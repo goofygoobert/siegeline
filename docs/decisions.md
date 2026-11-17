@@ -40,3 +40,16 @@ Format: decision — reason — alternative considered.
 - **All interface words now live in `data/world.json`** — the next world swap is data + art only, no code.
 - **Names I chose:** Gullwake (fort), Drowned Grotto (enemy base), Long Tom (cannon), powder (energy), doubloons (currency), Broadside / Sea Shanty (powers), Captain Rook Halloran (hero), Mother Fathom (boss), crew Hatchguard / Blackpowder / Rope Rat / Shantyman / Anchorman / Sawbones, monsters Drowner / Scuttler / Inkspitter / Pufferghast / Barnacle Troll / the Kelpie — alternatives welcome, they're one file to change.
 - **Navy-and-brass interface, monsters glow sickly green** — matches the sea palette and keeps crew (warm, upright) and monsters (green, hunched) apart at a glance.
+
+## Redesign slice (2026-11-17, phase 2) — see docs/design/critique.md and docs/design/art-direction.md
+- **Characters are no longer one rigid box per limb** — the peg-doll rig was the main reason the cast read as an outline. New kit (`art/blender/kit2.py`): lofted body parts, two-bone limbs, three-part spine, built faces, trailing cloth and kelp, poses keyed per frame with anticipation and a stretched strike. Still rigid segments on pivots (no skin weights), so it stays robust from code — alternative: armature with skinning (fragile), 2D cut-outs (would leave the Blender pipeline).
+- **Lighting is computed in the shader, not by lamps** — warm key from the right (the sunset), plum shadows, cool fill, orange rim. Crew face the light, mirrored monsters have it at their backs, so side reads from light alone. Forts use the same paint.
+- **Heavy outer ink line is added when packing** (2 px at atlas size), not rendered — consistent weight at phone size.
+- **New sprites are packed at 96 px per unit** (old: 72) and rendered at 144 — the old ones were upscaled on a 2x canvas. Costs about 0.96 MB for the four new sprites; the old Hatchguard/Drowner frames still ship until phase 3 repacks the groups.
+- **Grotto has no eyes** — the googly eyes fought the tone. Hollow sockets with kelp.
+- **Fort not enlarged in the slice** — the cannon's aim origin is tied to the fort sprite; a taller Gullwake needs a re-model with the mount point moved, which belongs in phase 3.
+- **Display type uses device fonts** (Copperplate on iPhone, slab/serif fallbacks elsewhere) — downloading an open-licence font package was blocked on this machine, so no new asset was added. Not seen on a real iPhone.
+- **Cannon depth:** direct body hit +50% to that monster (not the boss), stronger knock-back, 4 powder back per cannon kill. Re-tuned every stage to the old target win rates; boss par 215 → 260 s (docs/balance.md, change 7).
+- **Bodies stay on the beach** ~3 s (monsters melt into an ink puddle); hit-stop on heavy impacts; end of battle pans to the falling side before the tally.
+- **Preview lives at /preview/** on the same site, built from branch `redesign` by the same workflow and added only if its own tests and play-through pass. It keeps its own save slot (starts from a copy of the live save) and installs no offline worker. The live offline worker now ignores /preview/ and /worlds/ pages (it used to store any page it saw as the game's offline start page).
+- **Foreground layer not built** — listed in the art direction, deferred to phase 3.

@@ -47,3 +47,9 @@ Headless Chrome also caps animation frames at 15 fps, so frame *rate* can't be m
 
 ## Not yet verified
 - Real frame rate on an iPhone (no device here). The play-through recording and the perf probe are both headless.
+
+## Redesign slice (2026-11-17)
+- Download: `dist/` 8.6 MB → 9.6 MB (new carved-figure atlas pages `v2`, `v22` = 0.96 MB; old frames of the same two characters still ship until phase 3).
+- Frame work, headless software rendering, same machine under load (load average ~4.5), busiest-battle probe: live 28.2 ms avg / 34 ms p95; redesign 29.1 ms avg / 37 ms p95. No meaningful change. One 75 ms hitch seen in the redesign run (live worst 39 ms): not yet traced.
+- New per-frame work is small fixed pools (24 decals, 24 sparks, 8 rings). Hit-stop pauses the sim, not the renderer.
+- Still not measured on a real iPhone.
