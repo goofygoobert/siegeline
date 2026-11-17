@@ -127,6 +127,7 @@ class Fig:
         self.mats = {}; self.J = {}; self.W = {}; self.sign = {}; self.rest = {}; self.L = {}; self.vis_default = {}
         self.root = self.joint("root", (0, 0, 0), None)
         self.tails = []          # (joint names chain, sway, phase)
+        self.head_c = Vector((0, 0, h * 0.8))    # portrait centre; head builders overwrite it
         self.vis = {}            # name -> object shown/hidden by scale
 
     def joint(self, name, loc, parent, sign=1, rest=0.0):
@@ -401,8 +402,8 @@ def pose(fig, f, d):
     Feet stay flat and the lower foot stays on the ground unless d['free'] is set."""
     rad = math.radians
     d = dict(d)
-    P = fig.P; th = P.get("thigh", 0.27); sn = P.get("shin", 0.25); drop = []
-    for s in ("L", "R"):
+    P = getattr(fig, "P", {}); th = P.get("thigh", 0.27); sn = P.get("shin", 0.25); drop = [th + sn]
+    for s in (("L", "R") if "thL" in fig.J and "snL" in fig.J else ()):
         a1 = d.get("th" + s, 0.0); a2 = a1 + d.get("sn" + s, 0.0)
         if ("ft" + s) not in d:
             d["ft" + s] = -a2 - (d.get("hips", 0.0) if isinstance(d.get("hips", 0.0), (int, float)) else d["hips"][0])
