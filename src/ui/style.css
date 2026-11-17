@@ -28,7 +28,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent
 @keyframes screenIn { from { opacity: 0; transform: scale(1.015); } to { opacity: 1; transform: none; } }
 @keyframes screenOut { to { opacity: 0; } }
 .bgimg { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: -1; }
-.bgimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,5,5,.75), rgba(10,5,5,.15) 55%, rgba(10,5,5,.35)); }
+.bgimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,5,5,.88), rgba(10,5,5,.55) 35%, rgba(10,5,5,.1) 60%, rgba(10,5,5,.3)); }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 48px; min-width: 48px;
   padding: 0 var(--s5); border-radius: var(--r-m); background: var(--panel-2); border: 1px solid var(--line);
@@ -77,7 +77,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent
 .node.locked { filter: grayscale(1) brightness(.6); }
 .node.boss { width: 92px; height: 92px; border-color: #ff6a3a; background: radial-gradient(circle at 40% 35%, #6a2a1a, #2a0e0a); }
 .node .st { position: absolute; bottom: -20px; display: flex; gap: 1px; }
-.node .st i { width: 16px; height: 16px; display: block; background: currentColor; color: #4a3e38;
+.node .st i { width: 16px; height: 16px; display: block; background: currentColor; color: #9a8a80;
   clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
 .node .st i.on { color: var(--gold); }
 @keyframes pulse2 { 50% { box-shadow: 0 0 0 12px rgba(255,179,71,0), 0 6px 16px rgba(0,0,0,.55); } }
@@ -95,7 +95,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent
 .chip img { width: 28px; height: 28px; border-radius: 50%; background: #3a2c28; object-fit: cover; }
 .starrow { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-s); }
 .starrow div { display: flex; align-items: center; gap: var(--s2); }
-.star { width: 18px; height: 18px; display: inline-block; background: #4a3e38;
+.star { width: 18px; height: 18px; display: inline-block; background: #6a5a52;
   clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
 .star.on { background: var(--gold); }
 

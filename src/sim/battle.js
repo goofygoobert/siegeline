@@ -31,7 +31,7 @@ export function createBattle(content, stage, progress, seed = 1) {
                 dmg: g.ballista.dmg * (1 + g.ballista.dmgPerLevel * (lv("ballista") - 1)), x: F.playerCastleX + 98, y: F.groundY - 186 },
     abilities: (stage.abilities || []).map((id) => ({ id, cfg: g.abilities[id], level: (progress?.abilities || {})[id] || 1, cd: 6 })),
     hero: stage.hero ? { charge: 0, need: g.hero.charge, called: false, ent: null, level: lv("hero") } : null,
-    rally: 0, waveHold: false, waveClock: 0, waves: (stage.waves || []).map((w) => ({ ...w, done: 0, next: w.t })),
+    rally: 0, heldT: 0, waveHold: false, waveClock: 0, waves: (stage.waves || []).map((w) => ({ ...w, done: 0, next: w.t })),
     loop: stage.loop ? { ...stage.loop, timer: stage.loop.start } : null,
     triggers: (stage.triggers || []).map((t) => ({ ...t, fired: false })),
     boss: null, bossSpawned: false, result: null, endT: 0, emul: stage.power || 1, bmul: stage.bossPower || 1,
@@ -439,7 +439,7 @@ function stepProjectiles(B, dt) {
 }
 
 function stepWaves(B, dt) {
-  if (B.waveHold) return;
+  if (B.waveHold) { B.heldT += dt; return; }      // tutorial pauses don't count against the par time
   B.waveClock += dt;
   const T = B.waveClock;
   const eliteCfg = B.content.enemies.elite;
@@ -532,6 +532,6 @@ export function stars(B) {
   if (B.result !== "win") return 0;
   let s = 1;
   if (B.keep.hp >= B.keep.max * B.g.stars.keepHp) s++;
-  if (B.endT <= B.stage.par) s++;
+  if (B.endT - B.heldT <= B.stage.par) s++;
   return s;
 }

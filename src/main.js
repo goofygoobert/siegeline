@@ -144,7 +144,7 @@ async function worldMap() {
     const open = !!r.playable;
     map.append(h("button", { class: "pin" + (open ? "" : " locked"), style: `left:${p.x * 100}%;top:${p.y * 100}%`, "aria-label": r.name + (open ? "" : " (locked)"),
       onclick: open ? tap(() => regionScreen(r)) : tap(() => toast(`${r.name}: ${r.blurb.split(".")[0]}. Coming in a later update.`, 3200), "ui_locked") },
-      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : r.name),
+      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
       open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, "Cinderfold Vale is free"),
@@ -231,6 +231,8 @@ async function armoury(backFn) {
         const locked = !D.unlocked.units.includes(u.id), L = D.unitLevels[u.id] || 1;
         const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels);
         const nextTier = L < 5 ? `Lv 5: ${u.tiers["5"]}` : L < 10 ? `Lv 10: ${u.tiers["10"]}` : u.tiers["10"];
+        const from = content.stages.find((st) => st.unlocks.includes(u.id));
+        if (locked) { list.append(upRow(portrait(u.id), u.name, L, 10, `${u.role} · ${u.cost} embers · ${u.counter.toLowerCase().startsWith("any") ? "" : "weak to: " + u.counter.toLowerCase()}`, from ? `Unlocks when you clear ${from.name} (stage ${regionStages.indexOf(from) + 1})` : "Unlocks later", 0, () => {}, true)); continue; }
         list.append(upRow(portrait(u.id), u.name, L, 10,
           `${u.role} · ${u.cost} embers · HP ${Math.round(a.hp)} · ${u.id === "lamplighter" ? "heal " + Math.round(a.traits.heal) : "DMG " + Math.round(a.dmg)}`,
           L < 10 ? `Next: HP ${Math.round(b.hp)}, ${u.id === "lamplighter" ? "heal " + Math.round(b.traits.heal) : "DMG " + Math.round(b.dmg)} · ${nextTier}` : nextTier,
@@ -245,11 +247,13 @@ async function armoury(backFn) {
     } else {
       const hl = D.hero, hg = game.hero;
       list.append(upRow(portrait("marshal"), hg.name, hl, hg.maxLevel, `HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1)))} · DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1)))} · Flare stuns nearby Hollows`, `Next: HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * hl))}, DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))}`, upgradeCost("hero", hl, game), () => D.hero++, !D.unlocked.hero));
+      if (!D.unlocked.hero) list.lastChild.querySelector(".next").textContent = "Unlocks when you clear The Chapel Road (stage 2)";
       for (const id of ["ember_rain", "rally"]) {
         const a = game.abilities[id], L = D.abilities[id] || 1;
         const det = id === "ember_rain" ? `${a.stones} burning stones, ${Math.round(a.dmg * (1 + a.dmgPerLevel * (L - 1)))} dmg each · ${a.cooldown}s` : `+35% speed, faster attacks, heals 15% · ${(a.time + a.timePerLevel * (L - 1)).toFixed(1)}s · ${a.cooldown}s`;
         const nx = id === "ember_rain" ? `Next: ${Math.round(a.dmg * (1 + a.dmgPerLevel * L))} dmg each` : `Next: lasts ${(a.time + a.timePerLevel * L).toFixed(1)}s`;
         list.append(upRow(iconImg("i_" + id, id === "rally" ? I.bell : I.rain), abilityNames[id], L, a.maxLevel, det, nx, upgradeCost("ability", L, game), () => (D.abilities[id] = L + 1), !D.unlocked.abilities.includes(id)));
+        if (!D.unlocked.abilities.includes(id)) list.lastChild.querySelector(".next").textContent = id === "rally" ? "Unlocks when you clear Pyre Fields (stage 3)" : "Unlocks when you clear Smoke on the Vines (stage 1)";
       }
     }
   }
@@ -336,14 +340,14 @@ class BattleView {
     this.bindCanvas();
     const tut = stage.tutorial && !D.tutorials.includes(stage.tutorial) ? content.tutorials[stage.tutorial] : null;
     if (tut) this.tutor = { steps: tut, i: 0, shown: null, t0: 0, flags: {} };
-    this.callout(stage.boss ? "Hold the line" : "Defend the Keep");
+    if (!this.tutor) this.callout(stage.boss ? "Hold the line" : "Defend the Keep");
     this.raf = requestAnimationFrame((t) => this.frame(t));
     this.vis = () => { if (document.hidden && !this.over) this.pause(true); };
     document.addEventListener("visibilitychange", this.vis);
   }
   buildHud() {
     const B = this.B;
-    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, "Lantern Keep"), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
+    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, "Keep"), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
     this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? "Maw Gate · sealed" : "Maw Gate"), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
     this.speedBtn = h("button", { class: "pill", "aria-label": "Game speed", onclick: tap(() => { this.speed = this.speed === 1 ? 2 : 1; D.settings.speed = this.speed; persist(); this.speedBtn.innerHTML = I.speed(this.speed); }) });
     this.speedBtn.innerHTML = I.speed(this.speed);
@@ -577,7 +581,7 @@ class BattleView {
     const rec = D.stages[s.id] || (D.stages[s.id] = { stars: [false, false, false], best: 0, clears: 0 });
     let earned = 0, newStars = 0; const got = [false, false, false]; const unlocks = [];
     if (win) {
-      const n = starCount(B); got[0] = true; got[1] = B.keep.hp >= B.keep.max * game.stars.keepHp; got[2] = B.endT <= s.par;
+      const n = starCount(B); got[0] = true; got[1] = B.keep.hp >= B.keep.max * game.stars.keepHp; got[2] = B.endT - B.heldT <= s.par;
       for (let i = 0; i < 3; i++) if (got[i] && !rec.stars[i]) { rec.stars[i] = true; newStars++; }
       earned = (rec.clears === 0 ? s.reward : Math.round(s.reward * game.rewards.replayFraction)) + newStars * game.rewards.perNewStar;
       rec.best = rec.best ? Math.min(rec.best, Math.round(B.endT)) : Math.round(B.endT);
@@ -599,12 +603,15 @@ class BattleView {
     const starsEl = h("div", { class: "bigstars", "aria-label": `${got.filter(Boolean).length} of 3 stars` }, ...got.map((g) => h("span", { class: "star" + (g ? " on" : " miss") })));
     const earnN = h("b", {}, "0");
     const tip = win ? null : loseTip(this.B);
-    const marks = h("div", { class: "marks", style: "position:absolute;top:calc(var(--sat) + 16px);right:calc(var(--sar) + 24px)" }, coin(), h("span", {}, String(D.marks - earned)));
+    const marks = h("div", { class: "marks", style: "position:absolute;top:calc(var(--sat) + 60px);right:calc(var(--sar) + 16px)" }, coin(), h("span", {}, String(D.marks - earned)));
     const panel = h("div", { class: "panel result " + (win ? "win" : "lose"), role: "dialog", "aria-label": win ? "Victory" : "Defeat" },
       h("h2", {}, win ? (s.boss ? "The Matron falls" : "Victory") : "The Keep has fallen"),
-      win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" }, tip),
-      win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")} (you: ${Math.floor(this.B.endT / 60)}:${String(Math.floor(this.B.endT % 60)).padStart(2, "0")})` : d))) : null,
-      h("div", { class: "earn" }, coin(), "+", earnN, " marks"),
+      win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" },
+        this.B.gate.max && this.B.gate.hp / this.B.gate.max < 0.25 && !this.B.gate.sealed ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, `The Maw Gate had only ${Math.ceil(this.B.gate.hp)} health left. So close.`) : null,
+        this.B.boss && this.B.boss.alive && this.B.boss.hp / this.B.boss.maxHp < 0.3 ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, `The Matron was down to ${Math.round(this.B.boss.hp / this.B.boss.maxHp * 100)}%. So close.`) : null,
+        tip),
+      win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
+      h("div", { class: "earn" }, coin(), h("span", {}, "+"), earnN, h("span", {}, "marks")),
       unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
@@ -633,6 +640,7 @@ class BattleView {
   }
 }
 
+function fmt(t) { t = Math.floor(t); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; }
 function loseTip(B) {
   const alive = B.ents.filter((e) => e.alive && e.side === -1);
   const has = (id) => alive.some((e) => e.id === id);
