@@ -123,7 +123,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent
 .hud-top { position: absolute; top: calc(var(--sat) + 8px); left: calc(var(--sal) + 12px); right: calc(var(--sar) + 12px); display: flex; align-items: center; gap: var(--s3); pointer-events: none; }
 .hud-top > * { pointer-events: auto; }
 .hp { flex: 1; max-width: 240px; pointer-events: none !important; }
-.hp .lbl { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; text-shadow: 0 1px 2px #000; }
+.hp .lbl { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; gap: 10px; white-space: nowrap; text-shadow: 0 1px 2px #000; }
 .bar { height: 10px; border-radius: 999px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.15); overflow: hidden; }
 .bar > i { display: block; height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #6fcf5a, #a6e88a); transition: transform .25s var(--ease); }
 .hp.enemy .bar > i { background: linear-gradient(90deg, #ff7a3a, #ffb070); transform-origin: right; }

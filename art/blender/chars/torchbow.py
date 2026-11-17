@@ -1,19 +1,14 @@
 from kit import *
-# Torchbow — hooded archer, bow, quiver of burning arrows. Attack = "shoot" (arrow leaves on frame 4).
-def nocked_arrow(rig, C):
-    sc = rig["sc"]; hand = rig["hand_R"]; p = hand.matrix_world.translation.copy()
-    h = empty("arrow", (p.x, p.y - 0.05 * sc, p.z))
-    attach(rod((p.x, p.y - 0.05 * sc, p.z - 0.1 * sc), (p.x, p.y - 0.05 * sc, p.z + 0.62 * sc), 0.018 * sc, C["wood"]), h)
-    attach(ball(0.05 * sc, C["ember"], (p.x, p.y - 0.05 * sc, p.z + 0.64 * sc), scale=(1, 1, 1.5), glow=2.0, outline=0.0, name="tip"), h)
-    h.rotation_euler = (0, math.radians(170), 0)
-    bpy.context.view_layer.update()
-    h.parent = hand; h.matrix_parent_inverse = hand.matrix_world.inverted()
-    keyable(rig, "arrow", h, "scale", default=0.0)
+# Blackpowder — musketeer: long flintlock, black tricorn, navy coat, powder horn. Shot leaves on frame 4 (muzzle flash).
+ATTACKS["musket"] = dict(aR=[-50, -75, -88, -88, -86, -82, -70, -55], aL=[-40, -62, -75, -75, -72, -70, -58, -42],
+                         torso=[0, -2, -4, -4, -9, -6, -2, 0], head=[0, 4, 8, 8, 2, 4, 2, 0],
+                         rx=[0, 0, 0, 0, -0.07, -0.05, -0.02, 0], lL=[-8] * 8, lR=[10] * 8,
+                         k=dict(gR=[0, 60, 96, 96, 92, 88, 50, 10], flash=[0.001, 0.001, 0.001, 0.001, 1.2, 0.7, 0.001, 0.001]))
 
-def torchbow(t):
-    return dict(id="torchbow", scale=0.95, bulk=0.95, head=1.0, tabard=True, helmet="hood", offhand="bow",
-                extras=[quiver, nocked_arrow],
-                style=dict(attack="shoot", aL0=-10, aR0=-15),
-                colors=warden_colors(body=(0.42, 0.28, 0.18), arms=(0.42, 0.28, 0.18), legs=(0.26, 0.2, 0.17),
-                                     metal=(0.42, 0.44, 0.48) if t < 2 else PAL["steel"]))
-tiered(torchbow)
+def blackpowder(t):
+    return dict(portrait_noweapon=True, id="torchbow", scale=0.95, bulk=0.98, head=1.0, helmet="tricorn", moustache=(0.12, 0.1, 0.09),
+                weapon="musket", extras=[powder_horn, lambda r, C: coat(r, C, 0.75)],
+                style=dict(attack="musket", aR0=-50, aL0=-40, swingR=False),
+                colors=crew_colors(body=PAL["navy"], coat=PAL["navy"], lapel=PAL["sea_red"], arms=PAL["navy"],
+                                   legs=(0.8, 0.74, 0.6), hat=PAL["tar"]))
+tiered(blackpowder)

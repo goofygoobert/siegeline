@@ -1,38 +1,38 @@
 {
- "menu": {
-  "loopStart": 0.789478,
-  "loopEnd": 51.315805,
-  "samples": 2228211,
-  "preroll_samples": 34816,
-  "vol": 0.5
- },
- "map": {
-  "loopStart": 0.714286,
-  "loopEnd": 46.428571,
-  "samples": 2016000,
-  "preroll_samples": 31500,
-  "vol": 0.45
- },
- "battle": {
-  "loopStart": 0.454535,
-  "loopEnd": 58.636349,
-  "samples": 2565818,
-  "preroll_samples": 20045,
-  "vol": 0.45
- },
- "boss": {
-  "loopStart": 0.4,
-  "loopEnd": 58.0,
-  "samples": 2540160,
-  "preroll_samples": 17640,
-  "vol": 0.45
- },
- "victory": {
-  "samples": 264600,
-  "vol": 0.6
- },
- "defeat": {
-  "samples": 246960,
-  "vol": 0.6
- }
+  "menu": {
+    "loopStart": 0.937506,
+    "loopEnd": 45.937506,
+    "samples": 1984500,
+    "preroll_samples": 41344,
+    "vol": 0.5
+  },
+  "map": {
+    "loopStart": 0.5,
+    "loopEnd": 48.5,
+    "samples": 2116800,
+    "preroll_samples": 22050,
+    "vol": 0.45
+  },
+  "battle": {
+    "loopStart": 0.434785,
+    "loopEnd": 56.086961,
+    "samples": 2454261,
+    "preroll_samples": 19174,
+    "vol": 0.45
+  },
+  "boss": {
+    "loopStart": 0.47619,
+    "loopEnd": 61.428571,
+    "samples": 2688000,
+    "preroll_samples": 21000,
+    "vol": 0.45
+  },
+  "victory": {
+    "samples": 266204,
+    "vol": 0.6
+  },
+  "defeat": {
+    "samples": 328745,
+    "vol": 0.6
+  }
 }

@@ -23,6 +23,11 @@ PAL = dict(
     ash=(0.85, 0.83, 0.78), skin=(0.79, 0.60, 0.48), hskin=(0.30, 0.285, 0.285), hlimb=(0.37, 0.35, 0.35),
     bone=(0.85, 0.81, 0.71), ember=(1.0, 0.48, 0.10), blood=(0.353, 0.059, 0.07), rust=(0.48, 0.29, 0.165),
     dark=(0.10, 0.09, 0.10), cloth_dk=(0.17, 0.14, 0.15),
+    # Tales of the Brine (pirates vs. the Deep) — see docs/art-guide.md
+    navy=(0.122, 0.227, 0.353), sea_red=(0.69, 0.188, 0.165), canvas=(0.91, 0.863, 0.753), gold=(0.831, 0.635, 0.227),
+    tar=(0.165, 0.141, 0.125), lamp=(1.0, 0.70, 0.28), cursed=(0.78, 1.0, 0.42), iron=(0.30, 0.31, 0.33),
+    drown=(0.29, 0.416, 0.369), teal=(0.118, 0.29, 0.306), shell=(0.847, 0.812, 0.71), sick=(0.49, 1.0, 0.6),
+    ink=(0.227, 0.118, 0.29), kelp=(0.2, 0.34, 0.17), coral=(0.86, 0.45, 0.38),
 )
 
 
@@ -224,7 +229,7 @@ def attach(ob, pivot):
 
 def keyable(rig, name, ob, kind="scale", default=None):
     """Register an object whose scale/rotation the anims may key by name (d['k'][name])."""
-    base = tuple(ob.scale) if kind == "scale" else tuple(ob.rotation_euler)
+    base = tuple(ob.scale) if kind in ("scale", "sx") else tuple(ob.rotation_euler)
     rig["keyables"][name] = (ob, kind, base)
     if default is not None:
         rig.setdefault("kdef", {})[name] = default
@@ -259,8 +264,8 @@ def humanoid(spec):
         attach(box((legw, legw, hip_h * 0.8), C["legs"], (0, y, hip_h * 0.55), name="thigh"), lp)
         attach(box((0.3 * sc * spec.get("foot", 1.0), 0.24 * sc * max(lf, 0.8), 0.16 * sc), C.get("boots", C["legs"]),
                    (0.04 * sc, y, 0.08 * sc), name="boot"), lp)
-        if tier >= 2:
-            attach(box((legw * 1.3, legw * 1.25, hip_h * 0.36), C.get("metal", PAL["steel"]), (0.02 * sc, y, hip_h * 0.36), name="greave"), lp)
+        if tier >= 2:   # turned-down leather boot cuffs
+            attach(box((legw * 1.35, legw * 1.3, hip_h * 0.22), C.get("leather", PAL["leather"]), (0.02 * sc, y, hip_h * 0.3), name="cuff"), lp)
     tp = empty("torso", (0, 0, hip_h), hips); rig["torso"] = tp
     attach(box((bw * 0.82, bw * 0.72, torso_h), C["body"], (0, 0, hip_h + torso_h * 0.5),
                taper=spec.get("taper", (1.15, 1.05)), name="chest"), tp)
@@ -274,11 +279,18 @@ def humanoid(spec):
         attach(cyl(bw * 0.62, hip_h * 0.55, rc, (0, 0, hip_h * 0.28), r2=bw * 0.5, seg=14, name="robe_hem"), hips)
         if C.get("robe_trim"):
             attach(cyl(bw * 0.635, 0.07 * sc, C["robe_trim"], (0, 0, 0.06 * sc), seg=14, name="robe_trim"), hips)
-    if tier >= 2:  # chest plate
-        attach(box((0.1 * sc, bw * 0.62, torso_h * 0.5), C.get("metal", PAL["steel"]), (bw * 0.42, 0, hip_h + torso_h * 0.62), name="cplate"), tp)
+    if spec.get("facing", 1) > 0:   # crew: brass belt buckle
+        attach(box((0.05 * sc, 0.14 * sc, 0.12 * sc), C["trim"], (bw * 0.45, 0, hip_h + 0.05 * sc), name="buckle", outline=0.012), tp)
+    if tier >= 2:  # leather jerkin: two panels, shirt shows in the front gap
+        J = C.get("jerkin", PAL["leather"])
+        for yy in (-1, 1):
+            attach(box((bw * 0.88, bw * 0.3, torso_h * 0.8), J, (0, yy * bw * 0.23, hip_h + torso_h * 0.47), taper=(1.12, 1.05), name="jerkin"), tp)
         if tier >= 3:
-            attach(box((0.06 * sc, bw * 0.7, 0.07 * sc), C["trim"], (bw * 0.47, 0, hip_h + torso_h * 0.86), name="cplate_rim"), tp)
-            attach(box((0.06 * sc, 0.07 * sc, torso_h * 0.42), C["trim"], (bw * 0.48, 0, hip_h + torso_h * 0.6), name="cplate_bar"), tp)
+            for yy in (-1, 1):
+                attach(box((0.05 * sc, 0.05 * sc, torso_h * 0.78), C["trim"], (bw * 0.45, yy * bw * 0.085, hip_h + torso_h * 0.47), name="jtrim", outline=0.01), tp)
+            for i, (yy, zz) in enumerate(((-0.2, 0.78), (-0.07, 0.68), (0.07, 0.68), (0.2, 0.78))):   # doubloon necklace
+                attach(cyl(0.065 * sc, 0.03 * sc, C["trim"], (bw * 0.47, yy * bw, hip_h + torso_h * zz), rot=(0, math.radians(90), 0),
+                           seg=10, name="coin", outline=0.01, glow=0.2), tp)
     shoulder_z = hip_h + torso_h * 0.88
     hx = spec.get("head_fwd", 0.0) * sc
     hp = empty("head", (hx * 0.4, 0, shoulder_z + 0.05 * sc), tp); rig["head"] = hp
@@ -305,7 +317,11 @@ def humanoid(spec):
         hr = 0.1 * sc * spec.get("hand", 1.0) * k
         attach(ball(hr, C.get("hands", C["skin"]), (0, y, shoulder_z - al * 0.98), name="hand"), ap)
         hand = empty("hand_" + side, (0, y, shoulder_z - al * 0.98), ap); rig["hand_" + side] = hand
-        if spec.get("pauldrons") or tier >= 2:
+        if tier >= 2:   # leather bracers (t3: gold band)
+            attach(box((aw * 1.4, aw * 1.4, al * 0.3), C.get("leather", PAL["leather"]), (0, y, shoulder_z - al * 0.76), name="bracer"), ap)
+            if tier >= 3:
+                attach(box((aw * 1.5, aw * 1.5, al * 0.07), C["trim"], (0, y, shoulder_z - al * 0.64), name="bband", outline=0.01), ap)
+        if spec.get("pauldrons"):
             pc = C["trim"] if (tier >= 3 or spec.get("brass_pauldrons")) else C.get("metal", PAL["steel"])
             ps = spec.get("pauldron_size", 1.0) * (1.12 if tier >= 2 else 1.0)
             attach(box((0.32 * sc * ps, 0.3 * sc * ps, 0.17 * sc * ps), pc, (0, y * 1.08, shoulder_z + 0.01 * sc), bevel=0.05, name="pauldron"), ap)
@@ -360,7 +376,7 @@ def quad(spec):
 
 
 # ---------------------------------------------------------------- props
-GRIP = dict(sword=75, shortsword=80, knife=95, cleaver=75, boneclub=75, greathammer=60, bellpole=15, lamppole=12,
+GRIP = dict(cutlass=75, cutlass_s=80, musket=80, pistol=90, anchor=60, bottle=0, driftclub=60, sword=75, shortsword=80, knife=95, cleaver=75, boneclub=75, greathammer=60, bellpole=15, lamppole=12,
             bow=0, lantern=0, claws=0, hammer=70, spear=88, staff=10)
 
 
@@ -448,6 +464,8 @@ def weapon(kind, rig, C, side="R", grip=None):
             r = math.radians(a)
             A(spike((x, y, z + 0.95 * sc), (math.cos(r), math.sin(r), 0.3), 0.18 * sc, 0.035 * sc, C.get("metal_dk", PAL["steel_dk"])))
         A(ball(0.08 * sc, C.get("blood", PAL["blood"]), (x + 0.12 * sc, y - 0.06 * sc, z + 1.0 * sc), name="gore", outline=0.0))
+    elif kind in PROPS:
+        PROPS[kind](rig, C, A, x, y, z, sc, M, G, h)
     g = math.radians(GRIP.get(kind, 0) if grip is None else grip)
     h.rotation_euler = (0, g, 0)
     bpy.context.view_layer.update()
@@ -514,7 +532,9 @@ def helmet(rig, C, kind):
         cc = C.get("hood", C.get("cloth", PAL["red_dk"]))
         attach(ball(r * 1.06, cc, (hx - 0.06 * sc, 0, hz + 0.06 * sc), scale=(1, 1, 0.95), name="coif"), hp)
         attach(cyl(r * 0.98, 0.16 * sc, cc, (0, 0, hz - r * 0.95), seg=14, name="collar"), hp)
-    if t >= 2 and kind in ("hood", "coif", "hair"):   # steel skullcap over the hood
+    if kind in CREW_HATS:
+        CREW_HATS[kind](rig, C)
+    if t >= 2 and kind in ("hood", "coif"):   # steel skullcap over the hood
         attach(ball(r * 1.0, M, (hx - 0.08 * sc, 0, hz + r * 0.42), scale=(1.05, 1.05, 0.6), name="cap"), hp)
         attach(box((r * 1.1, 0.08 * sc, 0.12 * sc), C.get("crest", PAL["red"]) if t == 2 else C["trim"], (hx - 0.1 * sc, 0, hz + r * 1.0), bevel=0.03, name="capcrest"), hp)
         if t >= 3:
@@ -674,7 +694,7 @@ def apply(rig, f, d, st):
     if rig.get("quad"):
         key(rig["head"], f, (0, rad(d.get("head", 0)), 0)); key(rig["jaw"], f, (0, rad(d.get("jaw", 0)), 0))
         key(rig["tail"], f, (0, rad(d.get("tail", 0)), 0))
-        for n in ("FL", "FR", "BL", "BR"):
+        for n in rig.get("legs", ("FL", "FR", "BL", "BR")):
             key(rig["leg_" + n], f, (0, rad(d.get(n, 0)), 0))
     else:
         key(rig["torso"], f, (0, rad(d.get("torso", 0) + lean), 0))
@@ -688,6 +708,9 @@ def apply(rig, f, d, st):
         if kind == "scale":
             v = 1.0 if v is None else v
             key(ob, f, scale=tuple(b * v for b in base))
+        elif kind == "sx":     # squash/stretch along local x only (accordion bellows)
+            v = 1.0 if v is None else v
+            key(ob, f, scale=(base[0] * v, base[1], base[2]))
         else:
             v = 0.0 if v is None else v
             key(ob, f, rot=(base[0], base[1] + rad(v), base[2]))
@@ -747,14 +770,16 @@ def build_char(spec):
         helmet(rig, C, spec["helmet"])
     if spec.get("cape"):
         cape(rig, C, spec.get("cape_len", 1.0))
-    elif rig["tier"] >= 2:      # upgraded Wardens earn a short red half-cape (silhouette change)
-        cape(rig, C, 0.58)
+    elif rig["tier"] >= 2:      # upgraded crew: red sash tails hanging at the hip (silhouette change)
+        sash_tails(rig, C)
+    if spec.get("facing", 1) > 0 and not spec.get("no_face"):
+        crew_face(rig, C, spec)
     if spec.get("weapon"):
         weapon(spec["weapon"], rig, C, "R", spec.get("grip"))
     if spec.get("offhand"):
         weapon(spec["offhand"], rig, C, "L", spec.get("grip_L"))
     if spec.get("shield"):
-        tower_shield(rig, C, "L", -spec.get("style", {}).get("aL0", 10))
+        (hatch_shield if spec["shield"] == "hatch" else tower_shield)(rig, C, "L", -spec.get("style", {}).get("aL0", 10))
     for fn in spec.get("extras", []):
         bpy.context.view_layer.update()
         fn(rig, C)
@@ -1004,3 +1029,486 @@ def bg_camera(width_u, height_u, px_per_u, center_z):
     c = bpy.data.objects.new("bgcam", cd); s.collection.objects.link(c); s.camera = c
     c.location = (width_u / 2, -100, center_z); c.rotation_euler = (math.radians(90), 0, 0)
     return c
+
+
+# ================================================================ Tales of the Brine: crew + Deep parts
+# ---------------------------------------------------------------- crew hats (helmet kinds)
+def _hat_feather(rig, C, base, big=1.0):
+    """t2+: a plume tucked in the hat band, sweeping back (t3: gold-tipped)."""
+    sc = rig["sc"]; hp = rig["head"]; col = C.get("feather", (0.93, 0.9, 0.84))
+    b = Vector(base); p1 = b + Vector((-0.2, 0.0, 0.26)) * sc * big; p2 = p1 + Vector((-0.3, 0.0, 0.02)) * sc * big
+    attach(rod(b, p1, 0.035 * sc * big, col, r2=0.075 * sc * big), hp)
+    attach(rod(p1, p2, 0.075 * sc * big, col, r2=0.0), hp)
+    if rig["tier"] >= 3:
+        attach(ball(0.04 * sc, C["trim"], tuple(b), glow=0.3, name="pin", outline=0.01), hp)
+
+
+def _hat_geo(rig):
+    return rig["sc"], rig["head"], rig["head_z"], rig["head_r"], rig.get("head_x", 0), rig["tier"]
+
+
+def hat_tricorn(rig, C, big=1.0):
+    sc, hp, hz, r, hx, t = _hat_geo(rig); col = C.get("hat", PAL["tar"]); big = spec_get(rig, "hat_big", big)
+    attach(ball(r * 0.97, col, (hx - 0.03 * sc, 0, hz + r * 0.5), scale=(1, 1, 0.72), name="crown"), hp)
+    attach(cyl(r * 1.3 * big, 0.2 * sc * big, col, (hx - 0.03 * sc, 0, hz + r * 0.48), r2=r * 1.62 * big, seg=3, bevel=0.03, name="brim"), hp)
+    if t >= 3 or spec_get(rig, "hat_trim"):     # gold braid along the three upturned brim edges
+        R = r * 1.62 * big; zt = hz + r * 0.48 + 0.1 * sc * big
+        cs = [Vector((hx - 0.03 * sc + R * math.cos(a), R * math.sin(a), zt)) for a in (0, 2 * math.pi / 3, 4 * math.pi / 3)]
+        for a, b in zip(cs, cs[1:] + cs[:1]):
+            attach(rod(a, b, 0.035 * sc, C["trim"], outline=0.008), hp)
+    if t >= 2 or spec_get(rig, "plume"):
+        _hat_feather(rig, C, (hx - r * 0.3, r * 0.5, hz + r * 0.9), big * (1.35 if spec_get(rig, "plume") else 1.0))
+
+
+def hat_souwester(rig, C):
+    sc, hp, hz, r, hx, t = _hat_geo(rig); col = C.get("hat", (0.95, 0.74, 0.18))
+    attach(ball(r * 1.02, col, (hx - 0.04 * sc, 0, hz + r * 0.38), scale=(1, 1, 0.8), name="crown"), hp)
+    attach(cyl(r * 1.08, 0.16 * sc, col, (hx - r * 0.22, 0, hz + r * 0.14), r2=r * 1.0, seg=16, name="brimtop"), hp)
+    attach(cyl(r * 1.55, 0.08 * sc, col, (hx - r * 0.3, 0, hz + r * 0.04), r2=r * 1.15, seg=16, rot=(0, math.radians(-14), 0), name="brim"), hp)
+    attach(box((0.03 * sc, 0.05 * sc, r * 1.3), (0.55, 0.42, 0.12), (hx + r * 0.6, -r * 0.72, hz - r * 0.4), name="strap", outline=0.0), hp)
+    if t >= 3:
+        attach(cyl(r * 1.04, 0.06 * sc, C["trim"], (hx - r * 0.2, 0, hz + r * 0.3), seg=16, name="band", outline=0.01), hp)
+    if t >= 2:
+        _hat_feather(rig, C, (hx - r * 0.45, r * 0.5, hz + r * 0.6))
+
+
+def hat_beanie(rig, C):
+    sc, hp, hz, r, hx, t = _hat_geo(rig); col = C.get("hat", PAL["navy"])
+    attach(ball(r * 1.05, col, (hx - 0.05 * sc, 0, hz + r * 0.35), scale=(1, 1, 0.78), name="beanie"), hp)
+    attach(cyl(r * 1.08, 0.14 * sc, col, (hx - 0.05 * sc, 0, hz + r * 0.28), seg=16, name="fold"), hp)
+    attach(cyl(r * 1.1, 0.04 * sc, C.get("hat2", PAL["canvas"]), (hx - 0.05 * sc, 0, hz + r * 0.3), seg=16, name="stripe", outline=0.0), hp)
+    if t >= 3:
+        attach(ball(0.06 * sc, C["trim"], (hx - r * 0.1, -r * 0.92, hz - r * 0.3), glow=0.3, name="earring", outline=0.01), hp)
+    if t >= 2:
+        _hat_feather(rig, C, (hx - r * 0.5, r * 0.55, hz + r * 0.55), 0.9)
+
+
+def hat_bandana(rig, C):
+    sc, hp, hz, r, hx, t = _hat_geo(rig); col = C.get("hat", PAL["sea_red"])
+    attach(ball(r * 1.04, col, (hx - 0.05 * sc, 0, hz + r * 0.24), scale=(1, 1, 0.84), name="bandana"), hp)
+    kn = Vector((hx - r * 1.0, 0, hz + r * 0.25))
+    attach(ball(0.07 * sc, col, tuple(kn), name="knot"), hp)
+    for dy, L in ((-0.05, 0.3), (0.05, 0.24)):
+        attach(box((0.06 * sc, 0.1 * sc, L * sc), col, (kn.x - 0.06 * sc, dy * sc, kn.z - L * sc * 0.45), rot=(0, math.radians(-25), 0), name="tail"), hp)
+    for i in range(3):   # white polka dots on the near side
+        attach(ball(0.03 * sc, PAL["canvas"], (hx + r * (0.25 - i * 0.35), -r * 0.98, hz + r * (0.55 - abs(i - 1) * 0.12)), name="dot", outline=0.0), hp)
+    if t >= 3:
+        attach(ball(0.06 * sc, C["trim"], (hx - r * 0.1, -r * 0.92, hz - r * 0.3), glow=0.3, name="earring", outline=0.01), hp)
+    if t >= 2:
+        _hat_feather(rig, C, (hx - r * 0.75, r * 0.4, hz + r * 0.55), 0.85)
+
+
+def hat_hairband(rig, C):
+    """Hair / bald heads: t2 adds a red headband with a feather, t3 a gold earring."""
+    sc, hp, hz, r, hx, t = _hat_geo(rig)
+    if t >= 2:
+        attach(cyl(r * 1.06, 0.09 * sc, C.get("sash", PAL["sea_red"]), (hx - 0.03 * sc, 0, hz + r * 0.42), seg=16, name="headband"), hp)
+        _hat_feather(rig, C, (hx - r * 0.85, r * 0.3, hz + r * 0.5), 0.8)
+    if t >= 3:
+        attach(ball(0.06 * sc, C["trim"], (hx - r * 0.1, -r * 0.92, hz - r * 0.3), glow=0.3, name="earring", outline=0.01), hp)
+
+
+def hat_whitehair(rig, C):
+    sc, hp, hz, r, hx, t = _hat_geo(rig); col = C.get("hair", (0.92, 0.92, 0.9))
+    for y in (-1, 1):
+        attach(ball(r * 0.42, col, (hx - r * 0.25, y * r * 0.82, hz + r * 0.05), scale=(1.1, 0.8, 1), name="puff"), hp)
+    attach(ball(r * 0.55, col, (hx - r * 0.75, 0, hz + r * 0.05), scale=(0.7, 1.3, 1.1), name="back"), hp)
+    hat_hairband(rig, C)
+
+
+CREW_HATS = dict(tricorn=hat_tricorn, souwester=hat_souwester, beanie=hat_beanie, bandana=hat_bandana,
+                 bald=hat_hairband, hair=hat_hairband, whitehair=hat_whitehair)
+
+
+def crew_face(rig, C, spec):
+    """Nose, plus optional beard / moustache / spectacles from the spec."""
+    sc = rig["sc"]; hp = rig["head"]; hz = rig["head_z"]; r = rig["head_r"]; hx = rig.get("head_x", 0)
+    skin = C["skin"]; dk = tuple(v * 0.85 for v in skin)
+    attach(ball(r * 0.2, spec.get("nose_col", dk), (hx + r * 1.0, 0, hz - r * 0.12), scale=(1, 0.9, 1.1), name="nose", outline=0.012), hp)
+    if spec.get("beard"):
+        b = spec["beard"]; big = spec.get("beard_size", 1.0)
+        attach(ball(r * 0.72 * big, b, (hx + r * 0.42, 0, hz - r * 0.62), scale=(0.9, 1.15, 0.8), name="beard"), hp)
+        attach(box((r * 0.5, r * 1.6 * big, r * 0.35), b, (hx + r * 0.2, 0, hz - r * 0.35), name="chops"), hp)
+    if spec.get("moustache"):
+        m = spec["moustache"]
+        for y in (-1, 1):
+            attach(box((r * 0.18, r * 0.55, r * 0.16), m, (hx + r * 0.98, y * r * 0.3, hz - r * 0.34), rot=(math.radians(y * 18), 0, 0), name="stache"), hp)
+    if spec.get("specs"):
+        for ey in (-0.13, 0.13):
+            attach(cyl(0.052 * sc, 0.02 * sc, C["trim"], (hx + r * 0.96, ey * sc * spec.get("head", 1.0), hz + 0.03 * sc),
+                       rot=(0, math.radians(90), 0), seg=12, name="lens", outline=0.008), hp)
+            attach(cyl(0.034 * sc, 0.022 * sc, (0.75, 0.85, 0.9), (hx + r * 0.97, ey * sc * spec.get("head", 1.0), hz + 0.03 * sc),
+                       rot=(0, math.radians(90), 0), seg=12, glow=0.2, name="glass", outline=0.0), hp)
+
+
+def sash_tails(rig, C):
+    sc = rig["sc"]; tp = rig["torso"]; z = rig["hip_h"]; bw = rig["bw"]; col = C.get("sash", PAL["sea_red"])
+    for dx, L, a in ((-0.12, 0.42, 8), (0.0, 0.34, -6)):
+        attach(box((0.12 * sc, 0.05 * sc, L * sc), col, (bw * dx - 0.06 * sc, -bw * 0.44, z - L * sc * 0.4), rot=(0, math.radians(a), 0), name="sash"), tp)
+    attach(ball(0.08 * sc, col, (-0.06 * sc, -bw * 0.44, z + 0.04 * sc), name="sashknot"), tp)
+
+
+def stripes(rig, C, n=3):
+    """Horizontal shirt stripes around the chest."""
+    sc = rig["sc"]; tp = rig["torso"]; z = rig["hip_h"]; bw = rig["bw"]; th = rig["torso_h"]
+    tx, ty = rig["spec"].get("taper", (1.15, 1.05))
+    for i in range(n):
+        f = 0.3 + i * 0.22; zz = z + th * f
+        kx = 1 + (tx - 1) * f; ky = 1 + (ty - 1) * f
+        attach(box((bw * 0.83 * kx, bw * 0.73 * ky, th * 0.09), C["stripe"], (0, 0, zz), name="stripe", outline=0.0), tp)
+
+
+def sleeve_stripes(rig, C):
+    sc = rig["sc"]; z = rig["shoulder_z"]; th = rig["torso_h"]; bw = rig["bw"]
+    aw = 0.17 * sc * rig["spec"].get("limb", 1.0) * 1.04
+    for side, y in (("L", bw * 0.5), ("R", -bw * 0.5)):
+        for i in range(2):
+            attach(box((aw, aw, th * 0.08), C["stripe"], (0, y, z - th * (0.25 + i * 0.25)), name="sstripe", outline=0.0), rig["arm_" + side])
+
+
+def coat(rig, C, length=1.0):
+    """Long open coat: back tails to the knee, front flaps, lapels and brass buttons."""
+    sc = rig["sc"]; tp = rig["torso"]; z = rig["shoulder_z"]; hz = rig["hip_h"]; bw = rig["bw"]; th = rig["torso_h"]
+    col = C.get("coat", C["body"]); L = (th + hz * 0.75) * length
+    attach(box((0.1 * sc, bw * 0.86, L), col, (-bw * 0.42, 0, z - L * 0.5), taper=(1, 0.85), name="coatback"), tp)
+    for yy in (-1, 1):
+        attach(box((bw * 0.66, 0.08 * sc, L * 0.92), col, (-bw * 0.02, yy * bw * 0.4, z - L * 0.52), name="coatside"), tp)
+        attach(box((0.08 * sc, bw * 0.18, th * 0.55), C.get("lapel", C["trim"]), (bw * 0.44, yy * bw * 0.25, z - th * 0.3), name="lapel"), tp)
+    for i in range(3):
+        attach(ball(0.035 * sc, C["trim"], (bw * 0.47, -bw * 0.17, z - th * (0.25 + i * 0.22)), name="button", outline=0.008), tp)
+    attach(box((0.09 * sc, bw * 0.95, 0.12 * sc), col, (-bw * 0.05, 0, z + 0.02 * sc), name="collar"), tp)
+
+
+def powder_horn(rig, C):
+    sc = rig["sc"]; tp = rig["torso"]; z = rig["hip_h"]; bw = rig["bw"]; th = rig["torso_h"]
+    a = Vector((bw * 0.1, -bw * 0.46, z + 0.02 * sc)); b = Vector((-bw * 0.35, -bw * 0.46, z - 0.12 * sc))
+    attach(rod(a, b, 0.09 * sc, C.get("horn", PAL["bone"]), r2=0.02 * sc), tp)
+    attach(cyl(0.095 * sc, 0.05 * sc, C["trim"], tuple(a), rot=(0, math.radians(100), 0), name="horncap"), tp)
+    # bandolier strap across the chest
+    attach(box((bw * 0.9, bw * 0.78, 0.09 * sc), C.get("leather", PAL["leather"]), (0, 0, z + th * 0.55), rot=(math.radians(-38), 0, 0), name="strap"), tp)
+
+
+def accordion(rig, C):
+    """Squeezebox held in front of the chest; bellows keyable 'squeeze' (x-scale), music notes 'notes'."""
+    sc = rig["sc"]; tp = rig["torso"]; z = rig["hip_h"] + rig["torso_h"] * 0.42; bw = rig["bw"]; t = rig["tier"]
+    x0 = bw * 0.42 + 0.02 * sc; w = 0.32 * sc
+    piv = empty("bellows", (x0, -0.02 * sc, z), tp); keyable(rig, "squeeze", piv, "sx")
+    ends = C.get("box", PAL["sea_red"]) if t < 3 else C["trim"]
+    attach(box((0.07 * sc, 0.5 * sc, 0.46 * sc), ends, (x0, -0.02 * sc, z), name="endL"), tp)
+    for i in range(5):
+        attach(box((w / 5 * 0.92, 0.46 * sc, 0.42 * sc), (PAL["canvas"] if i % 2 == 0 else (0.25, 0.2, 0.18)), (x0 + w * (i + 0.5) / 5, -0.02 * sc, z),
+                   name="pleat", bevel=0.01), piv)
+    endR = empty("endRp", (x0 + w, -0.02 * sc, z), piv)
+    attach(box((0.07 * sc, 0.5 * sc, 0.46 * sc), ends, (x0 + w + 0.03 * sc, -0.02 * sc, z), name="endR"), piv)
+    for dy in (-0.12, 0.0, 0.12):   # buttons on the end board (camera side)
+        attach(ball(0.03 * sc, PAL["canvas"] if t < 3 else PAL["cursed"], (x0 + w + 0.03 * sc, -0.28 * sc, z + dy * sc), glow=0.0 if t < 3 else 1.0, name="key", outline=0.0), piv)
+    attach(box((0.03 * sc, 0.52 * sc, 0.06 * sc), C["trim"], (x0, -0.02 * sc, z + 0.25 * sc), name="endtrim", outline=0.01), tp)
+    # music notes (glow pulse on the attack), floating above the box
+    gp = glow_pivot(rig, "notes", (x0 + w * 0.5, -0.1 * sc, z + 0.55 * sc), tp)
+    nc = PAL["lamp"] if t < 3 else PAL["cursed"]
+    for (dx, dz, s) in ((-0.1, 0.0, 1.0), (0.22, 0.2, 0.8)):
+        px, pz = x0 + w * 0.5 + dx * sc, z + 0.55 * sc + dz * sc
+        attach(ball(0.07 * sc * s, nc, (px, -0.3 * sc, pz), scale=(1.3, 0.6, 1), glow=1.5, name="notehead", outline=0.01), gp)
+        attach(box((0.025 * sc, 0.03 * sc, 0.26 * sc * s), nc, (px + 0.07 * sc * s, -0.3 * sc, pz + 0.13 * sc * s), glow=1.5, name="stem", outline=0.01), gp)
+        attach(box((0.1 * sc * s, 0.03 * sc, 0.04 * sc), nc, (px + 0.11 * sc * s, -0.3 * sc, pz + 0.24 * sc * s), rot=(0, 0.5, 0), glow=1.5, name="flag", outline=0.01), gp)
+    rig.setdefault("kdef", {})["notes"] = 0.001
+
+
+def hatch_shield(rig, C, side="L", tilt=0.0):
+    """A ship's hatch door: planks, iron bands, ring handle (t3: gold bands, cursed-glow rivets)."""
+    bpy.context.view_layer.update()
+    sc = rig["sc"]; hand = rig["hand_" + side]; p = hand.matrix_world.translation.copy(); t = rig["tier"]
+    h = empty("shield", (p.x, p.y, p.z)); A = lambda ob: attach(ob, h)
+    x, y, z = p.x + 0.2 * sc, p.y - 0.04 * sc, p.z + 0.14 * sc
+    wood = C.get("hatch", (0.55, 0.38, 0.22)); band = C["trim"] if t >= 3 else PAL["iron"]
+    for i, dy in enumerate((-0.2, 0.0, 0.2)):
+        A(box((0.1 * sc, 0.19 * sc, 0.86 * sc), tuple(v * (1.0 if i % 2 else 0.88) for v in wood), (x, y + dy * sc, z), bevel=0.02, name="plank"))
+    for dz in (-0.28, 0.28):
+        A(box((0.13 * sc, 0.66 * sc, 0.09 * sc), band, (x + 0.01 * sc, y, z + dz * sc), name="band"))
+        for dy in (-0.24, 0.0, 0.24):
+            A(ball(0.035 * sc, band if t < 3 else PAL["cursed"], (x + 0.07 * sc, y + dy * sc, z + dz * sc), glow=0.0 if t < 3 else 1.5, name="rivet", outline=0.008))
+    A(cyl(0.11 * sc, 0.04 * sc, band, (x + 0.07 * sc, y, z), rot=(0, math.radians(90), 0), seg=14, name="ring"))
+    A(cyl(0.07 * sc, 0.05 * sc, wood, (x + 0.08 * sc, y, z), rot=(0, math.radians(90), 0), seg=14, name="ringhole", outline=0.0))
+    if t >= 2:   # painted gull emblem (sea-red chevron)
+        A(box((0.03 * sc, 0.26 * sc, 0.06 * sc), C.get("sash", PAL["sea_red"]), (x + 0.06 * sc, y - 0.07 * sc, z + 0.14 * sc), rot=(math.radians(25), 0, 0), name="gull", outline=0.0))
+        A(box((0.03 * sc, 0.26 * sc, 0.06 * sc), C.get("sash", PAL["sea_red"]), (x + 0.06 * sc, y + 0.07 * sc, z + 0.14 * sc), rot=(math.radians(-25), 0, 0), name="gull", outline=0.0))
+    h.rotation_euler = (0, math.radians(tilt), 0)
+    bpy.context.view_layer.update()
+    h.parent = hand; h.matrix_parent_inverse = hand.matrix_world.inverted()
+    return h
+
+
+# ---------------------------------------------------------------- crew props (weapon kinds; built upright at the hand)
+def p_cutlass(rig, C, A, x, y, z, sc, M, G, h, L=0.92):
+    n = 4; seg = L * sc / n; cur = Vector((x, y, z + 0.09 * sc)); ang = 0.0
+    for i in range(n):
+        d = Vector((math.sin(ang), 0, math.cos(ang)))
+        A(box((0.15 * sc * (1 - i * 0.1), 0.04 * sc, seg * 1.1), M, tuple(cur + d * seg * 0.5), rot=(0, ang, 0), glow=G,
+              taper=(0.9, 1) if i < n - 1 else (0.25, 1), name="blade", bevel=0.01))
+        cur = cur + d * seg; ang -= math.radians(8)
+    A(ball(0.12 * sc, C["trim"], (x + 0.06 * sc, y, z + 0.03 * sc), scale=(0.6, 1.0, 0.85), name="basket"))
+    A(box((0.06 * sc, 0.06 * sc, 0.17 * sc), C.get("leather", PAL["leather"]), (x, y, z - 0.03 * sc), name="hilt"))
+    A(ball(0.05 * sc, C["trim"], (x, y, z - 0.13 * sc), name="pommel"))
+
+
+def p_cutlass_s(rig, C, A, x, y, z, sc, M, G, h):
+    p_cutlass(rig, C, A, x, y, z, sc, M, G, h, L=0.66)
+
+
+def _muzzle_flash(rig, C, A, h, p, sc, name, size=1.0, hot=None):
+    gp = glow_pivot(rig, name, tuple(p), None); attach(gp, h)
+    hot = hot or (PAL["lamp"] if rig["tier"] < 3 else PAL["cursed"])
+    attach(ball(0.13 * sc * size, hot, tuple(p + Vector((0, 0, 0.08 * sc * size))), scale=(1, 1, 1.4), glow=2.0, name="flash", outline=0.0), gp)
+    attach(ball(0.07 * sc * size, (1, 0.97, 0.8), tuple(p + Vector((0, -0.05 * sc, 0.08 * sc * size))), glow=2.0, name="flashcore", outline=0.0), gp)
+    for a in (-50, 0, 50):
+        ra = math.radians(a)
+        attach(spike(tuple(p), (math.sin(ra), 0, math.cos(ra)), 0.26 * sc * size, 0.05 * sc * size, hot, glow=1.8, outline=0.0), gp)
+    rig.setdefault("kdef", {})[name] = 0.001
+
+
+def p_musket(rig, C, A, x, y, z, sc, M, G, h):
+    wood = C["wood"] if rig["tier"] < 3 else (0.3, 0.2, 0.12)
+    A(box((0.13 * sc, 0.08 * sc, 0.5 * sc), wood, (x - 0.02 * sc, y, z - 0.2 * sc), taper=(0.6, 0.9), name="stock"))
+    A(box((0.08 * sc, 0.07 * sc, 0.62 * sc), wood, (x, y, z + 0.32 * sc), name="forestock"))
+    A(rod((x + 0.02 * sc, y - 0.01 * sc, z), (x + 0.02 * sc, y - 0.01 * sc, z + 1.28 * sc), 0.032 * sc, C["trim"] if rig["tier"] >= 3 else PAL["iron"], glow=0.25 * G))
+    if rig["tier"] >= 3:
+        A(ball(0.05 * sc, M, (x + 0.02 * sc, y - 0.04 * sc, z + 0.04 * sc), glow=1.5, name="cursedgem", outline=0.0))
+    A(box((0.06 * sc, 0.09 * sc, 0.14 * sc), C["trim"], (x + 0.01 * sc, y - 0.03 * sc, z + 0.04 * sc), name="lock"))
+    A(box((0.15 * sc, 0.085 * sc, 0.05 * sc), C["trim"], (x - 0.02 * sc, y, z - 0.45 * sc), name="buttplate"))
+    for dz in (0.35, 0.7):
+        A(cyl(0.045 * sc, 0.04 * sc, C["trim"], (x + 0.02 * sc, y - 0.01 * sc, z + dz * sc), seg=10, name="bandm", outline=0.008))
+    _muzzle_flash(rig, C, A, h, Vector((x + 0.02 * sc, y - 0.01 * sc, z + 1.3 * sc)), sc, "flash")
+
+
+def p_pistol(rig, C, A, x, y, z, sc, M, G, h):
+    A(box((0.1 * sc, 0.07 * sc, 0.2 * sc), C["wood"], (x - 0.04 * sc, y, z - 0.05 * sc), rot=(0, math.radians(-25), 0), name="pgrip"))
+    A(rod((x, y - 0.01 * sc, z + 0.02 * sc), (x, y - 0.01 * sc, z + 0.42 * sc), 0.04 * sc, C["trim"], r2=0.045 * sc))
+    A(ball(0.05 * sc, C["trim"], (x - 0.07 * sc, y, z - 0.15 * sc), name="pbutt"))
+    _muzzle_flash(rig, C, A, h, Vector((x, y - 0.01 * sc, z + 0.45 * sc)), sc, "flare", 1.1, hot=(1.0, 0.42, 0.22))
+
+
+def p_anchor(rig, C, A, x, y, z, sc, M, G, h):
+    I = M if rig["tier"] >= 3 else C.get("anchor", PAL["iron"])
+    A(rod((x, y, z - 0.25 * sc), (x, y, z + 1.15 * sc), 0.06 * sc, I, glow=G * 0.6))
+    A(ball(0.1 * sc, I, (x, y, z + 1.17 * sc), name="crown", glow=G * 0.6))
+    for s in (-1, 1):
+        p0 = Vector((x, y, z + 1.17 * sc)); p1 = Vector((x + s * 0.34 * sc, y, z + 1.08 * sc)); p2 = Vector((x + s * 0.48 * sc, y, z + 0.82 * sc))
+        A(rod(p0, p1, 0.055 * sc, I, glow=G * 0.6)); A(rod(p1, p2, 0.055 * sc, I, r2=0.045 * sc, glow=G * 0.6))
+        A(spike(tuple(p2), (s * 0.15, 0, -1), 0.22 * sc, 0.1 * sc, I, glow=G * 0.6))
+    A(rod((x, y - 0.3 * sc, z + 0.1 * sc), (x, y + 0.3 * sc, z + 0.1 * sc), 0.05 * sc, C["wood"]))
+    for s in (-1, 1):
+        A(ball(0.06 * sc, C["trim"] if rig["tier"] >= 2 else PAL["iron"], (x, y + s * 0.31 * sc, z + 0.1 * sc), name="stockend"))
+    A(cyl(0.12 * sc, 0.04 * sc, I, (x, y, z - 0.31 * sc), rot=(math.radians(90), 0, 0), seg=14, name="ring"))
+    for i in range(3):    # chain links hanging from the ring
+        A(ball(0.045 * sc, PAL["iron"], (x - 0.05 * sc * i, y - 0.03 * sc, z - 0.42 * sc - i * 0.09 * sc), scale=(0.7, 0.7, 1.3), seg=8, name="link", outline=0.01))
+
+
+def p_bottle(rig, C, A, x, y, z, sc, M, G, h):
+    glass = (0.42, 0.24, 0.1) if rig["tier"] < 3 else PAL["cursed"]; gg = 0.0 if rig["tier"] < 3 else 0.8
+    A(ball(0.13 * sc, glass, (x, y, z + 0.15 * sc), scale=(1, 1, 1.25), glow=gg, name="bottle"))
+    A(rod((x, y, z + 0.28 * sc), (x, y, z + 0.44 * sc), 0.045 * sc, glass, glow=gg))
+    A(cyl(0.05 * sc, 0.07 * sc, PAL["wood"], (x, y, z + 0.47 * sc), name="cork"))
+    A(box((0.04 * sc, 0.18 * sc, 0.12 * sc), PAL["canvas"], (x + 0.0 * sc, y - 0.1 * sc, z + 0.14 * sc), name="label", outline=0.0))
+
+
+def p_driftclub(rig, C, A, x, y, z, sc, M, G, h):
+    dw = C.get("drift", (0.6, 0.55, 0.46))
+    A(rod((x, y, z - 0.2 * sc), (x + 0.04 * sc, y, z + 0.7 * sc), 0.06 * sc, dw, r2=0.1 * sc))
+    A(rod((x + 0.04 * sc, y, z + 0.7 * sc), (x - 0.03 * sc, y, z + 1.05 * sc), 0.1 * sc, dw, r2=0.15 * sc))
+    A(ball(0.18 * sc, dw, (x - 0.03 * sc, y, z + 1.08 * sc), scale=(1.1, 0.9, 0.9), name="knot"))
+    A(rod((x + 0.05 * sc, y, z + 0.6 * sc), (x + 0.24 * sc, y, z + 0.74 * sc), 0.04 * sc, dw, r2=0.015 * sc))
+    for (dx, dz) in ((0.1, 1.12), (-0.12, 1.0), (0.05, 0.9), (-0.05, 1.22)):
+        A(cyl(0.05 * sc, 0.07 * sc, C["bone"], (x + dx * sc, y - 0.13 * sc, z + dz * sc), r2=0.025 * sc, rot=(math.radians(80), 0, 0), seg=7, name="barnacle"))
+    A(spike((x + 0.1 * sc, y - 0.05 * sc, z + 1.0 * sc), (1, 0, 0.2), 0.16 * sc, 0.025 * sc, PAL["rust"]))
+    A(box((0.04 * sc, 0.04 * sc, 0.4 * sc), PAL["kelp"], (x - 0.15 * sc, y - 0.05 * sc, z + 0.85 * sc), rot=(0, 0.2, 0), name="kelp", outline=0.008))
+
+
+PROPS = dict(cutlass=p_cutlass, cutlass_s=p_cutlass_s, musket=p_musket, pistol=p_pistol, anchor=p_anchor, bottle=p_bottle,
+             driftclub=p_driftclub)
+
+
+# ---------------------------------------------------------------- the Deep (monster parts)
+def kelp_hair(rig, C, n=7, L=0.42, pivot=None):
+    sc = rig["sc"]; hp = pivot or rig["head"]; hz = rig["head_z"]; r = rig["head_r"]; hx = rig.get("head_x", 0)
+    col = C.get("kelp", PAL["kelp"])
+    for i in range(n):
+        a = math.radians(-70 + i * 140 / max(n - 1, 1))
+        b = Vector((hx - r * 0.35 + math.cos(a) * 0 - r * 0.25 * math.cos(a), math.sin(a) * r * 0.85, hz + r * 0.55))
+        ln = L * sc * (0.75 + 0.5 * ((i * 37) % 5) / 4)
+        e = b + Vector((-0.25, math.sin(a) * 0.15, -1)).normalized() * ln
+        attach(rod(b, e, 0.05 * sc, col, r2=0.012 * sc, seg=6), hp)
+    attach(ball(r * 1.0, col, (hx - r * 0.2, 0, hz + r * 0.25), scale=(1, 1, 0.75), name="kelpcap"), hp)
+
+
+def barnacles(rig, C, pivot, pts, s=1.0):
+    sc = rig["sc"]
+    for (x, y, z) in pts:
+        attach(cyl(0.06 * sc * s, 0.08 * sc * s, C["bone"], (x, y, z), r2=0.03 * sc * s, seg=7, rot=(math.radians(-70), 0, 0), name="barnacle", bevel=0.01), pivot)
+        attach(ball(0.022 * sc * s, PAL["dark"], (x, y - 0.04 * sc * s, z), name="bhole", outline=0.0), pivot)
+
+
+def dorsal_fin(rig, C, size=1.0, n=4):
+    """Spiny fin down the back of the torso (thin prism in the XZ plane)."""
+    sc = rig["sc"]; z = rig["shoulder_z"]; bw = rig["bw"]; th = rig["torso_h"]
+    pts = [(0.0, 0.0)]
+    for i in range(n):
+        pts.append((-0.06 * sc * size - i * 0.04 * sc, (0.1 + i * 0.18) * th))
+        pts.append((-(0.3 - i * 0.03) * sc * size, (0.2 + i * 0.18) * th))
+    pts.append((0.0, th * 0.85))
+    attach(prism([(p[0], p[1]) for p in pts], 0.04 * sc, C.get("fin", PAL["teal"]), loc=(-bw * 0.38, 0, z - th * 0.95)), rig["torso"])
+
+
+def rags(rig, C, n=9, L=0.2):
+    """Torn sailcloth hem around the waist."""
+    sc = rig["sc"]; bw = rig["bw"]; z = rig["hip_h"]; col = C.get("rag", (0.45, 0.47, 0.4))
+    attach(cyl(bw * 0.5, 0.2 * sc, col, (0, 0, z + 0.02 * sc), r2=bw * 0.46, seg=12, name="ragbelt"), rig["torso"])
+    for i in range(n):
+        a = math.radians(i * 360 / n + 15)
+        attach(spike((math.cos(a) * bw * 0.46, math.sin(a) * bw * 0.42, z - 0.04 * sc), (math.cos(a) * 0.2, math.sin(a) * 0.2, -1),
+                     L * sc * (0.7 + 0.6 * ((i * 7) % 3) / 2), 0.07 * sc, col), rig["torso"])
+
+
+def gills(rig, C):
+    sc = rig["sc"]; hp = rig["head"]; hz = rig["head_z"]; r = rig["head_r"]; hx = rig.get("head_x", 0)
+    for i in range(3):
+        attach(box((0.03 * sc, 0.02 * sc, r * 0.45), PAL["ink"], (hx - r * 0.15 - i * 0.06 * sc, -r * 0.93, hz - r * 0.35), rot=(0, 0.3, 0), name="gill", outline=0.0), hp)
+
+
+def face_tentacles(rig, C, n=5, L=0.36):
+    sc = rig["sc"]; hp = rig["head"]; hz = rig["head_z"]; r = rig["head_r"]; hx = rig.get("head_x", 0)
+    col = C.get("skin")
+    for i in range(n):
+        y = (-0.6 + 1.2 * i / max(n - 1, 1)) * r
+        b = Vector((hx + r * 0.75, y, hz - r * 0.35)); ln = L * sc * (1.0 if i % 2 else 0.75)
+        m = b + Vector((0.08 * sc, 0, -ln * 0.6)); e = m + Vector((-0.06 * sc, y * 0.2, -ln * 0.45))
+        attach(rod(b, m, 0.05 * sc, col, r2=0.035 * sc, seg=6), hp)
+        attach(rod(m, e, 0.035 * sc, col, r2=0.008 * sc, seg=6), hp)
+        attach(ball(0.018 * sc, C["eyes"], tuple(m + Vector((0.03 * sc, -0.02 * sc, 0))), glow=1.6, name="sucker", outline=0.0), hp)
+
+
+def deep_eyes(rig, C, s=1.0, round_=False):
+    """Big glowing eyes (used where the head is custom)."""
+    sc = rig["sc"]; hp = rig["head"]; hz = rig["head_z"]; r = rig["head_r"]; hx = rig.get("head_x", 0)
+    for ey in (-0.4, 0.4):
+        attach(ball(0.07 * sc * s, C["eyes"], (hx + r * 0.85, ey * r, hz + r * 0.15), scale=(0.6, 1, 1 if round_ else 0.7), glow=2.0, name="eye", outline=0.012), hp)
+
+
+# ---------------------------------------------------------------- crab builder (Scuttler) + anims
+def crab(spec):
+    """Low crab-thing: wide shell, 6 legs, eye stalks, big snapping claw on the near side, small claw on the far side.
+    Keys: head = big-claw arm (lift/lunge), jaw = pincer finger (neg opens), tail = small claw, legs FL ML BL / FR MR BR."""
+    sc = spec.get("scale", 1.0); C = spec["colors"]; h = 0.36 * sc
+    rig = dict(keyables={}, sc=sc, spec=spec, free=[], tier=1, quad=True, legs=("FL", "ML", "BL", "FR", "MR", "BR"))
+    root = empty("root"); rig["root"] = root
+    body = empty("hips", (0, 0, h), root); rig["hips"] = body
+    sz = h + 0.06 * sc
+    attach(ball(0.44 * sc, C["body"], (0, 0, sz), scale=(1.0, 0.85, 0.5), seg=20, name="shell"), body)
+    attach(ball(0.3 * sc, C["skin"], (0.02 * sc, 0, sz + 0.1 * sc), scale=(1.0, 0.85, 0.45), seg=16, name="shelltop"), body)
+    for a in (-60, -30, 0, 30, 60):
+        ra = math.radians(a)
+        attach(spike((0.42 * sc * math.cos(ra), 0.36 * sc * math.sin(ra), sz), (math.cos(ra), math.sin(ra) * 0.8, 0.25), 0.12 * sc, 0.045 * sc, C["bone"]), body)
+    barnacles(rig, C, body, [(-0.2 * sc, -0.12 * sc, sz + 0.18 * sc), (-0.05 * sc, -0.22 * sc, sz + 0.14 * sc), (-0.28 * sc, 0.05 * sc, sz + 0.15 * sc)], 0.9)
+    for (dx, dy, a) in ((-0.05, -0.3, 25), (0.12, -0.28, -30), (-0.22, -0.25, 60)):
+        attach(box((0.12 * sc, 0.03 * sc, 0.03 * sc), C["eyes"], (dx * sc, dy * sc, sz + 0.05 * sc), rot=(0, math.radians(a), 0), glow=1.8, name="crack", outline=0.0), body)
+    for ey in (-0.1, 0.1):   # eye stalks
+        b = Vector((0.3 * sc, ey * sc, sz + 0.12 * sc)); e = Vector((0.36 * sc, ey * 1.3 * sc, sz + 0.34 * sc))
+        attach(rod(b, e, 0.03 * sc, C["skin"]), body)
+        attach(ball(0.06 * sc, C["eyes"], tuple(e), glow=2.0, name="eye", outline=0.012), body)
+    for i in range(3):    # mouth bristles
+        attach(spike((0.42 * sc, (i - 1) * 0.06 * sc, sz - 0.08 * sc), (0.4, 0, -1), 0.1 * sc, 0.02 * sc, C["bone"], outline=0.008), body)
+    # big claw (near side, camera)
+    arm = empty("head", (0.25 * sc, -0.24 * sc, sz - 0.02 * sc), body); rig["head"] = arm
+    e1 = Vector((0.45 * sc, -0.36 * sc, sz + 0.04 * sc)); cb = Vector((0.6 * sc, -0.38 * sc, sz + 0.12 * sc))
+    attach(rod((0.25 * sc, -0.24 * sc, sz - 0.02 * sc), e1, 0.07 * sc, C["skin"]), arm)
+    attach(rod(e1, cb, 0.08 * sc, C["skin"]), arm)
+    attach(ball(0.16 * sc, C["body"], tuple(cb + Vector((0.08 * sc, 0, 0))), scale=(1.3, 0.8, 0.9), name="palm"), arm)
+    attach(box((0.32 * sc, 0.1 * sc, 0.09 * sc), C["bone"], tuple(cb + Vector((0.32 * sc, 0, -0.06 * sc))), taper=(0.3, 0.6), rot=(0, math.radians(-90), 0), name="lowfinger"), arm)
+    jaw = empty("jaw", tuple(cb + Vector((0.18 * sc, 0, 0.04 * sc))), arm); rig["jaw"] = jaw
+    tip0 = cb + Vector((0.18 * sc, 0, 0.04 * sc))
+    fing = box((0.3 * sc, 0.1 * sc, 0.09 * sc), C["bone"], tuple(tip0 + Vector((0.14 * sc, 0, 0.05 * sc))), rot=(0, math.radians(-14), 0), name="upfinger")
+    attach(fing, jaw)
+    for i in range(3):
+        attach(spike(tuple(tip0 + Vector(((0.06 + i * 0.07) * sc, 0, 0.0))), (0, 0, -1), 0.05 * sc, 0.018 * sc, C["bone"], outline=0.006), jaw)
+    # small claw (far side)
+    tl = empty("tail", (0.25 * sc, 0.22 * sc, sz), body); rig["tail"] = tl
+    attach(rod((0.25 * sc, 0.22 * sc, sz), (0.48 * sc, 0.3 * sc, sz + 0.06 * sc), 0.05 * sc, C["skin"]), tl)
+    attach(ball(0.08 * sc, C["bone"], (0.55 * sc, 0.3 * sc, sz + 0.08 * sc), scale=(1.4, 0.8, 0.8), name="smallclaw"), tl)
+    for nm, x, dx in (("F", 0.22, 0.22), ("M", 0.0, 0.04), ("B", -0.22, -0.18)):
+        for side, y in (("L", 1), ("R", -1)):
+            key_ = nm + ("R" if y > 0 else "L")      # near side (-Y) legs = L keys
+            lp = empty("leg_" + key_, (x * sc, y * 0.28 * sc, sz - 0.04 * sc), root); rig["leg_" + key_] = lp
+            k = Vector(((x + dx * 0.6) * sc, y * 0.5 * sc, sz + 0.12 * sc)); f = Vector(((x + dx) * sc, y * 0.6 * sc, 0.02 * sc))
+            col = C["legs"]
+            attach(rod((x * sc, y * 0.28 * sc, sz - 0.04 * sc), k, 0.045 * sc, col, r2=0.04 * sc), lp)
+            attach(rod(k, f, 0.04 * sc, col, r2=0.012 * sc), lp)
+            attach(ball(0.045 * sc, C["bone"], tuple(k), name="knee", outline=0.01), lp)
+    rig["head_z"] = sz + 0.2 * sc; rig["head_r"] = 0.12 * sc; rig["head_x"] = 0.3 * sc
+    rig["hip_h"] = h; rig["shoulder_z"] = sz; rig["bw"] = 0.4 * sc
+    return rig
+
+
+def c_idle(t, st):
+    s = math.sin(t * math.tau)
+    return dict(bob=0.012 * s, head=-6 + 5 * s, jaw=-10 + 10 * s, tail=6 * s, pitch=1.5 * s, FL=3 * s, MR=-3 * s)
+
+
+def c_walk(t, st):
+    s = math.sin(t * math.tau); c = math.cos(t * math.tau); A = 30
+    return dict(FL=-A * s, MR=-A * s, BL=-A * s, FR=A * s, ML=A * s, BR=A * s, pitch=3 * c, bob=0.05 * abs(c),
+                head=-8 + 6 * c, jaw=-12, tail=10 * s)
+
+
+C_ATTACK = dict(rx=[0, -0.04, -0.07, -0.07, 0.26, 0.2, 0.08, 0], pitch=[0, -4, -8, -8, 8, 6, 2, 0],
+                head=[-6, -22, -36, -40, 12, 8, 0, -6], jaw=[-8, -24, -38, -40, 14, 10, 0, -8], tail=[0, 10, 15, 15, -10, -5, 0, 0],
+                FL=[0, 8, 12, 12, -20, -15, -5, 0], ML=[0, -6, -10, -10, 15, 10, 4, 0], BL=[0, 10, 15, 15, 20, 12, 5, 0],
+                FR=[0, 8, 12, 12, -20, -15, -5, 0], MR=[0, -6, -10, -10, 15, 10, 4, 0], BR=[0, 10, 15, 15, 20, 12, 5, 0])
+
+
+def c_hit(t, st):
+    k = math.sin(t * math.pi + 0.6) if t > 0 else 0.7
+    return dict(rx=-0.14 * k, pitch=-12 * k, head=-25 * k, jaw=-30 * k, tail=20 * k, FL=-15 * k, FR=-15 * k, BL=10 * k)
+
+
+def c_die(t, st):
+    k = min(t / 0.75, 1.0); k = k * k * (3 - 2 * k)
+    return dict(bob=-0.16 * k, pitch=6 * k, rx_rot=18 * k, head=30 * k, jaw=-35 * k, tail=-25 * k,
+                FL=-55 * k, ML=40 * k, BL=55 * k, FR=-45 * k, MR=35 * k, BR=48 * k)
+
+
+CRAB_ANIMS = dict(idle=c_idle, walk=c_walk, attack=lambda t, st: _tab(C_ATTACK, t), hit=c_hit, die=c_die)
+
+
+# ---------------------------------------------------------------- tentacle (boss arm) + misc
+def tentacle(rig, C, hand_side="R", n=7, seg=0.11, r0=0.075, name="t"):
+    """Nested pivots t0..t{n-1} hanging down from the hand (keyable roty each), suckers on the camera side,
+    glowing barbs at the tip under glow pivot 'censer'."""
+    bpy.context.view_layer.update()
+    sc = rig["sc"]; hand = rig["hand_" + hand_side]; p = hand.matrix_world.translation.copy()
+    parent = hand; cur = Vector(p)
+    col = C.get("tent", C["skin"]); under = C.get("sucker", (0.78, 0.7, 0.62))
+    for i in range(n):
+        pv = empty("%s%d" % (name, i), tuple(cur), parent)
+        r = sc * r0 * (1 - i / (n + 1.5)); r2 = sc * r0 * (1 - (i + 1) / (n + 1.5))
+        nxt = cur + Vector((0, 0, -seg * sc))
+        attach(rod(cur, nxt, r, col, r2=r2, seg=10), pv)
+        attach(ball(r * 0.95, col, tuple(cur), seg=10, name="joint"), pv)
+        attach(ball(r * 0.42, under, tuple((cur + nxt) / 2 + Vector((r * 0.55, -r * 0.55, 0))), scale=(1, 0.6, 1), name="sucker", outline=0.006), pv)
+        keyable(rig, "%s%d" % (name, i), pv, "roty")
+        parent = pv; cur = nxt
+    gp = glow_pivot(rig, "censer", tuple(cur), parent)
+    for a in (-35, 0, 35):
+        ra = math.radians(a)
+        attach(spike(tuple(cur), (math.sin(ra), 0, -math.cos(ra)), 0.14 * sc, 0.03 * sc, C["eyes"], glow=1.8, outline=0.008), gp)
+    attach(ball(0.05 * sc, C["eyes"], tuple(cur), glow=2.0, name="tip", outline=0.0), gp)
+    rig["tent_n"] = n
+
+
+def with_k(fn, **kk):
+    """Wrap an anim fn so it always keys extra keyables (k values may be callables of (t, i, n))."""
+    def g(t, st):
+        d = fn(t, st); k = dict(d.get("k", {}))
+        for name, v in kk.items():
+            k[name] = v(t) if callable(v) else v
+        d["k"] = k
+        return d
+    return g

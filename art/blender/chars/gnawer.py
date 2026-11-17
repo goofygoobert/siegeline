@@ -1,5 +1,5 @@
 from kit import *
-# Gnawer — small fast four-legged crawler with a bone jaw.
-register(dict(id="gnawer", facing=-1, builder=quad, scale=1.15,
-              style=dict(anims=QUAD_ANIMS),
-              colors=hollow_colors(body=(0.32, 0.30, 0.30), skin=(0.38, 0.36, 0.36), legs=(0.28, 0.26, 0.26))))
+# Scuttler — dog-sized crab-thing: six legs, eye stalks, one big snapping claw (snaps shut on frame 4).
+register(dict(id="gnawer", facing=-1, builder=crab, scale=1.2,
+              style=dict(anims=CRAB_ANIMS),
+              colors=deep_colors(body=(0.2, 0.4, 0.41), skin=(0.33, 0.5, 0.46), legs=(0.26, 0.42, 0.4))))

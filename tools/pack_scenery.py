@@ -7,7 +7,7 @@ Outputs: public/assets/castles.{webp,json}, fx.{webp,json}, bg/*.webp + bg/manif
 Sprites are rendered at 96 px/u and downscaled to the contract's 72 ppu, trimmed, shelf-packed (<= 2048 wide).
 Anchors are computed from the render camera (constants below mirror art/blender/bg/castles.py and fx.py).
 """
-import sys, json, math, pathlib
+import sys, json, math, os, pathlib
 from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -17,6 +17,17 @@ PPU, RPPU = 72, 96
 SCALE = PPU / RPPU
 Q = 82
 PAD = 2
+
+
+def save_img(im, path, **kw):
+    """Atomic write (temp + os.replace) so a running game never sees a half-written file."""
+    path = pathlib.Path(path); tmp = path.with_name(path.name + ".tmp")
+    im.save(tmp, "WEBP", **kw); os.replace(tmp, path)
+
+
+def save_text(path, text):
+    path = pathlib.Path(path); tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text); os.replace(tmp, path)
 
 
 def frame(d, i):
@@ -72,8 +83,9 @@ def write_atlas(group, sprites):
                 e["hit"] = A["hit"]
             ja[an] = e
         js["sprites"][sid] = {"anims": ja}
-    sheet.save(OUT / f"{group}.webp", "WEBP", quality=Q, method=6)
-    (OUT / f"{group}.json").write_text(json.dumps(js, separators=(",", ":")))
+    # image first, then json: the json only ever points at a complete sheet of the same layout
+    save_img(sheet, OUT / f"{group}.webp", quality=Q, method=6)
+    save_text(OUT / f"{group}.json", json.dumps(js, separators=(",", ":")))
     print(group, W, H, (OUT / f"{group}.webp").stat().st_size // 1024, "KB")
 
 
@@ -89,7 +101,8 @@ def castles():
         sp[f"keep_{k}"] = single(frame("castles", 1 + k), (cell / 2 - 0.4 * RPPU, ground))
     for k in range(3):
         sp[f"maw_{k}"] = single(frame("castles", 4 + k), (cell / 2, ground))
-    sp["ballista"] = single(frame("castles", 7), (cell / 2 - 0.5 * RPPU, cell / 2))
+    sp["ballista"] = single(frame("castles", 7), (cell / 2 - 0.5 * RPPU, cell / 2))   # Long Tom barrel, anchor = trunnion pivot
+    # (frame 8 is a preview of keep_0 with Long Tom mounted; not packed)
     write_atlas("castles", sp)
 
 
@@ -114,18 +127,18 @@ def bg():
             im = frame("bg", 1 + vi * 4 + li).crop((0, 0, w, 810))
             fn = f"{reg}_{name}.webp"
             if name == "sky":
-                im.convert("RGB").save(d / fn, "WEBP", quality=Q, method=6); m["sky"] = fn
+                save_img(im.convert("RGB"), d / fn, quality=Q, method=6); m["sky"] = fn
             else:
-                im.save(d / fn, "WEBP", quality=Q, method=6); m[name] = {"file": fn, "parallax": par}
+                save_img(im, d / fn, quality=Q, method=6); m[name] = {"file": fn, "parallax": par}
             print(fn, (d / fn).stat().st_size // 1024, "KB")
         man[reg] = m
-    (d / "manifest.json").write_text(json.dumps(man, indent=1))
+    save_text(d / "manifest.json", json.dumps(man, indent=1))
 
 
 def title():
     im = frame("title", 1).convert("RGB")
     assert im.size == (1920, 1080), im.size
-    im.save(OUT / "title.webp", "WEBP", quality=85, method=6)
+    save_img(im, OUT / "title.webp", quality=85, method=6)
     print("title.webp", (OUT / "title.webp").stat().st_size // 1024, "KB")
 
 
@@ -137,10 +150,10 @@ def worldmap():
     m = Image.new("L", (256, 128), 0); ImageDraw.Draw(m).ellipse((-30, -24, 286, 152), fill=255)
     m = m.filter(ImageFilter.GaussianBlur(18)).resize(im.size, Image.BICUBIC).point(lambda v: 150 + v * 105 // 255)
     im = ImageChops.multiply(im, Image.merge("RGB", (m, m, m)))
-    im.save(OUT / "worldmap.webp", "WEBP", quality=85, method=6)
+    save_img(im, OUT / "worldmap.webp", quality=85, method=6)
     sys.path.insert(0, str(ROOT / "art" / "blender" / "bg"))
     import map_lib
-    (OUT / "worldmap.json").write_text(json.dumps({"regions": map_lib.markers()}, indent=1))
+    save_text(OUT / "worldmap.json", json.dumps({"regions": map_lib.markers()}, indent=1))
     print("worldmap.webp", (OUT / "worldmap.webp").stat().st_size // 1024, "KB")
 
 
@@ -158,7 +171,7 @@ def record_sizes():
             rows.append(f"| {f.relative_to(OUT)} | {n / 1024:.1f} KB |")
     rows.append(f"| **total** | **{tot / 1024:.1f} KB** |")
     t = notes.read_text(); a = t.index("<!-- sizes -->") + len("<!-- sizes -->"); b = t.index("<!-- /sizes -->")
-    notes.write_text(t[:a] + "\n" + "\n".join(rows) + "\n" + t[b:])
+    save_text(notes, t[:a] + "\n" + "\n".join(rows) + "\n" + t[b:])
 
 
 if __name__ == "__main__":

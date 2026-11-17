@@ -3,7 +3,7 @@ import numpy as np
 from scipy import signal
 
 from synth import (SR, n_of, tvec, noise, exp_env, adsr, fade, sine, saw, square, tri,
-                   mtof, lp, hp, bp, peak_bp)
+                   mtof, lp, hp, bp, peak_bp, mix_at, sweep_lp)
 
 
 def vib(n, rate=5.0, depth=0.004, delay=0.15, sr=SR, seed=0):
@@ -226,3 +226,279 @@ def drone(f0, n, seed=0):
     t = tvec(n)
     x = saw(f0 * (1 + 0.002 * np.sin(2 * np.pi * 0.13 * t)), n) + saw(f0 * 1.004, n, 0.3)
     return lp(x, f0 * 4, 2) * 0.5
+
+
+# ================================================================== sea / shanty kit (pirate re-theme)
+VOWELS["eh"] = [(560, 1.0, 7), (1750, 0.55, 9), (2500, 0.3, 11)]
+VOWELS["oh_lo"] = [(420, 1.0, 7), (720, 0.5, 8), (2400, 0.1, 12)]
+
+
+def accordion(f0, dur, vel=1.0, seed=0, a=0.02, r=0.07, musette=0.0032, bright=1.0, reeds=3,
+              bellows=0.0):
+    """Free-reed squeezebox: 2-3 detuned narrow-pulse reeds (musette beating), reedy body
+    resonances, quick bellows attack. bellows>0 adds a slow push/pull swell."""
+    n = n_of(dur + r)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    dets = [0.0, -musette, musette][:reeds]
+    x = np.zeros(n)
+    for k, d in enumerate(dets):
+        pw = 0.26 + 0.05 * k
+        x += square(f0 * (1 + d), n, phase0=rr.random(), pw=pw) - (2 * pw - 1)  # remove pulse DC
+    x /= len(dets)
+    cut = min(800 + f0 * 9 * bright, 8500)
+    y = lp(x, cut, 2)
+    y = y + 0.6 * peak_bp(y, 1250, 2.2) + 0.35 * peak_bp(y, 2700, 3.0)
+    y = y - 0.55 * lp(y, 220, 1)
+    env = adsr(n, a, 0.06, 0.82, r)
+    if bellows:
+        env = env * (1 - bellows + bellows * np.sin(np.pi * np.clip(t / max(dur, 1e-3), 0, 1)))
+    env = env * (1 + 0.025 * np.sin(2 * np.pi * rr.uniform(4.5, 6.0) * t))
+    return y * env * vel * 0.8
+
+
+def fiddle(f0, dur, vel=1.0, seed=0, a=0.035, r=0.12, vdepth=0.0055, bright=1.0, scoop=0.012,
+           vdelay=None):
+    """Bowed fiddle: saw + bow noise through violin body resonances, delayed vibrato."""
+    n = n_of(dur + r)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    vd = min(0.2, dur * 0.45) if vdelay is None else vdelay
+    p = vib(n, 5.9 + rr.uniform(-0.4, 0.4), vdepth, vd, seed=seed)
+    p = p * (1 - scoop * np.exp(-t / 0.025))
+    x = saw(f0 * p, n, phase0=rr.random())
+    x = x * (1 + 0.08 * lp(rr.standard_normal(n), 40, 1) * 8)  # bow-pressure jitter
+    y = 0.25 * x
+    for fc, g, q in ((285, 0.9, 4), (470, 0.8, 5), (1050, 0.45, 3), (2900, 0.9, 2.0), (4400, 0.35, 3)):
+        y += g * peak_bp(x, fc, q)
+    y = lp(y, 6500 * bright + 1000, 2)
+    bow = bp(noise(n, seed + 3), 2500, 8000) * 0.05 * (0.4 + np.exp(-t / 0.05))
+    env = adsr(n, a, 0.08, 0.82, r)
+    return (y + bow) * env * vel * 1.3
+
+
+def stomp(vel=1.0, seed=0, f=84, dur=0.32, boards=1.0):
+    """Boot on a wooden deck: pitched thump (kept above ~70 Hz for phones) + board knock."""
+    n = n_of(dur)
+    t = tvec(n)
+    body = sine(f * (1 + 1.3 * np.exp(-t / 0.012)), n) * np.exp(-t / 0.085)
+    thud = lp(noise(n, seed), 500, 2) * np.exp(-t / 0.03) * 1.2
+    knock = bp(noise(n, seed + 1), 250, 1600) * np.exp(-t / 0.022) * 0.9 * boards
+    plank = metal([196, 331, 517], [0.05, 0.035, 0.025], n, [0.5, 0.35, 0.2], seed=seed) * boards
+    y = body + thud + knock + plank
+    y[: n_of(0.003)] += hp(noise(n_of(0.003), seed + 2), 1200) * 0.5
+    return fade(y, 0.0003, 0.04) * vel
+
+
+def clap(vel=1.0, seed=0, people=1, dur=0.2):
+    """Hand clap(s); people>1 gives a ragged crew clap."""
+    n = n_of(dur + 0.03 * (people > 1))
+    y = np.zeros(n)
+    rr = np.random.default_rng(seed)
+    for p in range(people):
+        off = n_of(rr.uniform(0, 0.022)) if people > 1 else 0
+        for k, (d, tau, g) in enumerate(((0.0, 0.003, 0.6), (0.007, 0.003, 0.7), (0.013, 0.045, 1.0))):
+            m = n_of(dur * 0.8)
+            tt = tvec(m)
+            burst = noise(m, seed * 31 + p * 7 + k) * np.exp(-tt / tau)
+            mix_at(y, burst, off + n_of(d), g * rr.uniform(0.7, 1.0))
+    y = bp(y, 800, 4500, 2) + 0.8 * peak_bp(y, 1300 + 200 * rr.random(), 3)
+    return fade(y, 0.0002, 0.03) * vel / max(1.0, people ** 0.5)
+
+
+def shout(f0=190, dur=0.28, vel=1.0, voices=6, seed=0, vowel="eh", fall=0.18):
+    """Wordless crew shout ('hey!'-like vowel bark): breathy onset, falling pitch, formants."""
+    n = n_of(dur + 0.08)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    src = np.zeros(n)
+    for k in range(voices):
+        fk = f0 * rr.uniform(0.85, 1.25)
+        pc = fk * (1 + 0.06 * np.exp(-t / 0.03)) * (1 - fall * np.clip(t / dur, 0, 1))
+        src += saw(pc, n, phase0=rr.random()) * rr.uniform(0.7, 1.0)
+    src /= voices
+    src *= 1 + 0.15 * lp(noise(n, seed + 4), 60, 1) * 10
+    breath = hp(noise(n, seed), 1200) * np.exp(-t / 0.03) * 0.5
+    src = src + 0.15 * hp(noise(n, seed + 5), 1500)
+    y = np.zeros(n)
+    for fc, g, q in VOWELS[vowel]:
+        y += g * peak_bp(src, fc * rr.uniform(0.95, 1.05), q * 0.6)
+    y = y * 2.5 + breath
+    env = adsr(n, 0.018, 0.08, 0.6, 0.12) * (1 - 0.4 * np.clip(t / dur, 0, 1))
+    return fade(y * env, 0.001, 0.04) * vel
+
+
+def whale(knots, dur, vel=1.0, seed=0, a=0.4, r=0.6, growl=0.35, formants=((380, 1.0, 5), (820, 0.5, 6), (1650, 0.2, 8))):
+    """Deep whale-like moan: smooth gliding pitch (knots = list of Hz across the note), tonal
+    sine body + a formant-filtered growl. Fundamental sits >= ~70 Hz; energy is in harmonics."""
+    n = n_of(dur + r)
+    t = tvec(n)
+    kx = np.linspace(0, 1, len(knots))
+    u = np.clip(t / (dur + r), 0, 1)
+    f = np.interp(u, kx, knots)
+    f = lp(np.concatenate([np.full(2000, f[0]), f]), 3.0, 1)[2000:]
+    f = f * (1 + 0.004 * np.sin(2 * np.pi * 4.2 * t))
+    tone = sine(f, n) + 0.55 * sine(2 * f, n, 0.3) + 0.3 * sine(3 * f, n, 0.7) + 0.12 * sine(5 * f, n)
+    src = saw(f, n) * (1 + 0.3 * lp(noise(n, seed), 25, 1) * 10)
+    g = np.zeros(n)
+    for fc, gg, q in formants:
+        g += gg * peak_bp(src, fc, q)
+    y = 0.6 * tone + growl * 2.0 * g
+    return y * adsr(n, a, 0.3, 0.85, r) * vel
+
+
+def wave_wash(dur, vel=1.0, seed=0, bright=1.0, peak_at=0.4):
+    """One wave rolling in and drawing back: swelling low-passed noise + foam hiss."""
+    n = n_of(dur)
+    t = tvec(n)
+    u = t / dur
+    env = np.where(u < peak_at, np.sin(0.5 * np.pi * u / peak_at) ** 2,
+                   np.exp(-(u - peak_at) / (0.28 * (1 - peak_at) + 1e-3)))
+    body = sweep_lp_local(noise(n, seed), 350, 1800 * bright, peak_at)
+    body = hp(body, 90, 2)
+    foam = hp(noise(n, seed + 1), 2500 * bright, 2)
+    fenv = np.where(u < peak_at * 1.1, (u / (peak_at * 1.1)) ** 3,
+                    np.exp(-(u - peak_at * 1.1) / 0.18))
+    grit = 1 + 0.5 * lp(noise(n, seed + 2), 18, 1) * 8
+    y = body * env * 0.9 + foam * fenv * 0.18 * grit
+    return fade(y, 0.01, 0.05) * vel
+
+
+def sweep_lp_local(x, f_lo, f_hi, peak_at, steps=24):
+    """Low-pass that opens up to the wave's crest then closes again."""
+    from synth import _sos
+    n = len(x)
+    out = np.zeros(n)
+    edges = np.linspace(0, n, steps + 1).astype(int)
+    zi = None
+    for i in range(steps):
+        u = (i + 0.5) / steps
+        w = u / peak_at if u < peak_at else max(0.0, 1 - (u - peak_at) / (1 - peak_at))
+        fc = f_lo * (f_hi / f_lo) ** w
+        sos = _sos("low", fc, SR, 2)
+        if zi is None:
+            zi = np.zeros((sos.shape[0], 2))
+        y, zi = signal.sosfilt(sos, x[edges[i]:edges[i + 1]], zi=zi)
+        out[edges[i]:edges[i + 1]] = y
+    return out
+
+
+def creak(dur, f0=35, f1=80, vel=1.0, seed=0, res=(520, 980, 1700)):
+    """Wood/rope creak: stick-slip pulse train with varying rate through wood resonances."""
+    n = n_of(dur)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    u = t / dur
+    rate = f0 + (f1 - f0) * (0.5 - 0.5 * np.cos(np.pi * u)) * (1 + 0.15 * np.sin(2 * np.pi * rr.uniform(2, 5) * t))
+    ph = np.cumsum(rate) / SR
+    imp = np.zeros(n)
+    idx = np.nonzero(np.diff(np.floor(ph)) > 0)[0]
+    imp[idx] = rr.uniform(0.6, 1.0, len(idx))
+    y = np.zeros(n)
+    for k, fc in enumerate(res):
+        y += peak_bp(imp, fc * rr.uniform(0.95, 1.05), 12) * (1.0 - 0.25 * k)
+    y = y * 6 + 0.3 * bp(imp, 2000, 6000)
+    return fade(y * adsr(n, 0.04, 0.1, 0.8, min(0.15, dur * 0.3)), 0.002, 0.03) * vel
+
+
+def splash(dur=0.7, vel=1.0, seed=0, size=1.0, bubbles=14):
+    """Water splash: slap, spray body, bubble chirps, a soft plunge."""
+    n = n_of(dur)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    slap = bp(noise(n, seed), 250, 3500) * np.exp(-t / 0.02)
+    body = bp(noise(n, seed + 1), 500, 7000) * (1 - np.exp(-t / 0.012)) * np.exp(-t / (0.12 * size))
+    spray = hp(noise(n, seed + 2), 3500) * (1 - np.exp(-t / 0.03)) * np.exp(-t / (0.25 * size))
+    spray *= 1 + 0.6 * lp(noise(n, seed + 3), 30, 1) * 8
+    plunge = sine(140 * (1 - 0.4 * np.clip(t / 0.12, 0, 1)), n) * np.exp(-t / 0.07)
+    y = 0.9 * slap + 0.9 * body + 0.35 * spray + 0.5 * plunge
+    for k in range(bubbles):
+        s = rr.uniform(0.03, 0.65) * dur
+        m = n_of(rr.uniform(0.015, 0.04))
+        tt = tvec(m)
+        f = rr.uniform(500, 2200)
+        bub = sine(f * (1 + 2.5 * tt / (m / SR)), m) * np.exp(-tt / (m / SR / 3))
+        mix_at(y, bub, n_of(s), 0.25 * rr.uniform(0.4, 1.0) * np.exp(-s / (0.4 * dur)))
+    return fade(y, 0.0005, 0.05) * vel
+
+
+def fizz(dur, vel=1.0, seed=0, rate=900, tau=0.25):
+    """Carbonated fizz: dense random micro-crackles over a thin hiss, decaying."""
+    n = n_of(dur)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    imp = (rr.random(n) < rate / SR) * rr.uniform(-1, 1, n)
+    y = hp(imp, 3000, 2) * 3 + 0.12 * hp(noise(n, seed + 1), 5000)
+    return y * np.exp(-t / tau) * vel
+
+
+def squelch(dur=0.25, vel=1.0, seed=0, f=300, drop=0.6):
+    """Wet slimy squelch: AM-gurgled band noise with a falling resonance."""
+    n = n_of(dur)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    am = 1 + 0.9 * np.sin(2 * np.pi * (rr.uniform(35, 60) * t + 3 * t * t))
+    src = noise(n, seed) * am
+    fc = f * (1 - drop * np.clip(t / dur, 0, 1))
+    y = np.zeros(n)
+    edges = np.linspace(0, n, 13).astype(int)
+    for i in range(12):
+        a, b = edges[i], edges[i + 1]
+        seg = peak_bp(src[max(0, a - 400):b], float(fc[a]) + 1, 3)[min(a, 400):]
+        y[a:b] = seg[: b - a]
+    y = y * 3 + 0.3 * bp(src, 800, 3000)
+    return fade(y * adsr(n, 0.008, 0.05, 0.7, dur * 0.5), 0.001, 0.03) * vel
+
+
+def wood_crack(vel=1.0, seed=0, size=1.0, snaps=5):
+    """Splintering timber: rapid micro-snaps ringing at wood resonances + a body knock."""
+    n = n_of(0.25 * size + 0.1)
+    t = tvec(n)
+    rr = np.random.default_rng(seed)
+    y = np.zeros(n)
+    pos = 0.0
+    for k in range(snaps):
+        m = n_of(0.06)
+        tt = tvec(m)
+        fr = [rr.uniform(700, 1400), rr.uniform(1600, 2800), rr.uniform(3000, 4800)]
+        ring = metal(fr, [0.012, 0.008, 0.006], m, [1, 0.7, 0.4], seed=seed + k)
+        snap = hp(noise(m, seed * 7 + k), 1500) * np.exp(-tt / 0.002)
+        mix_at(y, ring * 0.7 + snap, n_of(pos), rr.uniform(0.5, 1.0))
+        pos += rr.uniform(0.004, 0.03) * size
+    y += 0.8 * sine(150 * (1 + 0.5 * np.exp(-t / 0.01)), n) * np.exp(-t / 0.05)
+    y += 0.5 * bp(noise(n, seed + 99), 300, 1200) * np.exp(-t / 0.04)
+    return fade(y, 0.0002, 0.04) * vel
+
+
+def cannon(vel=1.0, seed=0, size=1.0, dist=0.0, dur=1.2):
+    """Black-powder cannon: crack, mid 'blast' body (reads on phone speakers), roar closing down,
+    pitched boom (>=70 Hz), rumble. High-passed at 55 Hz."""
+    n = n_of(dur)
+    t = tvec(n)
+    crack = hp(noise(n, seed), 900) * np.exp(-t / 0.007)
+    blast = bp(noise(n, seed + 4), 160, 2200) * (1 - np.exp(-t / 0.002)) * np.exp(-t / (0.075 * size))
+    roar = sweep_lp(noise(n, seed + 1), 6000 * (1 - 0.6 * dist), 350, curve=0.5) * np.exp(-t / (0.18 * size))
+    boom_ = sine(74 * (1 + 1.6 * np.exp(-t / 0.025)), n) * np.exp(-t / (0.22 * size))
+    thump = bp(noise(n, seed + 2), 110, 600) * np.exp(-t / 0.1) * 1.4
+    rumble = bp(noise(n, seed + 3), 70, 320) * np.exp(-t / (0.45 * size)) * 1.1
+    y = (1 - 0.7 * dist) * 1.3 * crack + 1.6 * blast + roar * 1.0 + boom_ * 0.75 + thump + rumble
+    y = np.tanh(y * 1.8) / np.tanh(1.8)
+    if dist:
+        y = lp(y, 7000 * (1 - dist) + 900, 2)
+    y = hp(y, 55, 2)
+    return fade(y, 0.0002, 0.1) * vel
+
+
+def bosun_whistle(dur=0.8, vel=1.0, seed=0):
+    """Boatswain's pipe: glide up from ~1.1 kHz to ~2.3 kHz, hold, warble trill, fall-off."""
+    n = n_of(dur)
+    t = tvec(n)
+    u = t / dur
+    f = np.interp(u, [0, 0.18, 0.62, 0.85, 1.0], [1100, 2300, 2350, 2250, 1700])
+    trill = np.where((u > 0.45) & (u < 0.85), 1 + 0.035 * np.sign(np.sin(2 * np.pi * 14 * t)), 1.0)
+    trill = lp(trill, 120, 1)
+    f = f * trill
+    y = sine(f, n) + 0.12 * sine(2 * f, n) + 0.05 * sine(3 * f, n)
+    breath = bp(noise(n, seed), 1500, 5000) * 0.12
+    env = adsr(n, 0.03, 0.05, 0.9, 0.12)
+    return fade((y + breath) * env, 0.002, 0.05) * vel

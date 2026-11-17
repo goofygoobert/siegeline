@@ -46,7 +46,7 @@
     },
     "bolt_fire": {
       "file": "bolt_fire.m4a",
-      "vol": 0.7
+      "vol": 0.75
     },
     "bolt_hit": {
       "file": "bolt_hit.m4a",
@@ -66,7 +66,7 @@
     },
     "warden_die": {
       "file": "warden_die.m4a",
-      "vol": 0.6
+      "vol": 0.45
     },
     "hollow_die": {
       "file": "hollow_die.m4a",
@@ -137,26 +137,26 @@
     "menu": {
       "file": "menu.m4a",
       "vol": 0.5,
-      "loopStart": 0.789478,
-      "loopEnd": 51.315805
+      "loopStart": 0.937506,
+      "loopEnd": 45.937506
     },
     "map": {
       "file": "map.m4a",
       "vol": 0.45,
-      "loopStart": 0.714286,
-      "loopEnd": 46.428571
+      "loopStart": 0.5,
+      "loopEnd": 48.5
     },
     "battle": {
       "file": "battle.m4a",
       "vol": 0.45,
-      "loopStart": 0.454535,
-      "loopEnd": 58.636349
+      "loopStart": 0.434785,
+      "loopEnd": 56.086961
     },
     "boss": {
       "file": "boss.m4a",
       "vol": 0.45,
-      "loopStart": 0.4,
-      "loopEnd": 58.0
+      "loopStart": 0.47619,
+      "loopEnd": 61.428571
     },
     "victory": {
       "file": "victory.m4a",

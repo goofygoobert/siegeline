@@ -72,8 +72,8 @@ async function playStage(id) {
 }
 
 async function buyUpgrades() {
-  for (const tab of ["Units", "Keep & Ballista", "Hero & Powers"]) {
-    await tapText(".tab", tab);
+  for (let ti = 0; ti < 3; ti++) {
+    const tabs = await page.$$(".tab"); await tapEl(tabs[ti]);
     for (let i = 0; i < 12; i++) { const b = await page.$(".upbtn.primary"); if (!b) break; await tapEl(b); }
   }
   await shot("armoury-after-buying");

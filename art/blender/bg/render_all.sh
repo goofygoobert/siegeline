@@ -3,7 +3,7 @@
 cd "$(dirname "$0")/../../.."
 SC="--lib art/blender/scenery.py"
 declare -A SRC=([bg]=r1_bgs [castles]=castles [fx]=fx [title]=title [worldmap]=worldmap)
-declare -A FR=([bg]=1-8 [castles]=1-7 [fx]=1-25 [title]=1 [worldmap]=1)
+declare -A FR=([bg]=1-8 [castles]=1-8 [fx]=1-25 [title]=1 [worldmap]=1)
 for j in "${@:-bg castles fx title worldmap}"; do for k in $j; do
   case $k in
     bg) L="$SC --lib art/blender/bg/r1_lib.py";;

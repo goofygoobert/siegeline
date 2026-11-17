@@ -34,3 +34,9 @@ Format: decision — reason — alternative considered.
 - **Hero and powers moved into the bottom row** — the stacked column covered the Maw Gate.
 - **Atlas page list (`assets/atlases.json`) written at build time** — the loader used to probe for missing pages (~35 failed requests per session).
 - **Version string includes the build time** — so the live build can always be told apart from a local one.
+
+## Re-theme (your call, 2026-11-17 morning)
+- **World is now Tales of the Brine: pirates vs. monsters of sea folklore** (your direction). Mechanics, numbers and internal ids are unchanged so saves and balance carry over; old world kept as tag `ashen-marches-v1`.
+- **All interface words now live in `data/world.json`** — the next world swap is data + art only, no code.
+- **Names I chose:** Gullwake (fort), Drowned Grotto (enemy base), Long Tom (cannon), powder (energy), doubloons (currency), Broadside / Sea Shanty (powers), Captain Rook Halloran (hero), Mother Fathom (boss), crew Hatchguard / Blackpowder / Rope Rat / Shantyman / Anchorman / Sawbones, monsters Drowner / Scuttler / Inkspitter / Pufferghast / Barnacle Troll / the Kelpie — alternatives welcome, they're one file to change.
+- **Navy-and-brass interface, monsters glow sickly green** — matches the sea palette and keeps crew (warm, upright) and monsters (green, hunched) apart at a glance.

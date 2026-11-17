@@ -102,7 +102,7 @@ class Shelf:
 
 def pack(atlas, sheets=False):
     A = cast.ATLASES[atlas]
-    for ppu in (A["ppu"], 64, 60, 56, 48):
+    for ppu in (A["ppu"], 64, 60, 56, 52, 48):
         data, warn = cut_frames(atlas, ppu)
         # unique images per id
         uniq = {}
