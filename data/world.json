@@ -82,6 +82,7 @@
   "fire": "#ff8a2a",
   "sand": "#d9b488",
   "energyWord": "powder",
-  "directWord": "Direct hit!"
+  "directWord": "Direct hit!",
+  "grades": { "r1n": "#a9dcc4" }
  }
 }

@@ -49,7 +49,7 @@ const I = {
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
   hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4l6 6-3 3-6-6zM11 7L3.5 14.5a2 2 0 000 2.8l3.2 3.2a2 2 0 002.8 0L17 13"/></svg>',
-  ballista: '<svg viewBox="0 0 48 48"><rect x="10" y="17" width="28" height="11" rx="5" transform="rotate(-25 24 22)" fill="#3a332e" stroke="#f3d9a8" stroke-width="2"/><circle cx="17" cy="33" r="6" fill="none" stroke="#d49a3a" stroke-width="3"/><circle cx="41" cy="10" r="3" fill="#ffb347"/></svg>',
+  ballista: '<svg viewBox="0 0 48 48"><g transform="rotate(-22 22 26)"><path d="M6 20h6l2-2h20c4 0 7 1 9 3v6c-2 2-5 3-9 3H14l-2-2H6z" fill="#3b4048" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><rect x="15" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="27" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="39" y="19.5" width="3.5" height="9" rx="1" fill="currentColor"/><circle cx="5" cy="24" r="3.4" fill="currentColor" stroke="#14161a" stroke-width="1.5"/></g><path d="M10 33h20l3 6H7z" fill="#6a4426" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><circle cx="13" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/><circle cx="28" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/></svg>',
   rain: '<svg viewBox="0 0 48 48"><g fill="#ff9a40"><circle cx="14" cy="30" r="5"/><circle cx="28" cy="20" r="6"/><circle cx="36" cy="34" r="4.5"/></g><g stroke="#ffcf7a" stroke-width="2.4" stroke-linecap="round"><path d="M10 22l4 6M24 10l4 8M33 25l3 7"/></g></svg>',
   bell: '<svg viewBox="0 0 48 48"><path d="M24 8c-7 0-11 6-11 13v8l-4 6h30l-4-6v-8c0-7-4-13-11-13z" fill="#e0a84a" stroke="#6a4214" stroke-width="2"/><circle cx="24" cy="38" r="3.5" fill="#6a4214"/></svg>',
   speed: (s) => `<span style="font-size:14px">${s}×</span>`,
@@ -127,7 +127,7 @@ async function titleScreen() {
       h("div", { class: "row" },
         h("button", { class: "btn primary big", onclick: tap(() => worldMap()) }, cleared("r1s1") ? "Continue" : "Play"),
         h("button", { class: "btn icon big", "aria-label": "Settings", onclick: tap(() => openSettings()) }, icon(I.gear)))),
-    h("div", { class: "foot" }, "v" + (import.meta.env.VITE_VERSION || "0.1") + " · saves stay on this device"));
+    h("div", { class: "foot" }, "Saves stay on this device · v" + (import.meta.env.VITE_VERSION || "0.1").split(" ")[0]));
   show(el);
   if (S.note === "restored") toast("Your save was damaged. Restored the last good copy.", 4000);
   if (S.note === "corrupt") toast("Your save could not be read. Started fresh (the old copy was kept).", 5000);
@@ -166,7 +166,7 @@ async function regionScreen(region) {
   const pts = [[0.1, 0.72], [0.25, 0.4], [0.4, 0.68], [0.55, 0.36], [0.7, 0.66], [0.87, 0.42]];
   const path = h("div", { class: "path" });
   const svgPts = pts.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
-  path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="rgba(255,200,140,.35)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>` }));
+  path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="#2a1b11" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke" style="stroke-width:9px"/><polyline points="${svgPts}" fill="none" stroke="#d9bb82" stroke-linecap="round" stroke-dasharray="7 5" vector-effect="non-scaling-stroke" style="stroke-width:5px"/>` }));
   let nextIdx = regionStages.findIndex((s, i) => stageOpen(i) && !cleared(s.id));
   regionStages.forEach((s, i) => {
     const open = stageOpen(i), st = starsOf(s.id);
@@ -174,14 +174,15 @@ async function regionScreen(region) {
       style: `left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%`, "aria-label": `${s.name}${open ? "" : " (locked)"}`,
       onclick: open ? tap(() => stageSheet(s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
       s.boss ? "☠︎" : String(i + 1),
-      h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))));
+      h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))),
+      open ? h("span", { class: "nm" }, s.name) : null);
     if (!open) node.prepend(icon(I.lock));
     if (!open) node.childNodes[1].remove();
     path.append(node);
   });
   const back = bgs && (bgs.mid || bgs.far);
   show(h("div", { class: "screen" },
-    h("div", { class: "bgimg", style: back ? `background-image:url(${(bgs.sky || back).img.src})` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
+    h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
     topbar(region.name, worldMap, [h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
     path));
   if (nextIdx >= 0 && !D.seen.firstSheet) { D.seen.firstSheet = true; stageSheet(regionStages[nextIdx], region); }
@@ -343,7 +344,7 @@ async function startBattle(stage) {
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };
   const seedQ = new URLSearchParams(location.search).get("seed");
   const B = createBattle(content, st, prog, seedQ ? +seedQ : (Math.random() * 1e9) | 0);
-  R.resetForBattle(); R.region = stage.bg;
+  R.resetForBattle(); R.region = stage.bg; R.grade = (W.fx.grades || {})[stage.bg] || null;
   battle = new BattleView(B, stage);
   playMusic(stage.music || "battle");
 }

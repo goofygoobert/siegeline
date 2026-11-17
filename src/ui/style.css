@@ -432,3 +432,62 @@ textarea { width: 100%; min-height: 90px; border-radius: var(--r-s); background:
 .gainfx { position: absolute; left: 30px; top: -18px; font: 900 16px/1 system-ui, sans-serif; color: var(--brass-2); text-shadow: 0 2px 0 #000; pointer-events: none; animation: gainfx .9s ease-out both; }
 @keyframes gainfx { from { opacity: 0; transform: translateY(8px); } 20% { opacity: 1; } to { opacity: 0; transform: translateY(-22px); } }
 .energy { position: relative; }
+
+/* ================================================================ phase 3: every other screen */
+.btn.icon svg, .btn svg { color: var(--brass-2); }
+/* powder keg icon (drawn here, replaces the blob) */
+.energy .val .fl, .ucard .cost .fl { clip-path: none; border-radius: 0; box-shadow: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 24'%3E%3Cpath d='M4 2h12c2.500 6 2.500 14 0 20H4C1.500 16 1.500 8 4 2z' fill='%23a8703a' stroke='%231a0f08' stroke-width='1.600'/%3E%3Cpath d='M7 2.500v19M13 2.500v19' stroke='%236a421c' stroke-width='1.200'/%3E%3Cpath d='M2.600 7.500h14.800M2.600 16.500h14.800' stroke='%232a1a10' stroke-width='2.400'/%3E%3C/svg%3E") center / contain no-repeat; }
+.energy .val .fl { width: 18px; height: 22px; }
+.ucard .cost .fl { width: 10px; height: 13px; }
+.weapon svg { width: 54px; height: 54px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
+
+/* title */
+.logo { font-family: var(--display); font-weight: 700; letter-spacing: .05em; background: linear-gradient(180deg, #fff6d8, #f2c35b 48%, #b9741f 52%, #8a4f12);
+  -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 3px 0 #1c1210) drop-shadow(0 0 1px #1c1210) drop-shadow(0 12px 26px rgba(0,0,0,.65)); }
+.tagline { color: var(--canvas); font-size: 15px; text-shadow: 0 1px 3px #000; max-width: 34ch; border-left: 3px solid var(--brass); padding-left: 12px; }
+.foot { font-size: 11px; color: rgba(239,227,198,.55); text-shadow: 0 1px 2px #000; }
+.bgimg::after { background: linear-gradient(90deg, rgba(12,8,10,.86), rgba(12,8,10,.5) 36%, rgba(12,8,10,0) 62%); }
+
+/* sea chart */
+.map { border: 3px solid var(--brass-dk); border-radius: 12px; box-shadow: 0 0 0 2px var(--wood-3), 0 0 0 9px var(--wood), 0 0 0 11px var(--wood-3), 0 16px 30px rgba(0,0,0,.5); margin: 16px 10px 10px; }
+.pin { transform: translate(-50%, -22px); justify-content: flex-start; gap: 3px; }
+.pin .dot { width: 30px; height: 30px; border: 3px solid var(--wood-3); background: radial-gradient(circle at 38% 32%, #ffe6a6, var(--brass) 60%, #a8641a);
+  box-shadow: 0 0 0 2px var(--brass-2), 0 0 0 8px rgba(255,214,130,.25), 0 5px 8px rgba(0,0,0,.5); }
+.pin.locked .dot { width: 18px; height: 18px; background: #5a4a3c; border-color: var(--wood-3); box-shadow: 0 3px 5px rgba(0,0,0,.45); }
+.pin .lbl { background: linear-gradient(180deg, #f6ecd2, #dcc79a); color: #2a1a10; border: 2px solid var(--wood-3); border-radius: 4px; padding: 2px 9px; font: 700 12px/1.3 var(--display); letter-spacing: .05em; text-transform: uppercase; box-shadow: 0 3px 6px rgba(0,0,0,.4); }
+.pin.locked .lbl { background: rgba(28,18,16,.72); color: #d6c6a4; border-color: transparent; box-shadow: none; font-size: 10px; padding: 1px 7px; }
+.pin .cleared { background: linear-gradient(180deg, #ffe6a6, var(--brass)); border: 2px solid var(--wood-3); font-family: var(--display); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 2px var(--brass-2), 0 0 0 14px rgba(255,214,130,0), 0 5px 8px rgba(0,0,0,.5); } }
+
+/* stage select: markers along the cove */
+.bgimg.cove { background-size: auto 100%; background-repeat: no-repeat; background-position: 30% 0, 30% 0, 30% 0, center; }
+.bgimg.cove::after { background: linear-gradient(180deg, rgba(12,8,10,.55), rgba(12,8,10,.15) 30%, rgba(12,8,10,.35)); }
+.node { width: 72px; height: 72px; border: 4px solid var(--brass); color: var(--canvas); font: 900 26px/1 system-ui, sans-serif;
+  background: radial-gradient(circle at 42% 34%, var(--wood-2), var(--wood-3)); box-shadow: 0 0 0 2px var(--wood-3), 0 5px 0 2px var(--wood-3), 0 14px 20px rgba(0,0,0,.5); }
+.node.next { border-color: #fff4d2; animation: pulse2 1.8s infinite; }
+.node.locked { filter: none; border-color: #5a4a3c; color: #8a7a66; background: radial-gradient(circle at 42% 34%, #3a2c22, #1c130d); width: 58px; height: 58px; }
+.node.boss { width: 90px; height: 90px; border-color: #b48cff; background: radial-gradient(circle at 42% 34%, #3a5a5c, #14262c); font-size: 34px; color: #d9c2ff; }
+.node.boss.locked { border-color: #4a5a5c; color: #6a7a7c; }
+.node .st { bottom: -22px; gap: 2px; filter: drop-shadow(0 1px 0 #000); }
+.node .st i { width: 17px; height: 17px; color: #2a1b11; }
+.node .st i.on { color: #ffd05a; }
+.node .nm { position: absolute; top: calc(100% + 24px); left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 1px 8px; border-radius: 4px; background: rgba(28,18,16,.78); color: var(--canvas); font: 700 11px/1.5 system-ui, sans-serif; }
+.node.next .nm { background: linear-gradient(180deg, #f6ecd2, #dcc79a); color: #2a1a10; }
+@keyframes pulse2 { 50% { box-shadow: 0 0 0 2px var(--wood-3), 0 5px 0 2px var(--wood-3), 0 0 0 14px rgba(255,214,130,0), 0 14px 20px rgba(0,0,0,.5); } }
+
+/* Quartermaster backdrop: the ship's store below deck */
+.qm { background: radial-gradient(80% 70% at 50% -10%, rgba(255,190,100,.28), rgba(0,0,0,0) 70%), repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 118px, rgba(0,0,0,.35) 118px 121px), linear-gradient(180deg, #2c1e15, #150e0a); }
+.tabs { border-bottom-color: var(--brass-dk); }
+.tab .dot { width: 7px; height: 7px; }
+
+/* settings */
+.settings-panel { max-height: calc(100% - 8px); }
+.setting { border-bottom: 1px solid rgba(255,220,150,.14); padding: 2px 0; }
+input[type=range] { accent-color: var(--brass); }
+.toggle.on { background: var(--brass); }
+textarea { background: #f6ecd2; color: #2a1a10; border: 2px solid var(--wood-3); }
+.loading { background: linear-gradient(180deg, #2c1e15, #150e0a); }
+.loading .bar { height: 10px; border-radius: 3px; background: #130c08; border: 2px solid var(--brass-dk); }
+.loading .bar > i { background: repeating-linear-gradient(90deg, #ffd884 0 8px, #d99a36 8px 9px); }
+.pin.locked .lbl > span { gap: 7px !important; }

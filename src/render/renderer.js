@@ -124,11 +124,11 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; R.births.set(t, R.t);
           if (!onScreen(t.x)) break;
           if (t.side === 1) burst(t.x, gy - 2, 7, SAND, 110, 5, 2, -10, 0.6);
-          else { burst(t.x, gy - 30, 8, GLOWE, 150, 2.6, 1, -60, 0.8); burst(t.x, gy - 4, 5, "#27484a", 80, 8, 2, -15, 0.9); }
+          else { R.sfx("spit", { pan: panOf(t.x), rate: 0.6, gain: 0.35, minGap: 0.25 }); burst(t.x, gy - 30, 8, GLOWE, 150, 2.6, 1, -60, 0.8); burst(t.x, gy - 4, 5, "#27484a", 80, 8, 2, -15, 0.9); }
           break;
         }
         case "salvage": R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;     // shown at the powder counter, not in the fight
-        case "directHit": num(e.x, e.y - 150, TH.directWord || "Direct hit!", "#fff1c8", true); spark(e.x, e.y, 46); hitstop(0.09); break;
+        case "directHit": num(e.x, e.y - 150, TH.directWord || "Direct hit!", "#fff1c8", true); spark(e.x, e.y, 46); hitstop(0.09); R.sfx("hit_blunt", { pan: panOf(e.x), rate: 0.7, gain: 1 }); break;
         case "boltHit":
           burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
           for (let i = 0; i < 16; i++) { const a = -Math.PI * (0.15 + 0.7 * Math.random()), v = 180 + Math.random() * 260; part(e.x, gy - 4, Math.cos(a) * v, Math.sin(a) * v, 0.5 + Math.random() * 0.5, 3 + Math.random() * 3, SAND, 0, 900); }
@@ -303,7 +303,7 @@ export function createRenderer(canvas, hooks) {
     }
     if (c.hitT > 0 && atlases.castles) { g.globalAlpha = c.hitT / 0.15 * 0.5; spriteDraw(id, "idle", R.t, sx + shakeX, y, { white: true }); g.globalAlpha = 1; }
     if (st >= 1 && R.quality > 0 && Math.random() < 0.25) part(c.x + (Math.random() - 0.5) * 100, y - 120 - Math.random() * 100, (Math.random() - 0.5) * 10, -30, 1.6, 9, "#3c3533", 2, -15);
-    if (c === B.gate && c.sealed) { g.globalAlpha = 0.18 + 0.08 * Math.sin(R.t * 3); g.fillStyle = "#ff5a1a"; g.beginPath(); g.ellipse(sx, y - 120, 110, 150, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+    if (c === B.gate && c.sealed) { g.globalAlpha = 0.18 + 0.08 * Math.sin(R.t * 3); g.fillStyle = TH.enemyGlow || "#ff5a1a"; g.beginPath(); g.ellipse(sx, y - 120, 110, 150, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   }
 
   function drawProj(B, p, alpha) {
@@ -413,6 +413,9 @@ export function createRenderer(canvas, hooks) {
     list.sort((a, b) => a.lane - b.lane || (b.alive ? 1 : 0) - (a.alive ? 1 : 0));
     for (const e of list) drawEntity(B, e, alpha);
     for (const p of B.projs) if (p.alive) drawProj(B, p, alpha);
+    if (R.grade) {      // night stages: moonlight grade over the sunset-lit figures and forts (one fill)
+      g.globalCompositeOperation = "multiply"; g.fillStyle = R.grade; g.fillRect(-30, -30, R.W + 60, H + 60); g.globalCompositeOperation = "source-over";
+    }
     drawAim(B);
     for (const k of R.rings) {        // shock rings on the ground
       if (k.t <= 0) continue; k.t -= dtReal; const q = 1 - Math.max(0, k.t) / 0.32;
