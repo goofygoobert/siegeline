@@ -3,3 +3,5 @@ dist/
 .venv/
 *.blend1
 __pycache__/
+art/out/
+art/build/
