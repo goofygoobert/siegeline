@@ -28,7 +28,7 @@ export function createBattle(content, stage, progress, seed = 1) {
     cards, unitDefs, enemyDefs,
     ents: [], nextId: 1, projs: [], patches: [], marks: [], scheduled: [],
     ballista: { reload: 0, maxReload: Math.max(1.2, g.ballista.reload - g.ballista.reloadPerLevel * (lv("ballista") - 1)),
-                dmg: g.ballista.dmg * (1 + g.ballista.dmgPerLevel * (lv("ballista") - 1)), x: F.playerCastleX + 98, y: F.groundY - 186 },
+                dmg: g.ballista.dmg * (1 + g.ballista.dmgPerLevel * (lv("ballista") - 1)), x: F.playerCastleX + 118, y: F.groundY - 223 },     // Long Tom's pivot on the (1.2x) Gullwake
     abilities: (stage.abilities || []).map((id) => ({ id, cfg: g.abilities[id], level: (progress?.abilities || {})[id] || 1, cd: 6 })),
     hero: stage.hero ? { charge: 0, need: g.hero.charge, called: false, ent: null, level: lv("hero") } : null,
     rally: 0, heldT: 0, waveHold: false, waveClock: 0, waves: (stage.waves || []).map((w) => ({ ...w, done: 0, next: w.t })),

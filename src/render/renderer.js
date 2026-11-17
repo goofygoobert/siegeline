@@ -4,6 +4,7 @@ import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
 
 const H = 540;                 // logical height
 const MAXP = 360, MAXN = 48;
+const KEEP_S = 1.2;          // the Gullwake and Long Tom are drawn larger than their atlas size (sim pivot matches)
 const CH = 1.3;              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
 
 export function createRenderer(canvas, hooks) {
@@ -296,12 +297,13 @@ export function createRenderer(canvas, hooks) {
     const id = (side === 1 ? "keep_" : "maw_") + st;
     const y = B.F.groundY + 4;
     const shakeX = c.hitT > 0 ? (Math.random() - 0.5) * 4 : 0;
-    if (!spriteDraw(id, "idle", R.t, sx + shakeX, y)) {
+    const cs = side === 1 ? KEEP_S : 1;
+    if (!spriteDraw(id, "idle", R.t, sx + shakeX, y, { scale: cs })) {
       g.fillStyle = side === 1 ? "#4b4440" : "#2a2222";
       g.fillRect(sx - 70 + shakeX, y - 260 * (1 - st * 0.18), 140, 260 * (1 - st * 0.18));
       g.fillStyle = side === 1 ? "#ffb347" : "#ff6a1a"; g.fillRect(sx - 12, y - 250 * (1 - st * 0.18), 24, 22);
     }
-    if (c.hitT > 0 && atlases.castles) { g.globalAlpha = c.hitT / 0.15 * 0.5; spriteDraw(id, "idle", R.t, sx + shakeX, y, { white: true }); g.globalAlpha = 1; }
+    if (c.hitT > 0 && atlases.castles) { g.globalAlpha = c.hitT / 0.15 * 0.5; spriteDraw(id, "idle", R.t, sx + shakeX, y, { white: true, scale: cs }); g.globalAlpha = 1; }
     if (st >= 1 && R.quality > 0 && Math.random() < 0.25) part(c.x + (Math.random() - 0.5) * 100, y - 120 - Math.random() * 100, (Math.random() - 0.5) * 10, -30, 1.6, 9, "#3c3533", 2, -15);
     if (c === B.gate && c.sealed) { g.globalAlpha = 0.18 + 0.08 * Math.sin(R.t * 3); g.fillStyle = TH.enemyGlow || "#ff5a1a"; g.beginPath(); g.ellipse(sx, y - 120, 110, 150, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   }
@@ -371,7 +373,7 @@ export function createRenderer(canvas, hooks) {
       g.globalCompositeOperation = "lighter"; g.globalAlpha = R.muzzle; g.drawImage(FLASHB, mx - r, my - r, r * 2, r * 2);
       g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
     }
-    if (!spriteDraw("ballista", "idle", 0, bx, by, { rot: ang })) {
+    if (!spriteDraw("ballista", "idle", 0, bx, by, { rot: ang, scale: KEEP_S })) {
       g.save(); g.translate(sx, B.ballista.y); g.rotate(ang); g.fillStyle = "#6a4a2a"; g.fillRect(-10, -5, 60, 10);
       g.fillStyle = "#b08a3a"; g.fillRect(0, -18, 6, 36); g.restore();
     }
