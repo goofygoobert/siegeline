@@ -110,8 +110,8 @@
    "id": "cinder_matron",
    "name": "The Cinder Matron",
    "faction": "hollow",
-   "hp": 7000,
-   "dmg": 103,
+   "hp": 5600,
+   "dmg": 123,
    "rate": 2.0,
    "range": 60,
    "speed": 18,
@@ -120,7 +120,7 @@
    "traits": {},
    "boss": {
     "sweep": {
-     "dmg": 132,
+     "dmg": 171,
      "radius": 150,
      "windup": 1.3,
      "every": 7,
@@ -133,7 +133,7 @@
      "windup": 1.0
     },
     "spit": {
-     "dmg": 102,
+     "dmg": 132,
      "radius": 70,
      "every": 11,
      "warn": 1.5

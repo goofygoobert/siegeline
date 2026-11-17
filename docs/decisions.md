@@ -29,3 +29,8 @@ Format: decision — reason — alternative considered.
 - **Service worker: page network-first, versioned files cache-first, never answer a missing file with the page** — the first version could blank the screen after an update.
 - **Burning and fire-patch damage never trigger the white hit flash** — the boss was permanently white while standing in fire.
 - **Recording assembled from captured frames and encoded on the 5070** — headless Chrome's own screencast produced empty files here, and this ffmpeg has no software H.264 encoder.
+- **Boss reworked after two reviews: health 7000 → 5600 base, hits 20–30% harder, "winded" window 3 s at +60% damage taken, par 3:35** — fights went from ~4.5 to ~3–3.5 minutes at the same win rates.
+- **One callout at a time; boss warnings replace other callouts and sit on a dark plate** — overlapping callouts were unreadable.
+- **Hero and powers moved into the bottom row** — the stacked column covered the Maw Gate.
+- **Atlas page list (`assets/atlases.json`) written at build time** — the loader used to probe for missing pages (~35 failed requests per session).
+- **Version string includes the build time** — so the live build can always be told apart from a local one.

@@ -43,7 +43,7 @@ function h(tag, attrs = {}, ...kids) {
 }
 const I = {
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
-  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10.3 2.5h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.3"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
   hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4l6 6-3 3-6-6zM11 7L3.5 14.5a2 2 0 000 2.8l3.2 3.2a2 2 0 002.8 0L17 13"/></svg>',
@@ -144,7 +144,7 @@ async function worldMap() {
     const open = !!r.playable;
     map.append(h("button", { class: "pin" + (open ? "" : " locked"), style: `left:${p.x * 100}%;top:${p.y * 100}%`, "aria-label": r.name + (open ? "" : " (locked)"),
       onclick: open ? tap(() => regionScreen(r)) : tap(() => toast(`${r.name}: ${r.blurb.split(".")[0]}. Coming in a later update.`, 3200), "ui_locked") },
-      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
+      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
       open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, "Cinderfold Vale is free"),
@@ -200,7 +200,7 @@ function stageSheet(s, region) {
     h("div", { class: "starrow" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (st[i] ? " on" : "") }), i === 2 ? `Win in under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")}` : d))),
     ),
     h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)), "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} marks` }, "Fight",
-      h("span", { style: "display:inline-flex;align-items:center;gap:4px;font-size:15px;opacity:.85;margin-left:8px" }, coin(), reward + "")));
+      h("span", { style: "display:inline-flex;align-items:center;gap:4px;font-size:14px;opacity:.85;margin-left:10px" }, "+", coin(), reward + "")));
   current.append(sheet);
 }
 
@@ -371,16 +371,23 @@ class BattleView {
       return el;
     });
     this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": "Call the Marshal", onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
-    const side = h("div", { class: "side" }, ...this.abilEls, this.heroEl);
+    const side = h("div", { class: "side row-side" }, this.heroEl, ...this.abilEls);
     const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
   }
   bossWarn(kind) {
     const t = { sweep: "Censer raised! Fall back!", summon: "She calls the Choir!", spit: "Ember Spit! Clear the red ring!", winded: "She's winded! Strike now!" }[kind];
-    if (!t) return; const c = h("div", { class: "bosswarn" }, t); this.el.append(c); setTimeout(() => c.remove(), 1500);
+    if (t) this.callout(t, true);
   }
-  callout(text) { const c = h("div", { class: "callout" }, text); this.el.append(c); setTimeout(() => c.remove(), 1900); }
+  /** One callout at a time: urgent ones (boss warnings) replace the current one, others wait their turn. */
+  callout(text, urgent = false) {
+    this._cq = this._cq || [];
+    if (urgent) { this._cq.length = 0; if (this._co) { this._co.remove(); this._co = null; clearTimeout(this._coT); } }
+    else if (this._co) { if (this._cq.length < 2) this._cq.push(text); return; }
+    const c = h("div", { class: urgent ? "callout warn" : "callout" }, text); this.el.append(c); this._co = c;
+    this._coT = setTimeout(() => { c.remove(); this._co = null; const n = this._cq.shift(); if (n) this.callout(n); }, urgent ? 1500 : 1900);
+  }
   onBoss(e) {
     this.bossBar = h("div", { class: "bossbar" }, h("div", { class: "name" }, enemyById[e.id].name), h("div", { class: "bar" }, h("i")));
     this.el.append(this.bossBar); this.callout("The Matron rises"); R.camTarget = Math.max(0, e.x - R.W * 0.6);
@@ -436,7 +443,8 @@ class BattleView {
     const speed = Math.max(g.minSpeed, Math.min(g.maxSpeed, g.minSpeed + pull * k));
     R.aim = { vx: Math.cos(up) * speed, vy: -Math.sin(up) * speed, pull };
     // keep the landing point in view while aiming
-    if (R.aim.landX) R.camTarget = Math.max(0, Math.min(this.B.F.width - R.W, R.aim.landX - R.W * 0.55));
+    // keep the ballista in view; only slide right when the landing point would leave the screen
+    if (R.aim.landX && (R.aim.landX > R.camX + R.W * 0.9 || R.aim.landX < R.camX + 60)) R.camTarget = Math.max(0, Math.min(this.B.F.width - R.W, R.aim.landX - R.W * 0.75));
   }
   bindCanvas() {
     let pan = null;
@@ -536,7 +544,7 @@ class BattleView {
     const r = this.weapon.querySelector(".ring"); const rf = B.ballista.reload > 0 ? 1 - B.ballista.reload / B.ballista.maxReload : 1;
     r.style.background = rf < 1 ? `conic-gradient(rgba(255,200,120,.9) ${rf * 360}deg, transparent 0)` : "none";
     r.style.mask = r.style.webkitMask = "radial-gradient(circle, transparent 62%, #000 64%)";
-    const t = Math.floor(B.t); if (t !== this._t) { this._t = t; this.timer.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; }
+    const t = Math.floor(B.t - B.heldT); if (t !== this._t) { this._t = t; this.timer.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; }
     if (this.bossBar && B.boss) this.bossBar.querySelector(".bar > i").style.transform = `scaleX(${Math.max(0, B.boss.hp / B.boss.maxHp)})`;
   }
   frame(now) {
@@ -611,7 +619,7 @@ class BattleView {
         this.B.boss && this.B.boss.alive && this.B.boss.hp / this.B.boss.maxHp < 0.3 ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, `The Matron was down to ${Math.round(this.B.boss.hp / this.B.boss.maxHp * 100)}%. So close.`) : null,
         tip),
       win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
-      h("div", { class: "earn" }, coin(), h("span", {}, "+"), earnN, h("span", {}, "marks")),
+      h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " marks")),
       unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,

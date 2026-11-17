@@ -35,8 +35,11 @@ export async function loadAtlas(group, { white = true } = {}) {
 }
 
 /** A group may be split across numbered atlases (units, units2, units3...). Load all that exist. */
+let pageList = null;
 export async function loadGroup(group, opts) {
-  const names = [group, ...[2, 3, 4, 5, 6, 7, 8].map((n) => group + n)];
+  if (!pageList) pageList = fetch(BASE + "atlases.json").then((r) => r.json()).catch(() => null);
+  const list = await pageList;
+  const names = list ? list.filter((n) => n === group || new RegExp("^" + group + "\\d+$").test(n)) : [group];
   const res = await Promise.all(names.map((n) => loadAtlas(n, opts)));
   return res.filter(Boolean).length;
 }

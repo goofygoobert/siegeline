@@ -152,7 +152,7 @@ Levels 1–10: +8% HP and +7.000000000000001% damage per level; new look and per
 | Pyre Bloater | hollow | r1 | 350 | 12 | 1.4 | 26 | 22 | Swollen with embers. Bursts when killed, burning everyone nearby. |
 | Bonecage Brute | hollow | r1 | 870 | 68 | 2.4 | 34 | 24 | A giant split open to the ribs. Every swing sends soldiers flying. |
 | Husk Warden (mini-boss) | hollow | r1 | 2340 | 81 | 1.8 | 40 | 26 | Once a captain of the Vale. Enrages when wounded. |
-| The Cinder Matron (boss) | hollow | r1 | 7000 | 103 | 2 | 60 | 18 | Mother of the Hollow Host. Raises her censer before she swings — get clear. |
+| The Cinder Matron (boss) | hollow | r1 | 5600 | 123 | 2 | 60 | 18 | Mother of the Hollow Host. Raises her censer before she swings — get clear. |
 | Wailer | hollow | r2 | 150 | 18 | 1.4 | 120 | 40 | Flying shade. |
 | Tithe Spearman | tithe | r3 | 400 | 29 | 1.2 | 44 | 36 | Mercenary knight-spear. |
 | Tithe Crossbow | tithe | r3 | 235 | 41 | 2.2 | 280 | 30 | Long-range mercenary. |
@@ -172,5 +172,5 @@ Elite versions: HP x2.2, damage x1.4, speed x1.1, ember glow and 12% larger.
 | r1s3 | Pyre Fields | 2000 | x1.99 | 155 s | 180 | bellringer, rally | 2s 4x husk; 22s 1x bloater; 30s 2x spitter; 45s 5x gnawer; 60s 2x bloater; 75s 6x husk; 90s 1x brute |
 | r1s4 | The Broken Watch | 2500 | x1.18 | 190 s | 210 | lamplighter | 2s 4x husk; 18s 2x spitter; 32s 1x brute; 34s 3x husk; 55s 6x gnawer; 70s 2x bloater; 85s 1x husk_warden; 88s 4x husk |
 | r1s5 | Ashfall Ridge | 3000 | x0.97 | 205 s | 240 | - | 2s 5x husk; 15s 4x gnawer; 28s 1x brute; 30s 3x spitter; 50s 3x bloater; 65s 4x husk (elite); 80s 2x brute; 100s 1x husk_warden; 102s 6x gnawer |
-| r1boss | The Cinder Matron | sealed (defeat the boss) | x0.97, boss x1.43 | 240 s | 400 | - | 2s 4x husk; 12s 2x spitter |
+| r1boss | The Cinder Matron | sealed (defeat the boss) | x0.97, boss x1.64 | 215 s | 400 | - | 2s 4x husk; 12s 2x spitter |
 <!-- /GENERATED -->

@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5193",
-    "build": "node tools/check_data.mjs && vite build && node tools/postbuild.mjs",
+    "build": "node tools/check_data.mjs && node tools/atlas_manifest.mjs && vite build && node tools/postbuild.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 5194",
     "test": "node tools/check_data.mjs && node tools/test_sim.mjs",
     "balance": "node tools/balance.mjs"

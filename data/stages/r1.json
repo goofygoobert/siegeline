@@ -552,7 +552,7 @@
    "bg": "r1n",
    "music": "boss",
    "enemyCastleHp": 2500,
-   "par": 240,
+   "par": 215,
    "reward": 400,
    "boss": "cinder_matron",
    "bossAt": 20,
@@ -611,7 +611,7 @@
    },
    "triggers": [],
    "power": 0.97,
-   "bossPower": 1.43
+   "bossPower": 1.64
   }
  ],
  "tutorials": {
