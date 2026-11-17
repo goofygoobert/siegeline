@@ -82,7 +82,7 @@ def single(img, anchor):
 
 
 def castles():
-    cell, cz, e = 864, 4.0, math.radians(8)
+    cell, cz, e = 864, 4.0, math.radians(10)   # mirrors castles.py (CAM_ELEV)
     ground = (cell / 2 + cz * math.cos(e) * RPPU)
     sp = {}
     for k in range(3):

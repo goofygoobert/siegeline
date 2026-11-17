@@ -21,7 +21,7 @@ const ui = document.getElementById("ui");
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
-const R = createRenderer(canvas, { sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout("They're rushing!") });
+const R = createRenderer(canvas, { sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout("They're rushing!"), onAngry: () => battle && battle.callout("The Maw grows angry") });
 initAudio(D.settings);
 applySettings();
 

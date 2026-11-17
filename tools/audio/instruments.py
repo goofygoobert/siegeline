@@ -54,7 +54,7 @@ def strings(f0, dur, vel=1.0, a=0.25, r=0.5, voices=5, seed=0, cutoff=2600, detu
 def staccato(f0, dur, vel=1.0, seed=0, cutoff=1800):
     """Short bowed/martelé low-strings note for ostinati."""
     n = n_of(dur + 0.08)
-    x = (saw(f0 * 1.003, n) + saw(f0 * 0.997, n, phase0=0.5) + 0.5 * square(f0 * 0.5, n)) / 2.5
+    x = (saw(f0 * 1.003, n) + saw(f0 * 0.997, n, phase0=0.5) + 0.35 * square(f0, n, pw=0.3)) / 2.35
     env = adsr(n, 0.006, 0.06, 0.55, 0.06)
     e2 = np.exp(-tvec(n) / 0.05)
     y = lp(x, cutoff, 2) * (1 - 0.6 * e2) + lp(x, cutoff * 2.5, 2) * 0.6 * e2
@@ -146,7 +146,8 @@ def taiko(f=58, dur=0.9, vel=1.0, seed=0, skin=1.0):
     k = n_of(0.004)
     click = np.zeros(n)
     click[:k] = hp(noise(k, seed + 1), 1500) * np.linspace(1, 0, k)
-    y = body + thump * skin + click * 0.7
+    slap = bp(noise(n, seed + 2), 280, 1600) * np.exp(-t / 0.03) * 0.9  # reads on phone speakers
+    y = body + thump * skin + slap * skin + click * 0.7
     return fade(y, 0.0003, 0.05) * vel
 
 

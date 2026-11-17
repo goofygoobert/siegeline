@@ -120,6 +120,7 @@ export function createRenderer(canvas, hooks) {
         case "bossDead": R.slowmo = 1.6; flash(0.5, "#fff1c8"); addShake(1); R.sfx("castle_crumble"); break;
         case "enrage": burst(e.e.x, gy - 80, 18, "#ff4a20", 200, 3, 1, 0, 0.7); R.sfx("boss_roar", { rate: 1.3, gain: 0.6 }); break;
         case "rush": hooks.onRush && hooks.onRush(); break;
+        case "angry": hooks.onAngry && hooks.onAngry(); R.sfx("boss_warn", { rate: 0.7 }); break;
         case "sealed": break;
         case "win": if (B.stage.winOn !== "boss") { R.slowmo = 1.2; addShake(0.8); flash(0.35, "#fff1c8"); R.sfx("castle_crumble"); } break;
         case "lose": addShake(0.7); R.sfx("castle_crumble", { rate: 0.8 }); break;

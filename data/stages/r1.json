@@ -1,44 +1,665 @@
 {
-  "stages": [
-    {"id":"r1s1","name":"Smoke on the Vines","region":"r1","bg":"r1","music":"battle","enemyCastleHp":1200,"par":110,"reward":120,
-     "unlocks":["cinder_runner","ember_rain"],"tutorial":"basics","available":["ashguard","torchbow"],"hero":false,"abilities":[],
-     "waves":[{"t":4,"id":"husk","n":2,"gap":3},{"t":20,"id":"husk","n":3,"gap":2.5},{"t":38,"id":"gnawer","n":2,"gap":1.5},{"t":52,"id":"husk","n":4,"gap":2}],
-     "loop":{"start":65,"every":7,"pool":[["husk",3],["gnawer",1]],"ramp":0.03,"min":3.5},
-     "triggers":[{"below":0.5,"waves":[{"t":0,"id":"husk","n":4,"gap":1.2}]}]},
-    {"id":"r1s2","name":"The Chapel Road","region":"r1","bg":"r1","music":"battle","enemyCastleHp":1600,"par":130,"reward":150,
-     "unlocks":["maulwright","hero"],"tutorial":"ability","available":["ashguard","torchbow","cinder_runner"],"hero":false,"abilities":["ember_rain"],
-     "waves":[{"t":5,"id":"husk","n":3,"gap":2.5},{"t":22,"id":"spitter","n":1,"gap":1},{"t":26,"id":"husk","n":3,"gap":2},{"t":45,"id":"gnawer","n":4,"gap":1},{"t":60,"id":"spitter","n":2,"gap":3},{"t":64,"id":"husk","n":4,"gap":1.5}],
-     "loop":{"start":80,"every":6.5,"pool":[["husk",4],["gnawer",2],["spitter",1]],"ramp":0.03,"min":3.2},
-     "triggers":[{"below":0.5,"waves":[{"t":0,"id":"gnawer","n":5,"gap":0.6},{"t":3,"id":"spitter","n":2,"gap":2}]}]},
-    {"id":"r1s3","name":"Pyre Fields","region":"r1","bg":"r1","music":"battle","enemyCastleHp":2000,"par":150,"reward":180,
-     "unlocks":["bellringer","rally"],"tutorial":"hero","available":["ashguard","torchbow","cinder_runner","maulwright"],"hero":true,"abilities":["ember_rain"],
-     "waves":[{"t":5,"id":"husk","n":4,"gap":2},{"t":22,"id":"bloater","n":1,"gap":1},{"t":30,"id":"spitter","n":2,"gap":2},{"t":45,"id":"gnawer","n":5,"gap":0.8},{"t":60,"id":"bloater","n":2,"gap":4},{"t":75,"id":"husk","n":6,"gap":1.2},{"t":90,"id":"brute","n":1,"gap":1}],
-     "loop":{"start":100,"every":6,"pool":[["husk",4],["gnawer",2],["spitter",2],["bloater",1]],"ramp":0.03,"min":3},
-     "triggers":[{"below":0.5,"waves":[{"t":0,"id":"brute","n":1,"gap":1},{"t":2,"id":"husk","n":4,"gap":1}]}]},
-    {"id":"r1s4","name":"The Broken Watch","region":"r1","bg":"r1","music":"battle","enemyCastleHp":2500,"par":170,"reward":210,
-     "unlocks":["lamplighter"],"available":["ashguard","torchbow","cinder_runner","maulwright","bellringer"],"hero":true,"abilities":["ember_rain","rally"],
-     "waves":[{"t":4,"id":"husk","n":4,"gap":1.8},{"t":18,"id":"spitter","n":2,"gap":2},{"t":32,"id":"brute","n":1,"gap":1},{"t":34,"id":"husk","n":3,"gap":1.5},{"t":55,"id":"gnawer","n":6,"gap":0.7},{"t":70,"id":"bloater","n":2,"gap":3},{"t":85,"id":"husk_warden","n":1,"gap":1},{"t":88,"id":"husk","n":4,"gap":1.5}],
-     "loop":{"start":105,"every":5.5,"pool":[["husk",4],["gnawer",2],["spitter",2],["bloater",1],["brute",1]],"ramp":0.03,"min":2.8},
-     "triggers":[{"below":0.5,"waves":[{"t":0,"id":"brute","n":2,"gap":3},{"t":1,"id":"spitter","n":3,"gap":1.5}]}]},
-    {"id":"r1s5","name":"Ashfall Ridge","region":"r1","bg":"r1","music":"battle","enemyCastleHp":3000,"par":190,"reward":240,
-     "unlocks":[],"available":["ashguard","torchbow","cinder_runner","maulwright","bellringer","lamplighter"],"hero":true,"abilities":["ember_rain","rally"],
-     "waves":[{"t":4,"id":"husk","n":5,"gap":1.5},{"t":15,"id":"gnawer","n":4,"gap":0.8},{"t":28,"id":"brute","n":1,"gap":1},{"t":30,"id":"spitter","n":3,"gap":1.5},{"t":50,"id":"bloater","n":3,"gap":2},{"t":65,"id":"husk","n":4,"gap":1,"elite":true},{"t":80,"id":"brute","n":2,"gap":4},{"t":100,"id":"husk_warden","n":1,"gap":1},{"t":102,"id":"gnawer","n":6,"gap":0.6}],
-     "loop":{"start":115,"every":5,"pool":[["husk",4],["gnawer",3],["spitter",2],["bloater",2],["brute",1]],"ramp":0.035,"min":2.5,"eliteChance":0.15},
-     "triggers":[{"below":0.5,"waves":[{"t":0,"id":"husk_warden","n":1,"gap":1},{"t":2,"id":"spitter","n":3,"gap":1}]}]},
-    {"id":"r1boss","name":"The Cinder Matron","region":"r1","bg":"r1n","music":"boss","enemyCastleHp":2500,"par":240,"reward":400,"boss":"cinder_matron","bossAt":20,
-     "winOn":"boss","unlocks":[],"available":["ashguard","torchbow","cinder_runner","maulwright","bellringer","lamplighter"],"hero":true,"abilities":["ember_rain","rally"],
-     "waves":[{"t":3,"id":"husk","n":4,"gap":1.5},{"t":12,"id":"spitter","n":2,"gap":2}],
-     "loop":{"start":30,"every":7,"pool":[["husk",4],["gnawer",2],["spitter",2],["bloater",1]],"ramp":0.02,"min":4},
-     "triggers":[]}
-  ],
-  "tutorials": {
-    "basics": [
-      {"id":"send","text":"Tap the Ashguard card to send a soldier.","target":"unit:ashguard","until":"sent","holdWaves":true},
-      {"id":"energy","text":"Sending costs embers. They refill on their own.","target":"energy","until":"time:3.5"},
-      {"id":"aim","text":"Hold the ballista button, drag back to aim, let go to fire.","target":"weapon","until":"fired","holdWaves":true},
-      {"id":"goal","text":"Break the Maw Gate. Keep your Keep standing.","target":"enemyCastle","until":"time:4"}
+ "stages": [
+  {
+   "id": "r1s1",
+   "name": "Smoke on the Vines",
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "enemyCastleHp": 1200,
+   "par": 110,
+   "reward": 120,
+   "unlocks": [
+    "cinder_runner",
+    "ember_rain"
+   ],
+   "tutorial": "basics",
+   "available": [
+    "ashguard",
+    "torchbow"
+   ],
+   "hero": false,
+   "abilities": [],
+   "waves": [
+    {
+     "t": 4,
+     "id": "husk",
+     "n": 2,
+     "gap": 3
+    },
+    {
+     "t": 20,
+     "id": "husk",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 38,
+     "id": "gnawer",
+     "n": 2,
+     "gap": 1.5
+    },
+    {
+     "t": 52,
+     "id": "husk",
+     "n": 4,
+     "gap": 2
+    }
+   ],
+   "loop": {
+    "start": 65,
+    "every": 7,
+    "pool": [
+     [
+      "husk",
+      3
+     ],
+     [
+      "gnawer",
+      1
+     ]
     ],
-    "ability": [{"id":"rain","text":"Ember Rain is ready. Tap it, then tap where to drop it.","target":"ability:ember_rain","until":"ability","when":"enemies:4"}],
-    "hero": [{"id":"hero","text":"The Marshal is ready. Tap his banner to call him in.","target":"hero","until":"hero","when":"heroReady"}]
+    "ramp": 0.03,
+    "min": 3.5
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "husk",
+       "n": 4,
+       "gap": 1.2
+      }
+     ]
+    }
+   ],
+   "power": 2.42
+  },
+  {
+   "id": "r1s2",
+   "name": "The Chapel Road",
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "enemyCastleHp": 1600,
+   "par": 130,
+   "reward": 150,
+   "unlocks": [
+    "maulwright",
+    "hero"
+   ],
+   "tutorial": "ability",
+   "available": [
+    "ashguard",
+    "torchbow",
+    "cinder_runner"
+   ],
+   "hero": false,
+   "abilities": [
+    "ember_rain"
+   ],
+   "waves": [
+    {
+     "t": 5,
+     "id": "husk",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 22,
+     "id": "spitter",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 26,
+     "id": "husk",
+     "n": 3,
+     "gap": 2
+    },
+    {
+     "t": 45,
+     "id": "gnawer",
+     "n": 4,
+     "gap": 1
+    },
+    {
+     "t": 60,
+     "id": "spitter",
+     "n": 2,
+     "gap": 3
+    },
+    {
+     "t": 64,
+     "id": "husk",
+     "n": 4,
+     "gap": 1.5
+    }
+   ],
+   "loop": {
+    "start": 80,
+    "every": 6.5,
+    "pool": [
+     [
+      "husk",
+      4
+     ],
+     [
+      "gnawer",
+      2
+     ],
+     [
+      "spitter",
+      1
+     ]
+    ],
+    "ramp": 0.03,
+    "min": 3.2
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "gnawer",
+       "n": 5,
+       "gap": 0.6
+      },
+      {
+       "t": 3,
+       "id": "spitter",
+       "n": 2,
+       "gap": 2
+      }
+     ]
+    }
+   ],
+   "power": 2.38
+  },
+  {
+   "id": "r1s3",
+   "name": "Pyre Fields",
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "enemyCastleHp": 2000,
+   "par": 150,
+   "reward": 180,
+   "unlocks": [
+    "bellringer",
+    "rally"
+   ],
+   "tutorial": "hero",
+   "available": [
+    "ashguard",
+    "torchbow",
+    "cinder_runner",
+    "maulwright"
+   ],
+   "hero": true,
+   "abilities": [
+    "ember_rain"
+   ],
+   "waves": [
+    {
+     "t": 5,
+     "id": "husk",
+     "n": 4,
+     "gap": 2
+    },
+    {
+     "t": 22,
+     "id": "bloater",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 30,
+     "id": "spitter",
+     "n": 2,
+     "gap": 2
+    },
+    {
+     "t": 45,
+     "id": "gnawer",
+     "n": 5,
+     "gap": 0.8
+    },
+    {
+     "t": 60,
+     "id": "bloater",
+     "n": 2,
+     "gap": 4
+    },
+    {
+     "t": 75,
+     "id": "husk",
+     "n": 6,
+     "gap": 1.2
+    },
+    {
+     "t": 90,
+     "id": "brute",
+     "n": 1,
+     "gap": 1
+    }
+   ],
+   "loop": {
+    "start": 100,
+    "every": 6,
+    "pool": [
+     [
+      "husk",
+      4
+     ],
+     [
+      "gnawer",
+      2
+     ],
+     [
+      "spitter",
+      2
+     ],
+     [
+      "bloater",
+      1
+     ]
+    ],
+    "ramp": 0.03,
+    "min": 3
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "brute",
+       "n": 1,
+       "gap": 1
+      },
+      {
+       "t": 2,
+       "id": "husk",
+       "n": 4,
+       "gap": 1
+      }
+     ]
+    }
+   ],
+   "power": 1.99
+  },
+  {
+   "id": "r1s4",
+   "name": "The Broken Watch",
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "enemyCastleHp": 2500,
+   "par": 170,
+   "reward": 210,
+   "unlocks": [
+    "lamplighter"
+   ],
+   "available": [
+    "ashguard",
+    "torchbow",
+    "cinder_runner",
+    "maulwright",
+    "bellringer"
+   ],
+   "hero": true,
+   "abilities": [
+    "ember_rain",
+    "rally"
+   ],
+   "waves": [
+    {
+     "t": 4,
+     "id": "husk",
+     "n": 4,
+     "gap": 1.8
+    },
+    {
+     "t": 18,
+     "id": "spitter",
+     "n": 2,
+     "gap": 2
+    },
+    {
+     "t": 32,
+     "id": "brute",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 34,
+     "id": "husk",
+     "n": 3,
+     "gap": 1.5
+    },
+    {
+     "t": 55,
+     "id": "gnawer",
+     "n": 6,
+     "gap": 0.7
+    },
+    {
+     "t": 70,
+     "id": "bloater",
+     "n": 2,
+     "gap": 3
+    },
+    {
+     "t": 85,
+     "id": "husk_warden",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 88,
+     "id": "husk",
+     "n": 4,
+     "gap": 1.5
+    }
+   ],
+   "loop": {
+    "start": 105,
+    "every": 5.5,
+    "pool": [
+     [
+      "husk",
+      4
+     ],
+     [
+      "gnawer",
+      2
+     ],
+     [
+      "spitter",
+      2
+     ],
+     [
+      "bloater",
+      1
+     ],
+     [
+      "brute",
+      1
+     ]
+    ],
+    "ramp": 0.03,
+    "min": 2.8
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "brute",
+       "n": 2,
+       "gap": 3
+      },
+      {
+       "t": 1,
+       "id": "spitter",
+       "n": 3,
+       "gap": 1.5
+      }
+     ]
+    }
+   ],
+   "power": 1.18
+  },
+  {
+   "id": "r1s5",
+   "name": "Ashfall Ridge",
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "enemyCastleHp": 3000,
+   "par": 190,
+   "reward": 240,
+   "unlocks": [],
+   "available": [
+    "ashguard",
+    "torchbow",
+    "cinder_runner",
+    "maulwright",
+    "bellringer",
+    "lamplighter"
+   ],
+   "hero": true,
+   "abilities": [
+    "ember_rain",
+    "rally"
+   ],
+   "waves": [
+    {
+     "t": 4,
+     "id": "husk",
+     "n": 5,
+     "gap": 1.5
+    },
+    {
+     "t": 15,
+     "id": "gnawer",
+     "n": 4,
+     "gap": 0.8
+    },
+    {
+     "t": 28,
+     "id": "brute",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 30,
+     "id": "spitter",
+     "n": 3,
+     "gap": 1.5
+    },
+    {
+     "t": 50,
+     "id": "bloater",
+     "n": 3,
+     "gap": 2
+    },
+    {
+     "t": 65,
+     "id": "husk",
+     "n": 4,
+     "gap": 1,
+     "elite": true
+    },
+    {
+     "t": 80,
+     "id": "brute",
+     "n": 2,
+     "gap": 4
+    },
+    {
+     "t": 100,
+     "id": "husk_warden",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 102,
+     "id": "gnawer",
+     "n": 6,
+     "gap": 0.6
+    }
+   ],
+   "loop": {
+    "start": 115,
+    "every": 5,
+    "pool": [
+     [
+      "husk",
+      4
+     ],
+     [
+      "gnawer",
+      3
+     ],
+     [
+      "spitter",
+      2
+     ],
+     [
+      "bloater",
+      2
+     ],
+     [
+      "brute",
+      1
+     ]
+    ],
+    "ramp": 0.035,
+    "min": 2.5,
+    "eliteChance": 0.15
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "husk_warden",
+       "n": 1,
+       "gap": 1
+      },
+      {
+       "t": 2,
+       "id": "spitter",
+       "n": 3,
+       "gap": 1
+      }
+     ]
+    }
+   ],
+   "power": 0.97
+  },
+  {
+   "id": "r1boss",
+   "name": "The Cinder Matron",
+   "region": "r1",
+   "bg": "r1n",
+   "music": "boss",
+   "enemyCastleHp": 2500,
+   "par": 240,
+   "reward": 400,
+   "boss": "cinder_matron",
+   "bossAt": 20,
+   "winOn": "boss",
+   "unlocks": [],
+   "available": [
+    "ashguard",
+    "torchbow",
+    "cinder_runner",
+    "maulwright",
+    "bellringer",
+    "lamplighter"
+   ],
+   "hero": true,
+   "abilities": [
+    "ember_rain",
+    "rally"
+   ],
+   "waves": [
+    {
+     "t": 3,
+     "id": "husk",
+     "n": 4,
+     "gap": 1.5
+    },
+    {
+     "t": 12,
+     "id": "spitter",
+     "n": 2,
+     "gap": 2
+    }
+   ],
+   "loop": {
+    "start": 30,
+    "every": 7,
+    "pool": [
+     [
+      "husk",
+      4
+     ],
+     [
+      "gnawer",
+      2
+     ],
+     [
+      "spitter",
+      2
+     ],
+     [
+      "bloater",
+      1
+     ]
+    ],
+    "ramp": 0.02,
+    "min": 4
+   },
+   "triggers": [],
+   "power": 0.97,
+   "bossPower": 1.05
   }
+ ],
+ "tutorials": {
+  "basics": [
+   {
+    "id": "send",
+    "text": "Tap the Ashguard card to send a soldier.",
+    "target": "unit:ashguard",
+    "until": "sent",
+    "holdWaves": true
+   },
+   {
+    "id": "energy",
+    "text": "Sending costs embers. They refill on their own.",
+    "target": "energy",
+    "until": "time:3.5"
+   },
+   {
+    "id": "aim",
+    "text": "Hold the ballista button, drag back to aim, let go to fire.",
+    "target": "weapon",
+    "until": "fired",
+    "holdWaves": true
+   },
+   {
+    "id": "goal",
+    "text": "Break the Maw Gate. Keep your Keep standing.",
+    "target": "enemyCastle",
+    "until": "time:4"
+   }
+  ],
+  "ability": [
+   {
+    "id": "rain",
+    "text": "Ember Rain is ready. Tap it, then tap where to drop it.",
+    "target": "ability:ember_rain",
+    "until": "ability",
+    "when": "enemies:4"
+   }
+  ],
+  "hero": [
+   {
+    "id": "hero",
+    "text": "The Marshal is ready. Tap his banner to call him in.",
+    "target": "hero",
+    "until": "hero",
+    "when": "heroReady"
+   }
+  ]
+ }
 }

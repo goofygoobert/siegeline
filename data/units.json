@@ -33,5 +33,5 @@
     {"id":"skyward_lancer","name":"Skyward Lancer","role":"anti-air","region":6,"cost":100,"cooldown":8,"hp":170,"dmg":26,"rate":1.2,"range":150,"speed":40,"size":15,"traits":{"bonusVsFlying":2.5},"counter":"Ground heavies","strongVs":"flyers","tiers":{"5":"faster","10":"chain throw"}},
     {"id":"lantern_colossus","name":"Lantern Colossus","role":"ultimate","region":6,"cost":400,"cooldown":45,"hp":3200,"dmg":120,"rate":2.6,"range":50,"speed":20,"size":40,"traits":{"splash":90,"knockback":60},"counter":"Its own cost","strongVs":"everything","tiers":{"5":"burning aura","10":"beacon beam"}}
   ],
-  "levels": {"max": 10, "hpPerLevel": 0.12, "dmgPerLevel": 0.09, "tierLevels": [5, 10]}
+  "levels": {"max": 10, "hpPerLevel": 0.08, "dmgPerLevel": 0.07, "tierLevels": [5, 10]}
 }

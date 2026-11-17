@@ -1,16 +1,34 @@
 #!/bin/bash
-# Usage: tools/render_chars.sh id [id...]  — bundle, compile-check, render on 5070, contact sheet
+# Usage: tools/render_chars.sh JOB [JOB...]      JOB = units | field | boss | ui   (see art/blender/cast.py)
+#        tools/render_chars.sh one:ID[,ID...]    quick preview of a few ids (uses the first id's job layout)
+# Bundles kit + cast + every character script into ONE bpy script, compile-checks it, renders the whole job
+# as one EEVEE animation on the 5070 (all characters on a grid). Review sheets: tools/pack_sprites.py --sheets
 cd "$(dirname "$0")/.."
-for c in "$@"; do
-  src=$(ls art/blender/chars/$c.py 2>/dev/null) || { echo "no $c"; continue; }
-  python3 tools/bundle_blend.py $src art/build/$c.py >/dev/null
-  python3 -m py_compile art/build/$c.py || { echo "SYNTAX $c"; continue; }
-  N=$(python3 -c "import re;s=open('art/blender/kit.py').read();print(sum(int(n) for n in re.findall(r'\(\"\w+\", (\d+)\)', s.split('ANIMS =')[1].split('\n')[0])))")
-  rm -rf art/out/$c
+CHARS=$(ls art/blender/chars/_*.py; ls art/blender/chars/*.py | grep -v '/_' | grep -v -E '/(a|b|c)_[a-z]+\.py$')
+LIBS=""; for f in art/blender/cast.py $CHARS; do LIBS="$LIBS --lib $f"; done
+mkdir -p art/build art/out
+for J in "$@"; do
+  if [[ $J == one:* ]]; then
+    ids=${J#one:}; name="one_${ids//,/_}"
+    job=$(python3 -c "import sys;sys.path.insert(0,'art/blender');import cast;i='$ids'.split(',')[0];print(next(k for k,v in cast.JOBS.items() if i in v['ids']))")
+    echo "render_job('$job', only=[$(echo $ids | sed "s/[^,]*/'&'/g")])" > art/build/drv_$name.py
+    N=$(python3 -c "import sys;sys.path.insert(0,'art/blender');import cast;print(max(sum(a[1] for a in cast.anims_of(i)) for i in '$ids'.split(',')))")
+  else
+    name=$J
+    echo "render_job('$J')" > art/build/drv_$name.py
+    N=$(python3 -c "import sys;sys.path.insert(0,'art/blender');import cast;print(cast.job_frames('$J'))")
+  fi
+  python3 tools/bundle_blend.py art/build/drv_$name.py art/build/$name.py $LIBS >/dev/null
+  python3 -m py_compile art/build/$name.py || { echo "SYNTAX $name"; continue; }
+  rm -rf art/out/$name
   for try in 1 2 3; do
-    timeout 900 gpu5070 render art/build/$c.py --frames 1-$N --engine eevee --wait-busy 60 --out art/out/$c > art/build/$c.log 2>&1 && break
-    grep -q "unreachable\|not answering" art/build/$c.log && gpu5070 wake >/dev/null 2>&1
-    echo "retry $c ($try)"; sleep 30
+    timeout 1500 gpu5070 render art/build/$name.py --frames 1-$N --engine eevee --wait-busy 60 --out art/out/$name > art/build/$name.log 2>&1 && break
+    grep -q "unreachable\|not answering" art/build/$name.log && gpu5070 wake >/dev/null 2>&1
+    echo "retry $name ($try)"; sleep 60
   done
-  ls art/out/$c/frame_*.png >/dev/null 2>&1 && .venv/bin/python tools/contact.py art/out/$c art/out/${c}_sheet.png 12 >/dev/null && echo "OK $c" || { echo "FAIL $c"; tail -3 art/build/$c.log; }
+  if ls art/out/$name/frame_*.png >/dev/null 2>&1; then
+    echo "OK $name ($(ls art/out/$name/frame_*.png | wc -l)/$N frames)"; grep -E "FAILED|Error|JOB " art/build/$name.log | head -20
+  else
+    echo "FAIL $name"; tail -5 art/build/$name.log
+  fi
 done

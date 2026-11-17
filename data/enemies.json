@@ -1,24 +1,273 @@
 {
-  "enemies": [
-    {"id":"husk","name":"Husk","faction":"hollow","hp":100,"dmg":11,"rate":1.2,"range":26,"speed":34,"size":15,"traits":{},"desc":"The risen dead of the Vale. Slow, numerous, relentless.","art":true},
-    {"id":"gnawer","name":"Gnawer","faction":"hollow","hp":48,"dmg":7,"rate":0.6,"range":22,"speed":80,"size":11,"traits":{},"desc":"Scuttles on all fours past slow defenders.","art":true},
-    {"id":"spitter","name":"Ash Spitter","faction":"hollow","hp":80,"dmg":16,"rate":1.8,"range":210,"speed":30,"size":14,"traits":{"projectile":"spit","lob":true},"desc":"Lobs burning ash from behind the horde.","art":true},
-    {"id":"bloater","name":"Pyre Bloater","faction":"hollow","hp":210,"dmg":8,"rate":1.4,"range":26,"speed":22,"size":20,"traits":{"deathBlast":{"dmg":70,"radius":75}},"desc":"Swollen with embers. Bursts when killed, burning everyone nearby.","art":true},
-    {"id":"brute","name":"Bonecage Brute","faction":"hollow","hp":520,"dmg":46,"rate":2.4,"range":34,"speed":24,"size":26,"large":true,"traits":{"splash":40,"knockback":30},"desc":"A giant split open to the ribs. Every swing sends soldiers flying.","art":true},
-    {"id":"husk_warden","name":"Husk Warden","faction":"hollow","hp":1400,"dmg":55,"rate":1.8,"range":40,"speed":26,"size":30,"large":true,"miniboss":true,"traits":{"splash":50,"knockback":50,"enrage":{"below":0.5,"speed":1.3,"rate":0.75}},"desc":"Once a captain of the Vale. Enrages when wounded.","art":true},
-    {"id":"cinder_matron","name":"The Cinder Matron","faction":"hollow","hp":6000,"dmg":70,"rate":2.0,"range":60,"speed":18,"size":60,"large":true,"traits":{},
-     "boss":{"sweep":{"dmg":90,"radius":150,"windup":1.3,"every":7,"knockback":90},
-             "summon":{"id":"gnawer","n":4,"every":18,"windup":1.0},
-             "spit":{"dmg":70,"radius":70,"every":11,"warn":1.5},
-             "phase2":{"below":0.5,"cooldownMul":0.7,"speedMul":1.2,"firePatch":true}},
-     "desc":"Mother of the Hollow Host. Raises her censer before she swings — get clear.","art":true},
-    {"id":"wailer","name":"Wailer","faction":"hollow","region":2,"hp":90,"dmg":12,"rate":1.4,"range":120,"speed":40,"size":13,"traits":{"flying":true},"desc":"Flying shade."},
-    {"id":"tithe_spear","name":"Tithe Spearman","faction":"tithe","region":3,"hp":240,"dmg":20,"rate":1.2,"range":44,"speed":36,"size":17,"traits":{"armor":0.2},"desc":"Mercenary knight-spear."},
-    {"id":"tithe_crossbow","name":"Tithe Crossbow","faction":"tithe","region":3,"hp":140,"dmg":28,"rate":2.2,"range":280,"speed":30,"size":15,"traits":{"projectile":"bolt"},"desc":"Long-range mercenary."},
-    {"id":"tithe_paladin","name":"Gilded Paladin","faction":"tithe","region":3,"hp":900,"dmg":40,"rate":1.6,"range":34,"speed":28,"size":24,"large":true,"traits":{"armor":0.35,"heal":30},"desc":"Heals nearby Tithe."},
-    {"id":"maw_hound","name":"Maw Hound","faction":"mawborn","region":4,"hp":160,"dmg":18,"rate":0.8,"range":24,"speed":85,"size":16,"traits":{},"desc":"Furnace beast."},
-    {"id":"slag_golem","name":"Slag Golem","faction":"mawborn","region":4,"hp":1600,"dmg":60,"rate":2.6,"range":36,"speed":18,"size":34,"large":true,"traits":{"armor":0.3,"splash":50},"desc":"Molten tank."},
-    {"id":"cinder_drake","name":"Cinder Drake","faction":"mawborn","region":5,"hp":700,"dmg":35,"rate":1.6,"range":160,"speed":40,"size":28,"large":true,"traits":{"flying":true,"cone":true},"desc":"Fire-breathing flyer."}
-  ],
-  "elite": {"hpMul": 2.2, "dmgMul": 1.4, "speedMul": 1.1}
+ "enemies": [
+  {
+   "id": "husk",
+   "name": "Husk",
+   "faction": "hollow",
+   "hp": 165,
+   "dmg": 16,
+   "rate": 1.2,
+   "range": 26,
+   "speed": 34,
+   "size": 15,
+   "traits": {},
+   "desc": "The risen dead of the Vale. Slow, numerous, relentless.",
+   "art": true
+  },
+  {
+   "id": "gnawer",
+   "name": "Gnawer",
+   "faction": "hollow",
+   "hp": 80,
+   "dmg": 10,
+   "rate": 0.6,
+   "range": 22,
+   "speed": 80,
+   "size": 11,
+   "traits": {},
+   "desc": "Scuttles on all fours past slow defenders.",
+   "art": true
+  },
+  {
+   "id": "spitter",
+   "name": "Ash Spitter",
+   "faction": "hollow",
+   "hp": 135,
+   "dmg": 24,
+   "rate": 1.8,
+   "range": 210,
+   "speed": 30,
+   "size": 14,
+   "traits": {
+    "projectile": "spit",
+    "lob": true
+   },
+   "desc": "Lobs burning ash from behind the horde.",
+   "art": true
+  },
+  {
+   "id": "bloater",
+   "name": "Pyre Bloater",
+   "faction": "hollow",
+   "hp": 350,
+   "dmg": 12,
+   "rate": 1.4,
+   "range": 26,
+   "speed": 22,
+   "size": 20,
+   "traits": {
+    "deathBlast": {
+     "dmg": 102,
+     "radius": 75
+    }
+   },
+   "desc": "Swollen with embers. Bursts when killed, burning everyone nearby.",
+   "art": true
+  },
+  {
+   "id": "brute",
+   "name": "Bonecage Brute",
+   "faction": "hollow",
+   "hp": 870,
+   "dmg": 68,
+   "rate": 2.4,
+   "range": 34,
+   "speed": 24,
+   "size": 26,
+   "large": true,
+   "traits": {
+    "splash": 40,
+    "knockback": 30
+   },
+   "desc": "A giant split open to the ribs. Every swing sends soldiers flying.",
+   "art": true
+  },
+  {
+   "id": "husk_warden",
+   "name": "Husk Warden",
+   "faction": "hollow",
+   "hp": 2340,
+   "dmg": 81,
+   "rate": 1.8,
+   "range": 40,
+   "speed": 26,
+   "size": 30,
+   "large": true,
+   "miniboss": true,
+   "traits": {
+    "splash": 50,
+    "knockback": 50,
+    "enrage": {
+     "below": 0.5,
+     "speed": 1.3,
+     "rate": 0.75
+    }
+   },
+   "desc": "Once a captain of the Vale. Enrages when wounded.",
+   "art": true
+  },
+  {
+   "id": "cinder_matron",
+   "name": "The Cinder Matron",
+   "faction": "hollow",
+   "hp": 10020,
+   "dmg": 103,
+   "rate": 2.0,
+   "range": 60,
+   "speed": 18,
+   "size": 60,
+   "large": true,
+   "traits": {},
+   "boss": {
+    "sweep": {
+     "dmg": 132,
+     "radius": 150,
+     "windup": 1.3,
+     "every": 7,
+     "knockback": 90
+    },
+    "summon": {
+     "id": "gnawer",
+     "n": 4,
+     "every": 18,
+     "windup": 1.0
+    },
+    "spit": {
+     "dmg": 102,
+     "radius": 70,
+     "every": 11,
+     "warn": 1.5
+    },
+    "phase2": {
+     "below": 0.5,
+     "cooldownMul": 0.7,
+     "speedMul": 1.2,
+     "firePatch": true
+    }
+   },
+   "desc": "Mother of the Hollow Host. Raises her censer before she swings \u2014 get clear.",
+   "art": true
+  },
+  {
+   "id": "wailer",
+   "name": "Wailer",
+   "faction": "hollow",
+   "region": 2,
+   "hp": 150,
+   "dmg": 18,
+   "rate": 1.4,
+   "range": 120,
+   "speed": 40,
+   "size": 13,
+   "traits": {
+    "flying": true
+   },
+   "desc": "Flying shade."
+  },
+  {
+   "id": "tithe_spear",
+   "name": "Tithe Spearman",
+   "faction": "tithe",
+   "region": 3,
+   "hp": 400,
+   "dmg": 29,
+   "rate": 1.2,
+   "range": 44,
+   "speed": 36,
+   "size": 17,
+   "traits": {
+    "armor": 0.2
+   },
+   "desc": "Mercenary knight-spear."
+  },
+  {
+   "id": "tithe_crossbow",
+   "name": "Tithe Crossbow",
+   "faction": "tithe",
+   "region": 3,
+   "hp": 235,
+   "dmg": 41,
+   "rate": 2.2,
+   "range": 280,
+   "speed": 30,
+   "size": 15,
+   "traits": {
+    "projectile": "bolt"
+   },
+   "desc": "Long-range mercenary."
+  },
+  {
+   "id": "tithe_paladin",
+   "name": "Gilded Paladin",
+   "faction": "tithe",
+   "region": 3,
+   "hp": 1505,
+   "dmg": 59,
+   "rate": 1.6,
+   "range": 34,
+   "speed": 28,
+   "size": 24,
+   "large": true,
+   "traits": {
+    "armor": 0.35,
+    "heal": 30
+   },
+   "desc": "Heals nearby Tithe."
+  },
+  {
+   "id": "maw_hound",
+   "name": "Maw Hound",
+   "faction": "mawborn",
+   "region": 4,
+   "hp": 265,
+   "dmg": 26,
+   "rate": 0.8,
+   "range": 24,
+   "speed": 85,
+   "size": 16,
+   "traits": {},
+   "desc": "Furnace beast."
+  },
+  {
+   "id": "slag_golem",
+   "name": "Slag Golem",
+   "faction": "mawborn",
+   "region": 4,
+   "hp": 2670,
+   "dmg": 88,
+   "rate": 2.6,
+   "range": 36,
+   "speed": 18,
+   "size": 34,
+   "large": true,
+   "traits": {
+    "armor": 0.3,
+    "splash": 50
+   },
+   "desc": "Molten tank."
+  },
+  {
+   "id": "cinder_drake",
+   "name": "Cinder Drake",
+   "faction": "mawborn",
+   "region": 5,
+   "hp": 1170,
+   "dmg": 51,
+   "rate": 1.6,
+   "range": 160,
+   "speed": 40,
+   "size": 28,
+   "large": true,
+   "traits": {
+    "flying": true,
+    "cone": true
+   },
+   "desc": "Fire-breathing flyer."
+  }
+ ],
+ "elite": {
+  "hpMul": 2.2,
+  "dmgMul": 1.4,
+  "speedMul": 1.1
+ }
 }

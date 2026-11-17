@@ -14,4 +14,4 @@ register(dict(HOLLOW, id="spitter", scale=1.0, bulk=0.88, head=0.85, torso=1.05,
               extras=[sac, lambda r, C: hollow_horns(r, C, 0.8, "R"), hollow_maw, lambda r, C: hollow_spikes(r, C, 2),
                       lambda r, C: hollow_cracks(r, C, 2)],
               style=dict(attack="spit", lean=18, headc=0.75, die="fwd", aR0=0, aL0=8, stride=24),
-              colors=hollow_colors(body=(0.25, 0.235, 0.235))))
+              colors=hollow_colors(body=(0.31, 0.29, 0.29))))

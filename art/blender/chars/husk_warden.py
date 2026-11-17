@@ -16,8 +16,8 @@ def scraps(rig, C):
     cracks(rig, rig["torso"], [(bw * 0.3, -bw * 0.38, z + th * 0.3, 25, 0.2)], C)
 
 register(dict(HOLLOW, id="husk_warden", scale=1.5, bulk=0.95, head=0.88, torso=1.1, leg=1.0, arm=1.2, limb=0.75, head_fwd=0.12,
-              weapon="cleaver",
+              weapon="cleaver", grip=30,
               extras=[scraps, lambda r, C: hollow_horns(r, C, 1.0, "R"), hollow_maw, lambda r, C: hollow_spikes(r, C, 3),
                       hollow_elbows],
               style=dict(attack="heavy", lean=18, headc=0.7, die="fwd", aR0=-15, aL0=5, heavy=1.3, stride=24),
-              colors=hollow_colors(body=(0.24, 0.23, 0.23))))
+              colors=hollow_colors(body=(0.3, 0.285, 0.285))))

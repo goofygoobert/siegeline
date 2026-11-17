@@ -2,9 +2,9 @@
 
 Loops are rendered into a circular buffer: any note or reverb tail running past the loop end
 wraps around onto the head, so the end flows into the start sample-for-sample. IIR stages
-(high-pass, limiter) run over [tail warm-up + loop] so they are seamless too. The shipped file
-is the loop followed by POST seconds of the loop head (padding against AAC end padding), with
-loopStart = 0 and loopEnd = loop length.
+(high-pass, shelf, limiter) run over [tail warm-up + loop] so they are seamless too. The shipped
+file is [one-beat pre-roll (loop tail, faded in)] + loop + [POST s of loop head]; loopStart and
+loopEnd in the manifest bracket the loop exactly (see finish_loop).
 """
 import sys
 import json
@@ -109,7 +109,7 @@ class Track:
             b += d
         return b
 
-    def mixdown(self, sends, ir, target_rms_db=-17.0, hp_hz=32.0):
+    def mixdown(self, sends, ir, target_rms_db=-17.0, hp_hz=32.0, presence=0.0, lowshelf=0.0):
         """sends: {bus: (wet, gain)}"""
         out = np.zeros((2, self.L))
         for name, x in self.buses.items():
@@ -123,7 +123,13 @@ class Track:
                 y = x
             out += g * y
         self.buses.clear()
-        proc = lambda z: hp(z, hp_hz, 2)
+        def proc(z):
+            z = hp(z, hp_hz, 2)
+            if lowshelf:  # ~ -3 dB shelf below 150 Hz at 0.3: phone speakers can't use that energy
+                z = z - lowshelf * lp(z, 150, 2)
+            if presence:  # parallel high band lift (~+presence dB-ish above 2 kHz) for small speakers
+                z = z + presence * hp(z, 2000, 2)
+            return z
         out = circular_filter(out, proc, warm=n_of(2.0)) if self.loop else proc(out)
         rms = np.sqrt(np.mean(out ** 2))
         out *= undb(target_rms_db) / max(rms, 1e-9)
@@ -146,12 +152,20 @@ def limiter(x, thr, release=0.12):
     return x * g[None, :]
 
 
-def finish_loop(name, x, bitrate):
+def finish_loop(name, x, bitrate, pre_sec):
+    """File = [pre-roll: last pre_sec of the loop, faded in] + loop + [POST s of loop head].
+    The pre-roll is a one-beat pickup that flows seamlessly into the loop head, and lets the
+    first play start from silence (no start click). loopStart/loopEnd bracket the loop exactly."""
     L = x.shape[1]
-    full = np.concatenate([x, x[:, : n_of(POST)]], axis=1)
+    P = n_of(pre_sec)
+    pre = x[:, L - P:].copy()
+    k = n_of(0.03)
+    pre[:, :k] *= np.linspace(0, 1, k) ** 2
+    full = np.concatenate([pre, x, x[:, : n_of(POST)]], axis=1)
     A.write_wav(full, "mus_" + name)
     A.encode_safe(full, name, bitrate)
-    return {"loopStart": 0.0, "loopEnd": round(L / SR, 6), "samples": L}
+    return {"loopStart": round(P / SR, 6), "loopEnd": round((P + L) / SR, 6), "samples": L,
+            "preroll_samples": P}
 
 
 def finish_sting(name, x, bitrate):
@@ -246,8 +260,8 @@ def menu():
         tr.add("drums", taiko(52, 1.2, seed=bi, skin=0.6), bi * 4, 0.35 if bi % 4 == 0 else 0.22)
     tr.add("drums", taiko(52, 1.0, seed=99, skin=0.6), 63, 0.16)
     tr.add("drums", taiko(52, 1.0, seed=98, skin=0.6), 63.5, 0.2)
-    return tr.mixdown({"pad": (0.45, 1.0), "inst": (0.4, 1.0), "lead": (0.35, 1.0), "drums": (0.4, 1.0)},
-                      hall(), target_rms_db=-19.0)
+    return tr.mixdown({"pad": (0.36, 1.0), "inst": (0.35, 1.0), "lead": (0.3, 1.1), "drums": (0.35, 1.0)},
+                      hall(), target_rms_db=-19.0, hp_hz=38, presence=0.25, lowshelf=0.2)
 
 
 # ================================================================== MAP
@@ -275,10 +289,10 @@ def map_():
                        0.16, pan=0.35)
     # flute melody bars 1-8, horn bars 9-16 with flute descant
     tr.melody("lead", MAP_MEL_A + MAP_MEL_B, 0, flute, gain=0.3, pan=0.15)
-    tr.melody("lead", [(m - 12 if m else None, d) for m, d in MAP_MEL_A + MAP_MEL_B], 32, brass, gain=0.24,
-              pan=-0.1, a=0.08, r=0.25, bright=0.35, vel=0.7)
+    tr.melody("lead", [(m - 12 if m else None, d) for m, d in MAP_MEL_A + MAP_MEL_B], 32, brass, gain=0.36,
+              pan=-0.1, a=0.08, r=0.25, bright=0.45, vel=0.8)
     desc = parse_mel("F5:4 E5:4 F5:4 D5:4 C5:4 D5:4 D5:2 C5:2 E5:4")
-    tr.melody("lead", desc, 32, flute, gain=0.12, pan=0.35)
+    tr.melody("lead", desc, 32, flute, gain=0.17, pan=0.35)
     # march: field snare + frame drum
     for bi in range(16):
         b0 = bi * 4
@@ -308,7 +322,7 @@ def battle_drums(tr, bar0, bars, fill_every=8, intensity=1.0):
         b0 = (bar0 + bi) * 4
         # taiko: X . x . X x . x
         for pos, v in ((0, 1.0), (1, 0.55), (2, 0.9), (2.5, 0.6), (3.5, 0.5)):
-            tr.add("drums", taiko(56, 0.8, seed=bi * 7 + int(pos * 2)), b0 + pos, 0.55 * v * intensity)
+            tr.add("drums", taiko(78 if pos in (0, 2) else 96, 0.7, seed=bi * 7 + int(pos * 2)), b0 + pos, 0.5 * v * intensity)
         for pos in (1, 3):
             tr.add("drums", snare(0.25, seed=bi * 3 + pos, snappy=0.8), b0 + pos, 0.3 * intensity, pan=0.1)
         for k in range(8):
@@ -341,6 +355,9 @@ def battle():
             for k, m in enumerate(voicing(ch, 62, 3)):
                 tr.add("lead", brass(mtof(m), 0.16, vel=0.9, a=0.01, r=0.1, seed=k), bi * 4 + pos, 0.12,
                        pan=0.3 * (k - 1))
+    # horn call in bars 5-8 (answering the stabs)
+    call = parse_mel("D4:.5 D4:.5 A4:1 G4:.5 F4:.5 E4:1  D4:3 r:1  F4:.5 F4:.5 C5:1 Bb4:.5 A4:.5 G4:1  A4:4")
+    tr.melody("lead", call, 16, brass, gain=0.22, pan=-0.1, a=0.02, r=0.12, bright=0.7, vel=0.9)
     # theme on brass (section B), octave doubled with strings (section D)
     tr.melody("lead", THEME_A + THEME_B, 32, brass, gain=0.3, pan=0.05, a=0.03, r=0.15, bright=0.8, vel=0.95)
     tr.melody("lead", THEME_A + THEME_B, 96, brass, gain=0.3, pan=0.05, a=0.03, r=0.15, bright=0.9, vel=1.0)
@@ -360,8 +377,8 @@ def battle():
         tr.add("drums", cymbal(2.0, seed=bar0 + 1), bar0 * 4, 0.12)
     tr.add("drums", cymbal(1.8, seed=77, swell=True), 128 - 1.8 / tr.spb(), 0.12)
     tr.add("drums", cymbal(2.0, seed=78), 0, 0.12)
-    return tr.mixdown({"pad": (0.3, 1.0), "inst": (0.15, 1.0), "lead": (0.28, 1.0), "drums": (0.15, 1.0)},
-                      hall(), target_rms_db=-16.5)
+    return tr.mixdown({"pad": (0.3, 1.1), "inst": (0.15, 0.75), "lead": (0.28, 1.6), "drums": (0.15, 0.9)},
+                      hall(), target_rms_db=-16.5, hp_hz=45, presence=0.35, lowshelf=0.3)
 
 
 # ================================================================== BOSS
@@ -394,14 +411,14 @@ def boss():
         brk = bi >= 32
         pat = ((0, 1.0), (0.75, 0.5), (1.5, 0.8), (2, 1.0), (2.75, 0.5), (3, 0.7), (3.5, 0.8), (3.75, 0.5))
         for pos, v in pat if not brk else ((0, 1.0), (2, 0.9)):
-            tr.add("drums", taiko(50, 0.9, seed=bi * 11 + int(pos * 4)), b0 + pos, 0.5 * v)
+            tr.add("drums", taiko(70 if v >= 0.8 else 88, 0.8, seed=bi * 11 + int(pos * 4)), b0 + pos, 0.48 * v)
         if not brk:
             for pos in (1, 3):
                 tr.add("drums", snare(0.3, seed=bi * 5 + pos, tone=160), b0 + pos, 0.3, pan=0.1)
             for k in range(8):
                 tr.add("drums", hat(seed=bi * 8 + k), b0 + k * 0.5 + 0.25, 0.08, pan=0.35)
         if bi % 4 == 0:
-            tr.add("drums", boom(36, 1.5, seed=bi, drop=1.4, tau=0.5), b0, 0.4)
+            tr.add("drums", boom(44, 1.2, seed=bi, drop=1.4, tau=0.35), b0, 0.22)
     # build in bars 33-36: rising taiko 16ths + swell
     for k in range(32):
         tr.add("drums", taiko(60 + k * 2, 0.35, seed=700 + k, skin=0.7), 33 * 4 + k * 0.25 + 4 * 0, 0.12 + 0.012 * k,
@@ -419,8 +436,8 @@ def boss():
         tr.melody("lead", twist, bar0 * 4, brass, gain=0.28, pan=0.1, a=0.02, r=0.12, bright=1.0, vel=1.0)
         tr.melody("lead", [(m + 12 if m else None, d) for m, d in twist], bar0 * 4, strings, gain=0.13,
                   pan=-0.3, a=0.03, r=0.2, voices=4, cutoff=4500)
-    return tr.mixdown({"pad": (0.35, 1.0), "inst": (0.15, 1.0), "lead": (0.28, 1.0), "drums": (0.18, 1.0)},
-                      hall(), target_rms_db=-16.0)
+    return tr.mixdown({"pad": (0.35, 1.2), "inst": (0.15, 0.75), "lead": (0.28, 1.6), "drums": (0.18, 0.9)},
+                      hall(), target_rms_db=-16.0, hp_hz=45, presence=0.35, lowshelf=0.3)
 
 
 # ================================================================== STINGS
@@ -438,12 +455,12 @@ def victory():
     for k, m in enumerate((62, 66, 69)):
         tr.add("pad", choir(mtof(m), 2.6, vowel="ah", a=0.15, r=1.0, seed=k), 4, 0.12, pan=0.4 * (k - 1))
     for b in (0, 1, 2, 3):
-        tr.add("drums", taiko(58, 0.8, seed=b), b, 0.4 if b else 0.6)
-    tr.add("drums", taiko(50, 1.5, seed=9), 4, 0.8)
+        tr.add("drums", taiko(76, 0.8, seed=b), b, 0.4 if b else 0.6)
+    tr.add("drums", taiko(62, 1.5, seed=9), 4, 0.8)
     tr.add("drums", cymbal(3.0, seed=3), 4, 0.2)
     tr.add("inst", bell(mtof(74), 3.0, decay=1.0, seed=2, strike=0.3), 4, 0.18, 0.3)
-    return tr.mixdown({"pad": (0.35, 1.0), "inst": (0.4, 1.0), "lead": (0.3, 1.0), "drums": (0.25, 1.0)},
-                      hall(), target_rms_db=-17.0)
+    return tr.mixdown({"pad": (0.3, 1.0), "inst": (0.35, 1.0), "lead": (0.28, 1.2), "drums": (0.22, 1.0)},
+                      hall(), target_rms_db=-17.0, hp_hz=40, presence=0.3, lowshelf=0.3)
 
 
 def defeat():
@@ -454,13 +471,15 @@ def defeat():
         for k, m in enumerate(voicing(ch, 55, 3)):
             tr.add("pad", strings(mtof(m), d + 0.4, a=0.25, r=1.2 if b == 3 else 0.4, voices=4, cutoff=1500,
                                   seed=m), b, 0.17, pan=0.4 * (k - 1))
-        tr.add("pad", strings(mtof(root_midi(ch, 1)), d + 0.4, a=0.2, r=1.0, voices=3, cutoff=700, seed=b), b, 0.28)
+        tr.add("pad", strings(mtof(root_midi(ch, 2)), d + 0.4, a=0.2, r=1.0, voices=3, cutoff=800, seed=b), b, 0.26)
     tr.add("inst", bell(mtof(38), 4.0, decay=1.4, seed=8, strike=0.4), 3, 0.25, -0.2)
-    tr.add("drums", taiko(45, 1.6, seed=3), 3, 0.5)
-    tr.add("drums", taiko(45, 1.0, seed=4), 0, 0.3)
-    return tr.mixdown({"pad": (0.4, 1.0), "inst": (0.45, 1.0), "lead": (0.35, 1.0), "drums": (0.3, 1.0)},
-                      hall(), target_rms_db=-19.0)
+    tr.add("drums", taiko(58, 1.6, seed=3), 3, 0.5)
+    tr.add("drums", taiko(58, 1.0, seed=4), 0, 0.3)
+    return tr.mixdown({"pad": (0.28, 1.0), "inst": (0.3, 1.0), "lead": (0.25, 1.2), "drums": (0.22, 1.0)},
+                      hall(), target_rms_db=-19.0, hp_hz=40, presence=0.25, lowshelf=0.3)
 
+
+BEAT = {"menu": 60 / 76, "map": 60 / 84, "battle": 60 / 132, "boss": 60 / 150}  # pre-roll = 1 beat
 
 MUSIC = {
     "menu": (menu, True, 0.5), "map": (map_, True, 0.45), "battle": (battle, True, 0.45),
@@ -474,7 +493,7 @@ def build(ids=None, bitrate=MUSIC_BITRATE):
         fn, looped, vol = MUSIC[mid]
         x = fn()
         x = x - x.mean(axis=1, keepdims=True)
-        meta = finish_loop(mid, x, bitrate) if looped else finish_sting(mid, x, bitrate)
+        meta = finish_loop(mid, x, bitrate, BEAT[mid]) if looped else finish_sting(mid, x, bitrate)
         meta["vol"] = vol
         info[mid] = meta
         an = A.analyse(x)

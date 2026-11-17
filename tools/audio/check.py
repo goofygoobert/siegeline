@@ -64,33 +64,38 @@ def main():
         if lag != 0:
             fails.append(f"{key}: decoded offset {lag} samples")
         if kind == "music" and "loopEnd" in manifest["music"][key]:
-            L = int(round(manifest["music"][key]["loopEnd"] * sr))
+            S = int(round(manifest["music"][key]["loopStart"] * sr))
+            E = int(round(manifest["music"][key]["loopEnd"] * sr))
             m = y.mean(axis=0)
-            steps = np.abs(np.diff(m[:L]))
+            steps = np.abs(np.diff(m[S:E]))
             typical = float(np.percentile(steps, 99.9))
-            seam = float(abs(m[L] - m[L - 1]))  # what plays: ... y[L-1] then y[loopStart=0]
-            seam_wrap = float(abs(m[0] - m[L - 1]))
+            seam_jump = float(abs(m[S] - m[E - 1]))  # played: ... m[E-1] then m[S]
             n = int(0.25 * sr)
-            post_err = float(np.sqrt(np.mean((y[:, L:L + n] - y[:, :n]) ** 2)))
-            head_rms = float(np.sqrt(np.mean(y[:, :n] ** 2)))
-            # click detector: >6 kHz energy in a 10 ms window straddling the played seam,
-            # compared with the same measure over every 10 ms window of the loop
+            post_err = float(np.sqrt(np.mean((y[:, E:E + n] - y[:, S:S + n]) ** 2)))
+            head_rms = float(np.sqrt(np.mean(y[:, S:S + n] ** 2)))
+            # click detector: >6 kHz energy in a 10 ms window straddling the played seam, vs every
+            # 10 ms window of the loop, and vs the same seam where it is continuous in the file
             from synth import hp as _hp
             w = int(0.005 * sr)
-            seam_seg = np.concatenate([m[L - 4 * w:L], m[:4 * w]])
+            seam_seg = np.concatenate([m[E - 4 * w:E], m[S:S + 4 * w]])
             hf_seam = _hp(seam_seg, 6000, 4)[3 * w:5 * w]
-            hf_all = _hp(m[:L], 6000, 4)
+            hf_all = _hp(m[S:E], 6000, 4)
             k = len(hf_all) // (2 * w)
             win_e = np.sqrt(np.mean(hf_all[: k * 2 * w].reshape(k, 2 * w) ** 2, axis=1))
             e_seam = float(np.sqrt(np.mean(hf_seam ** 2)))
             pct = float((win_e < e_seam).mean() * 100)
-            r.update({"seam_jump": round(seam_wrap, 5), "p999_step": round(typical, 5),
-                      "seam_hf_percentile": round(pct, 1),
+            nat = _hp(m[E - 4 * w:E + 4 * w], 6000, 4)[3 * w:5 * w]
+            ratio_db = db(e_seam) - db(float(np.sqrt(np.mean(nat ** 2))))
+            r.update({"loopStart": S / sr, "loopEnd": E / sr, "first_sample": round(float(abs(m[0])), 5),
+                      "seam_jump": round(seam_jump, 5), "p999_step": round(typical, 5),
+                      "seam_hf_percentile": round(pct, 1), "seam_vs_continuous_hf_db": round(ratio_db, 2),
                       "postpad_vs_head_err_db": round(db(post_err) - db(head_rms), 1)})
-            if seam_wrap > typical:
-                fails.append(f"{key}: seam jump {seam_wrap:.4f} > 99.9th pct step {typical:.4f}")
-            if pct > 99.0:
-                fails.append(f"{key}: seam HF energy at {pct:.1f}th percentile (possible click)")
+            if seam_jump > typical:
+                fails.append(f"{key}: seam jump {seam_jump:.4f} > 99.9th pct step {typical:.4f}")
+            if ratio_db > 1.5:
+                fails.append(f"{key}: seam HF {ratio_db:.1f} dB above the continuous version")
+            if abs(m[0]) > 0.01:
+                fails.append(f"{key}: starts with a non-zero sample ({m[0]:.3f})")
         rows.append(r)
     report = {"total_bytes": total, "files": rows, "fails": fails}
     with open(os.path.join(A.WAVDIR, "check_report.json"), "w") as f:

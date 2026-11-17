@@ -35,4 +35,4 @@ register(dict(HOLLOW, id="bloater", scale=1.1, bulk=1.15, head=0.72, torso=1.0, 
               foot=1.2, extras=[belly, lambda r, C: hollow_horns(r, C, 0.7, "L"), lambda r, C: hollow_maw(r, C, 0.8)],
               style=dict(attack="belly", lean=10, headc=0.5, aR0=-25, aL0=-20, stride=18, heavy=1.3, bounce=0.03,
                          anims=dict(die=lambda t, st: _tab(BURST, t))),
-              colors=hollow_colors(body=(0.27, 0.25, 0.25))))
+              colors=hollow_colors(body=(0.34, 0.31, 0.31))))

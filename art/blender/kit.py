@@ -18,9 +18,9 @@ OL = 0.026          # outline thickness (world units)
 
 # shared palette (sRGB) — see docs/art-guide.md
 PAL = dict(
-    red=(0.549, 0.165, 0.118), red_dk=(0.37, 0.11, 0.08), steel=(0.34, 0.355, 0.39), steel_dk=(0.23, 0.235, 0.27),
+    red=(0.549, 0.165, 0.118), red_dk=(0.37, 0.11, 0.08), steel=(0.43, 0.45, 0.50), steel_dk=(0.27, 0.28, 0.32),
     brass=(0.83, 0.60, 0.23), glow=(1.0, 0.70, 0.28), leather=(0.35, 0.23, 0.15), wood=(0.42, 0.29, 0.17),
-    ash=(0.85, 0.83, 0.78), skin=(0.79, 0.60, 0.48), hskin=(0.228, 0.22, 0.22), hlimb=(0.30, 0.28, 0.28),
+    ash=(0.85, 0.83, 0.78), skin=(0.79, 0.60, 0.48), hskin=(0.30, 0.285, 0.285), hlimb=(0.37, 0.35, 0.35),
     bone=(0.85, 0.81, 0.71), ember=(1.0, 0.48, 0.10), blood=(0.353, 0.059, 0.07), rust=(0.48, 0.29, 0.165),
     dark=(0.10, 0.09, 0.10), cloth_dk=(0.17, 0.14, 0.15),
 )
@@ -360,7 +360,7 @@ def quad(spec):
 
 
 # ---------------------------------------------------------------- props
-GRIP = dict(sword=75, shortsword=80, knife=95, cleaver=75, boneclub=75, greathammer=150, bellpole=15, lamppole=12,
+GRIP = dict(sword=75, shortsword=80, knife=95, cleaver=75, boneclub=75, greathammer=60, bellpole=15, lamppole=12,
             bow=0, lantern=0, claws=0, hammer=70, spear=88, staff=10)
 
 
@@ -400,19 +400,19 @@ def weapon(kind, rig, C, side="R", grip=None):
         A(box((0.09 * sc, 0.07 * sc, 0.18 * sc), C["trim"], (x + 0.16 * sc, y, z), name="bowgrip"))
         A(rod(pts[0], pts[-1], 0.008 * sc, (0.85, 0.8, 0.7), outline=0.008))
     elif kind == "bellpole":
-        A(rod((x, y, z - 0.75 * sc), (x, y, z + 1.25 * sc), 0.04 * sc, C["wood"]))
-        A(rod((x - 0.05 * sc, y, z + 1.22 * sc), (x + 0.42 * sc, y, z + 1.26 * sc), 0.04 * sc, C["wood"]))
-        A(spike((x, y, z + 1.25 * sc), (0, 0, 1), 0.16 * sc, 0.05 * sc, C["trim"]))
+        A(rod((x, y, z - 0.6 * sc), (x, y, z + 1.6 * sc), 0.04 * sc, C["wood"]))
+        A(rod((x - 0.05 * sc, y, z + 1.57 * sc), (x + 0.42 * sc, y, z + 1.61 * sc), 0.04 * sc, C["wood"]))
+        A(spike((x, y, z + 1.6 * sc), (0, 0, 1), 0.16 * sc, 0.05 * sc, C["trim"]))
         bc = _ember(C) if t3 else C["trim"]
         bs = 1.15 if rig["tier"] >= 2 else 1.0
-        A(cyl(0.12 * sc * bs, 0.34 * sc * bs, bc, (x + 0.4 * sc, y, z + 1.0 * sc), r2=0.06 * sc * bs, seg=14, glow=G * 0.5, name="bell"))
-        A(cyl(0.16 * sc * bs, 0.06 * sc, bc, (x + 0.4 * sc, y, z + 0.84 * sc), seg=14, glow=G * 0.5, name="bellrim"))
-        A(ball(0.06 * sc, C.get("metal_dk", PAL["steel_dk"]) if not t3 else (1, 0.85, 0.4), (x + 0.4 * sc, y, z + 0.78 * sc), glow=G, name="clapper"))
+        A(cyl(0.12 * sc * bs, 0.34 * sc * bs, bc, (x + 0.4 * sc, y, z + 1.35 * sc), r2=0.06 * sc * bs, seg=14, glow=G * 0.5, name="bell"))
+        A(cyl(0.16 * sc * bs, 0.06 * sc, bc, (x + 0.4 * sc, y, z + 1.19 * sc), seg=14, glow=G * 0.5, name="bellrim"))
+        A(ball(0.06 * sc, C.get("metal_dk", PAL["steel_dk"]) if not t3 else (1, 0.85, 0.4), (x + 0.4 * sc, y, z + 1.13 * sc), glow=G, name="clapper"))
     elif kind == "lamppole":
-        A(rod((x, y, z - 0.8 * sc), (x, y, z + 1.35 * sc), 0.035 * sc, C["wood"]))
-        A(rod((x, y, z + 1.33 * sc), (x + 0.3 * sc, y, z + 1.45 * sc), 0.03 * sc, C.get("metal_dk", PAL["steel_dk"])))
-        A(rod((x + 0.3 * sc, y, z + 1.45 * sc), (x + 0.36 * sc, y, z + 1.3 * sc), 0.025 * sc, C.get("metal_dk", PAL["steel_dk"])))
-        lx, lz = x + 0.36 * sc, z + 1.12 * sc
+        A(rod((x, y, z - 0.7 * sc), (x, y, z + 1.75 * sc), 0.035 * sc, C["wood"]))
+        A(rod((x, y, z + 1.73 * sc), (x + 0.32 * sc, y, z + 1.85 * sc), 0.03 * sc, C.get("metal_dk", PAL["steel_dk"])))
+        A(rod((x + 0.32 * sc, y, z + 1.85 * sc), (x + 0.38 * sc, y, z + 1.7 * sc), 0.025 * sc, C.get("metal_dk", PAL["steel_dk"])))
+        lx, lz = x + 0.38 * sc, z + 1.52 * sc
         ls = 1.2 if rig["tier"] >= 3 else 1.0
         A(box((0.24 * sc * ls, 0.24 * sc * ls, 0.06 * sc), C["trim"] if rig["tier"] >= 3 else C.get("metal_dk", PAL["steel_dk"]), (lx, y, lz + 0.17 * sc * ls), name="lampcap"))
         A(spike((lx, y, lz + 0.2 * sc * ls), (0, 0, 1), 0.12 * sc, 0.1 * sc * ls, C["trim"] if rig["tier"] >= 3 else C.get("metal_dk", PAL["steel_dk"])))
@@ -435,7 +435,8 @@ def weapon(kind, rig, C, side="R", grip=None):
         A(ball(0.05 * sc, C.get("blood", PAL["blood"]), (x + 0.12 * sc, y - 0.02 * sc, z - 0.04 * sc), name="gore", outline=0.0))
     elif kind == "cleaver":
         A(rod((x, y, z - 0.18 * sc), (x, y, z + 0.32 * sc), 0.045 * sc, C["wood"]))
-        A(box((0.4 * sc, 0.05 * sc, 0.85 * sc), C.get("rust", PAL["rust"]), (x + 0.12 * sc, y, z + 0.72 * sc), taper=(1.25, 1), name="cleaver"))
+        A(box((0.4 * sc, 0.05 * sc, 0.85 * sc), (0.5, 0.5, 0.53), (x + 0.12 * sc, y, z + 0.72 * sc), taper=(1.25, 1), name="cleaver"))
+        A(box((0.16 * sc, 0.06 * sc, 0.22 * sc), C.get("rust", PAL["rust"]), (x + 0.02 * sc, y - 0.005 * sc, z + 0.45 * sc), name="rustspot", outline=0.0))
         A(box((0.07 * sc, 0.06 * sc, 0.8 * sc), C.get("blood", PAL["blood"]), (x + 0.33 * sc, y, z + 0.74 * sc), name="edge", outline=0.0))
         A(cyl(0.06 * sc, 0.04 * sc, PAL["dark"], (x + 0.05 * sc, y - 0.03 * sc, z + 0.95 * sc), rot=(math.radians(90), 0, 0), name="hole", outline=0.0))
     elif kind == "boneclub":
@@ -495,13 +496,13 @@ def helmet(rig, C, kind):
             for y in (-1, 1):
                 attach(box((r * 0.5, 0.05 * sc, r * 0.7), M, (hx + r * 0.45, y * r * 0.92, hz - r * 0.25), name="cheek"), hp)
     elif kind == "great":
-        attach(box((r * 2.2, r * 2.15, r * 2.25), M, (hx + 0.01 * sc, 0, hz + 0.02 * sc), bevel=0.08, name="greathelm", taper=(0.92, 0.92)), hp)
-        attach(box((0.05 * sc, r * 1.6, 0.07 * sc), (0.04, 0.03, 0.03), (hx + r * 1.08, 0, hz + 0.06 * sc), name="visor", bevel=0.0, outline=0.0), hp)
-        attach(box((0.06 * sc, 0.09 * sc, r * 1.5), C["trim"], (hx + r * 1.1, 0, hz - 0.06 * sc), name="nasal"), hp)
+        attach(box((r * 1.95, r * 1.9, r * 2.05), M, (hx + 0.01 * sc, 0, hz + 0.02 * sc), bevel=0.08, name="greathelm", taper=(0.92, 0.92)), hp)
+        attach(box((0.05 * sc, r * 1.6, 0.07 * sc), (0.04, 0.03, 0.03), (hx + r * 0.96, 0, hz + 0.06 * sc), name="visor", bevel=0.0, outline=0.0), hp)
+        attach(box((0.06 * sc, 0.09 * sc, r * 1.5), C["trim"], (hx + r * 0.98, 0, hz - 0.06 * sc), name="nasal"), hp)
         if spec_get(rig, "crest") or t >= 2:
-            attach(box((r * 1.9, 0.1 * sc, 0.26 * sc), C.get("crest", PAL["red"]), (hx - 0.04 * sc, 0, hz + r * 1.2), taper=(0.8, 1), bevel=0.04, name="crest"), hp)
+            attach(box((r * 1.7, 0.1 * sc, 0.26 * sc), C.get("crest", PAL["red"]), (hx - 0.04 * sc, 0, hz + r * 1.1), taper=(0.8, 1), bevel=0.04, name="crest"), hp)
         if t >= 3 or spec_get(rig, "gilded_helm"):
-            attach(box((r * 2.26, r * 2.2, 0.08 * sc), C["trim"], (hx + 0.01 * sc, 0, hz + r * 0.95), name="helmband"), hp)
+            attach(box((r * 2.0, r * 1.95, 0.08 * sc), C["trim"], (hx + 0.01 * sc, 0, hz + r * 0.82), name="helmband"), hp)
     elif kind == "hood":
         cc = C.get("hood", C.get("cloth", PAL["red_dk"]))
         attach(ball(r * 1.16, cc, (hx - 0.13 * sc, 0, hz + 0.05 * sc), scale=(1.0, 1.0, 1.08), name="hood"), hp)
@@ -597,6 +598,7 @@ ATTACKS = {
     "ring": dict(aR=[-15, -35, -55, -65, -5, 5, -10, -15], aL=[-25] * 8, torso=[0, -3, -6, -6, 6, 6, 2, 0],
                  lL=[0] * 8, lR=[0] * 8, k=dict(gR=[0, 0, 0, 0, 0, 0, 0, 0])),
     "slam": dict(aR=[-30, -100, -170, -200, -45, -35, -40, -30], aL=[-30, -100, -170, -200, -45, -35, -40, -30],
+                 k=dict(gR=[0, 10, 20, 20, 95, 90, 50, 0]),
                  torso=[0, -6, -14, -16, 22, 24, 12, 2], rx=[0, -0.02, -0.04, -0.04, 0.12, 0.12, 0.06, 0],
                  rz=[0, 0, 0.02, 0.03, -0.04, -0.04, -0.02, 0],
                  lL=[0, -5, -10, -12, -24, -24, -12, 0], lR=[0, 5, 8, 10, 18, 18, 8, 0]),
@@ -787,10 +789,9 @@ def place(sid, J, pos):
     facing = spec.get("facing", 1)
     s = 1.0
     if sid.startswith("p_"):
-        s = 1.0 / rig["sc"]
-        e = math.cos(math.radians(ELEV))
-        holder.location.z -= (rig["head_z"] - 0.12 * rig["sc"]) * s
-        holder.location.x -= 0.04
+        s = 1.4 / rig["sc"]
+        holder.location.z -= rig["head_z"] * s - 0.12
+        holder.location.x -= 0.06
     holder.scale = (facing * s, s, s)
     holder.rotation_euler = (0, 0, math.radians(-J["yaw"] * facing))
     _parent_keep_local(rig["root"], holder)
@@ -813,6 +814,8 @@ def render_job(job, only=None):
     ce = math.cos(math.radians(ELEV))
     nmax = 1
     for i, sid in enumerate(ids):
+        if sid == "_":
+            continue
         col, row = i % cols, i // cols
         ax, ay = cell_anchor(job, sid)
         px, py = col * cw + ax, row * ch + ay

@@ -34,7 +34,7 @@ export function createBattle(content, stage, progress, seed = 1) {
     rally: 0, waveHold: false, waveClock: 0, waves: (stage.waves || []).map((w) => ({ ...w, done: 0, next: w.t })),
     loop: stage.loop ? { ...stage.loop, timer: stage.loop.start } : null,
     triggers: (stage.triggers || []).map((t) => ({ ...t, fired: false })),
-    boss: null, bossSpawned: false, result: null, endT: 0,
+    boss: null, bossSpawned: false, result: null, endT: 0, emul: stage.power || 1, bmul: stage.bossPower || 1,
     stats: { sent: 0, kills: 0, shots: 0, shotHits: 0, dmgDealt: 0, abilityUses: 0 },
     events: [], inputs: [],
   };
@@ -102,6 +102,9 @@ function applyInputs(B) {
 }
 
 // ------------------------------------------------------------------ entities
+/** Stage difficulty: scales enemy health and damage (tuned by tools/tune.mjs). */
+function powered(B, s, m) { if (m !== 1) { s.hp *= m; s.dmg *= Math.pow(m, 0.75); } return s; }
+
 function spawn(B, s, side, x) {
   let e = null;
   for (const o of B.ents) if (!o.alive && o.gone) { e = o; break; }   // reuse dead slots (no per-spawn garbage)
@@ -261,7 +264,7 @@ function bossThink(B, e, dt) {
         ev(B, "bossSlam", { x: cx, r: b.sweep.radius });
         if (e.phase2) B.patches.push({ x: cx, r: 60, dps: 14, t: 4, side: -1 });
       } else if (w.kind === "summon") {
-        for (let k = 0; k < b.summon.n; k++) spawn(B, enemyStats(B.enemyDefs[b.summon.id], false, B.content.enemies.elite), -1, e.x - 30 - k * 12);
+        for (let k = 0; k < b.summon.n; k++) spawn(B, powered(B, enemyStats(B.enemyDefs[b.summon.id], false, B.content.enemies.elite), B.emul), -1, e.x - 30 - k * 12);
         ev(B, "bossSummon", { x: e.x });
       } else if (w.kind === "spit") {
         B.scheduled.push({ at: B.t + 0.01, kind: "bossSpit", x: w.x, dmg: b.spit.dmg, splash: b.spit.radius });
@@ -439,7 +442,7 @@ function stepWaves(B, dt) {
   const eliteCfg = B.content.enemies.elite;
   const spawnEnemy = (id, elite) => {
     const d = B.enemyDefs[id]; if (!d) return;
-    spawn(B, enemyStats(d, elite, eliteCfg), -1, B.gate.front - 10);
+    spawn(B, powered(B, enemyStats(d, elite, eliteCfg), B.emul), -1, B.gate.front - 10);
   };
   for (const w of B.waves) {
     while (w.done < w.n && T >= w.next) { spawnEnemy(w.id, w.elite); w.done++; w.next += w.gap; }
@@ -455,16 +458,21 @@ function stepWaves(B, dt) {
     if (B.loop.timer <= 0) {
       const minutes = (T - B.loop.start) / 60;
       B.loop.timer = Math.max(B.loop.min, B.loop.every * (1 - B.loop.ramp * minutes * 4));
+      // the Maw grows angry after par time: faster spawns and more elites, so no battle stalls forever
+      const over = Math.max(0, B.t - (B.stage.par || 180));
+      if (over > 0) B.loop.timer = Math.max(0.9, B.loop.timer * Math.max(0.3, 1 - over / 200));
+      if (over > 0 && !B.angry) { B.angry = true; ev(B, "angry", {}); }
       const pool = B.loop.pool; let tot = 0; for (const [, w] of pool) tot += w;
       let r = B.rand() * tot, pick = pool[0][0];
       for (const [id, w] of pool) { r -= w; if (r <= 0) { pick = id; break; } }
       const n = pick === "gnawer" ? 2 : 1;
-      for (let k = 0; k < n; k++) spawnEnemy(pick, B.rand() < (B.loop.eliteChance || 0));
+      const over2 = Math.max(0, B.t - (B.stage.par || 180));
+      for (let k = 0; k < n; k++) spawnEnemy(pick, B.rand() < (B.loop.eliteChance || 0) + over2 / 240);
     }
   }
   if (B.stage.boss && !B.bossSpawned && T >= B.stage.bossAt) {
     B.bossSpawned = true;
-    B.boss = spawn(B, enemyStats(B.enemyDefs[B.stage.boss], false, eliteCfg), -1, B.gate.front - 20);
+    B.boss = spawn(B, powered(B, enemyStats(B.enemyDefs[B.stage.boss], false, eliteCfg), B.bmul), -1, B.gate.front - 20);
     ev(B, "bossSpawn", { e: B.boss });
   }
 }

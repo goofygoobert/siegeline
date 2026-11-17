@@ -27,12 +27,14 @@ ANIMSET_OF = {"marshal": "hero", "cinder_matron": "boss", "cinder_runner": "fast
 
 # ax: anchor x as a fraction of the cell (players; enemies use 1-ax), gy: ground px above the cell bottom
 JOBS = {
-    "units": dict(cell=(448, 448), cols=6, ppu=96, ax=0.52, gy=40, yaw=25, mode="anim",
+    "units": dict(cell=(480, 480), cols=6, ppu=96, ax=0.52, gy=40, yaw=25, mode="anim",
                   ids=UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]),
-    "field": dict(cell=(576, 576), cols=4, ppu=96, ax=0.5, gy=44, yaw=25, mode="anim",
+    "field": dict(cell=(672, 672), cols=4, ppu=96, ax=0.5, gy=44, yaw=25, mode="anim",
                   ids=["marshal"] + ENEMIES),
     "boss": dict(cell=(1024, 1024), cols=1, ppu=96, ax=0.5, gy=64, yaw=20, mode="anim", ids=["cinder_matron"]),
-    "ui": dict(cell=(192, 192), cols=7, ppu=128, ax=0.5, gy=96, yaw=32, mode="still", ids=PORTRAITS + ICONS),
+    # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
+    "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
+               ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * 14 + [x for p in ICONS for x in (p, "_")]),
 }
 
 # atlas groups: name -> (job, ids, ppu, out_scale). out_scale only for ui (render px -> atlas px).
@@ -46,7 +48,7 @@ ATLASES = {
 
 
 def anims_of(sid):
-    return ANIMSETS["still"] if sid.startswith(("p_", "i_")) else ANIMSETS[ANIMSET_OF.get(sid, "std")]
+    return ANIMSETS["still"] if sid.startswith(("p_", "i_", "_")) else ANIMSETS[ANIMSET_OF.get(sid, "std")]
 
 
 def is_enemy(sid):
@@ -64,4 +66,4 @@ def cell_anchor(job, sid):
 
 
 def job_frames(job):
-    return max(sum(a[1] for a in anims_of(s)) for s in JOBS[job]["ids"])
+    return max(sum(a[1] for a in anims_of(s)) for s in JOBS[job]["ids"] if s != "_")
