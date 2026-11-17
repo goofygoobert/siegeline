@@ -1,0 +1,360 @@
+// Canvas 2D battle renderer: parallax backgrounds, atlased sprites, pooled particles and numbers, shake.
+// Reads sim state, never changes it. Turns sim events into visuals and sounds ("feel").
+import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
+
+const H = 540;                 // logical height
+const MAXP = 360, MAXN = 48;   // particle / number pools (fixed, reused: no per-frame garbage)
+
+export function createRenderer(canvas, hooks) {
+  const g = canvas.getContext("2d", { alpha: false });
+  const R = {
+    g, canvas, W: 960, scale: 1, dpr: 1, dprCap: 2, camX: 0, camTarget: null, shake: 0, shakeX: 0, shakeY: 0,
+    flashA: 0, flashC: "#fff", slowmo: 0, quality: 2, reduced: false, sfx: hooks.sfx || (() => {}),
+    parts: Array.from({ length: MAXP }, () => ({ life: 0 })), pi: 0,
+    nums: Array.from({ length: MAXN }, () => ({ life: 0 })), ni: 0,
+    aim: null, target: null, region: "r1", t: 0, frameMs: 16, fpsAvg: 60, lowFrames: 0,
+    coinBurst: [],
+  };
+
+  R.resize = () => {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    R.dpr = Math.min(window.devicePixelRatio || 1, R.dprCap);
+    canvas.width = Math.round(vw * R.dpr); canvas.height = Math.round(vh * R.dpr);
+    canvas.style.width = vw + "px"; canvas.style.height = vh + "px";
+    R.scale = canvas.height / H; R.W = canvas.width / R.scale;
+  };
+  R.resize();
+
+  /** Screen (css px) -> world x. */
+  R.toWorldX = (cssX) => (cssX * R.dpr) / R.scale + R.camX;
+  R.toWorldY = (cssY) => (cssY * R.dpr) / R.scale;
+  R.toCss = (wx, wy) => [((wx - R.camX) * R.scale) / R.dpr, (wy * R.scale) / R.dpr];
+  R.clampCam = (B) => { const max = Math.max(0, B.F.width - R.W); R.camX = Math.max(0, Math.min(max, R.camX)); };
+
+  // ---------------------------------------------------------------- particles & numbers
+  function part(x, y, vx, vy, life, size, color, kind = 0, grav = 600) {
+    if (R.quality === 0 && kind !== 3 && Math.random() < 0.5) return;
+    const p = R.parts[R.pi]; R.pi = (R.pi + 1) % MAXP;
+    p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = life; p.max = life; p.size = size; p.c = color; p.k = kind; p.gr = grav;
+  }
+  R.part = part;
+  function burst(x, y, n, color, speed = 160, size = 3, kind = 0, grav = 600, life = 0.6) {
+    const m = R.quality === 2 ? n : Math.ceil(n * 0.5);
+    for (let i = 0; i < m; i++) {
+      const a = Math.random() * Math.PI * 2, s = speed * (0.3 + Math.random() * 0.7);
+      part(x, y, Math.cos(a) * s, Math.sin(a) * s - speed * 0.4, life * (0.6 + Math.random() * 0.6), size * (0.6 + Math.random() * 0.8), color, kind, grav);
+    }
+  }
+  R.burst = burst;
+  function num(x, y, text, color, big = false) {
+    const n = R.nums[R.ni]; R.ni = (R.ni + 1) % MAXN;
+    n.x = x + (Math.random() - 0.5) * 14; n.y = y; n.t = text; n.c = color; n.life = 0.9; n.big = big;
+  }
+  function addShake(a) { if (!R.reduced) R.shake = Math.min(1, R.shake + a); }
+  R.addShake = addShake;
+  function flash(a, c = "#fff") { if (!R.reduced) { R.flashA = Math.max(R.flashA, a); R.flashC = c; } }
+
+  const BLOOD_W = "#7a1714", ICHOR = "#2b2523", EMBER = "#ff8a2a";
+  const panOf = (x) => Math.max(-1, Math.min(1, ((x - R.camX) / R.W) * 2 - 1)) * 0.6;
+  const onScreen = (x) => x > R.camX - 80 && x < R.camX + R.W + 80;
+
+  /** Drain sim events into effects + sounds. */
+  R.consume = (B) => {
+    const gy = B.F.groundY;
+    for (const e of B.events) {
+      switch (e.type) {
+        case "dmg": {
+          const t = e.e; if (!onScreen(t.x)) break;
+          if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
+          const enemy = t.side === -1;
+          num(t.x, gy - (t.s.size * 3.6 + 30), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
+          burst(t.x - t.side * 6, gy - t.s.size * 2.2, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
+          if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, EMBER, 120, 2, 1, 200, 0.5);
+          if (e.kind === "blade") R.sfx("hit_blade", { pan: panOf(t.x), gain: 0.8 });
+          else if (e.kind === "claw") R.sfx("hit_claw", { pan: panOf(t.x), gain: 0.8 });
+          else if (e.kind === "blunt") { R.sfx("hit_blunt", { pan: panOf(t.x) }); addShake(0.12); }
+          else if (e.kind === "arrow") R.sfx("arrow_hit", { pan: panOf(t.x), gain: 0.7 });
+          if (e.amt >= 60) addShake(0.08);
+          break;
+        }
+        case "die": {
+          const t = e.e; if (!onScreen(t.x)) break;
+          const enemy = t.side === -1;
+          burst(t.x, gy - t.s.size * 2, enemy ? 14 : 10, enemy ? ICHOR : BLOOD_W, 200, 3.5, 0);
+          if (enemy) { burst(t.x, gy - t.s.size * 2, 8, EMBER, 160, 2.4, 1, -40, 0.9); burst(t.x, gy - 6, 6, "#6b6260", 70, 6, 2, -10, 1.1); }
+          R.sfx(enemy ? "hollow_die" : "warden_die", { pan: panOf(t.x), gain: 0.8, minGap: 0.06 });
+          if (t.s.large) addShake(0.25);
+          break;
+        }
+        case "burst": burst(e.x, gy - 30, 26, EMBER, 260, 4, 1, 300, 0.8); burst(e.x, gy - 20, 10, "#3a2b28", 120, 8, 2, -20, 1.2); addShake(0.3); flash(0.15, "#ff9a40"); R.sfx("bloater_burst", { pan: panOf(e.x) }); break;
+        case "fire": R.sfx("bolt_fire"); addShake(0.06); break;
+        case "boltHit":
+          burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
+          addShake(e.hits ? 0.32 : 0.15); R.sfx("bolt_hit", { pan: panOf(e.x) });
+          if (e.kills >= 2) num(e.x, e.y - 70, e.kills + " down!", "#ffe28a", true);
+          break;
+        case "reloaded": R.sfx("ballista_reload", { gain: 0.6 }); break;
+        case "shoot": if (onScreen(e.e.x)) R.sfx(e.kind === "spit" ? "spit" : "arrow_fire", { pan: panOf(e.e.x), gain: 0.6, minGap: 0.08 }); break;
+        case "send": R.sfx("unit_send"); burst(B.keep.front, gy - 4, 8, "#8a7a70", 90, 5, 2, -10, 0.7); break;
+        case "denied": R.sfx("ui_locked", { gain: 0.6 }); break;
+        case "castleHit": {
+          const c = e.side === 1 ? B.keep : B.gate;
+          burst(c.front + (e.side === 1 ? 10 : -10), gy - 80 - Math.random() * 120, 6, "#8d8078", 180, 4, 0);
+          R.sfx("castle_hit", { gain: 0.7, minGap: 0.12 }); if (e.side === 1) addShake(0.1);
+          break;
+        }
+        case "stone": burst(e.x, gy - 6, 16, EMBER, 240, 3.5, 1, 400, 0.7); addShake(0.12); R.sfx("bolt_hit", { gain: 0.6, rate: 1.2, minGap: 0.05 }); break;
+        case "ember_rain": R.sfx("ember_rain"); break;
+        case "rally": R.sfx("rally"); flash(0.12, "#ffcf7a"); break;
+        case "hero": R.sfx("hero_call"); flash(0.15, "#ffcf7a"); addShake(0.2); break;
+        case "heroReady": R.sfx("energy_full", { rate: 0.8 }); break;
+        case "flare": burst(e.e.x, gy - 60, 30, "#ffe09a", 320, 3, 1, 0, 0.6); flash(0.25, "#ffe9b0"); R.sfx("hero_flare"); break;
+        case "heal": if (onScreen(e.e.x)) { num(e.e.x, gy - e.e.s.size * 3.6 - 30, "+" + Math.round(e.amt), "#9cf08a"); part(e.e.x, gy - 60, 0, -50, 0.8, 3, "#c8ff9a", 1, -30); } break;
+        case "healBeam": R.sfx("heal", { gain: 0.5, minGap: 0.3 }); break;
+        case "slam": burst(e.x, gy - 4, 12, "#6e625c", 160, 6, 2, -10, 0.8); break;
+        case "bossSpawn": R.sfx("boss_roar"); hooks.duck && hooks.duck(0.3, 2.5); addShake(0.6); flash(0.2, "#ff6a2a"); hooks.onBoss && hooks.onBoss(e.e); break;
+        case "bossWarn": R.sfx(e.kind === "summon" ? "boss_roar" : "boss_warn", { gain: e.kind === "summon" ? 0.6 : 1 }); break;
+        case "bossSlam": burst(e.x, gy - 6, 30, "#6e625c", 300, 8, 2, -20, 1.0); burst(e.x, gy - 10, 16, EMBER, 260, 3, 1, 300, 0.7); addShake(0.55); R.sfx("boss_slam"); break;
+        case "bossSpitHit": burst(e.x, gy - 6, 26, EMBER, 300, 4, 1, 400, 0.8); addShake(0.35); R.sfx("bolt_hit", { rate: 0.8 }); break;
+        case "bossPhase": flash(0.3, "#ff5020"); addShake(0.5); R.sfx("boss_roar", { rate: 0.85 }); break;
+        case "bossDead": R.slowmo = 1.6; flash(0.5, "#fff1c8"); addShake(1); R.sfx("castle_crumble"); break;
+        case "enrage": burst(e.e.x, gy - 80, 18, "#ff4a20", 200, 3, 1, 0, 0.7); R.sfx("boss_roar", { rate: 1.3, gain: 0.6 }); break;
+        case "rush": hooks.onRush && hooks.onRush(); break;
+        case "sealed": break;
+        case "win": if (B.stage.winOn !== "boss") { R.slowmo = 1.2; addShake(0.8); flash(0.35, "#fff1c8"); R.sfx("castle_crumble"); } break;
+        case "lose": addShake(0.7); R.sfx("castle_crumble", { rate: 0.8 }); break;
+      }
+    }
+    B.events.length = 0;
+  };
+
+  // ---------------------------------------------------------------- drawing helpers
+  function drawLayer(L, camX, y = 0) {
+    if (!L || !L.img) return;
+    const img = L.img, f = L.parallax || 0;
+    const wLog = 1170 + (2600 - 1170) * f;           // contract width in logical px
+    const k = img.width / wLog;                       // image px per logical px
+    const sx = camX * f * k, sw = R.W * k;
+    if (f === 0) { g.drawImage(img, 0, 0, img.width, img.height, 0, y, R.W, H); return; }
+    g.drawImage(img, Math.max(0, sx), 0, Math.min(sw, img.width - sx), img.height, 0, y, Math.min(sw, img.width - sx) / k, img.height / k);
+  }
+
+  function spriteDraw(id, anim, t, x, y, opts = {}) {
+    const sp = sprites[id];
+    if (!sp) return false;
+    const fr = frameAt(sp, anim, t, opts.fps); if (!fr) return false;
+    const a = sp.atlas, s = a.scale * (opts.scale || 1);
+    const [fx, fy, fw, fh, ax, ay] = fr;
+    const src = opts.white && a.white ? a.white : a.img;
+    const dx = x - ax * s, dy = y - ay * s;
+    if (opts.rot) {
+      g.save(); g.translate(x, y); g.rotate(opts.rot); g.drawImage(src, fx, fy, fw, fh, -ax * s, -ay * s, fw * s, fh * s); g.restore();
+    } else g.drawImage(src, fx, fy, fw, fh, dx, dy, fw * s, fh * s);
+    return true;
+  }
+  R.spriteDraw = spriteDraw;
+
+  const colorOf = { ashguard: "#8c2a1e", torchbow: "#a6582a", cinder_runner: "#c4772f", bellringer: "#b08a3a", maulwright: "#5e6068", lamplighter: "#d8cdb8",
+    marshal: "#c23a24", husk: "#4a4646", gnawer: "#3a3636", spitter: "#5a4a40", bloater: "#6a3a2a", brute: "#2e2a2a", husk_warden: "#55443a", cinder_matron: "#2a1a1a" };
+  function placeholder(e, x, y, h, flashOn) {
+    const w = e.s.size * 1.4;
+    g.fillStyle = flashOn ? "#fff" : (colorOf[e.id] || (e.side === 1 ? "#8c2a1e" : "#3a3838"));
+    const lean = e.side === -1 ? 6 : 0;
+    g.beginPath(); g.moveTo(x - w / 2, y); g.lineTo(x + w / 2, y); g.lineTo(x + w / 2 - lean, y - h); g.lineTo(x - w / 2 - lean, y - h); g.fill();
+    g.beginPath(); g.arc(x - lean, y - h - w * 0.35, w * 0.45, 0, 7); g.fill();
+    if (e.side === -1) { g.fillStyle = "#ff7a1a"; g.fillRect(x - lean - w * 0.35, y - h - w * 0.4, 4, 3); }
+    else { g.fillStyle = "#d49a3a"; g.fillRect(x - w / 2, y - h * 0.55, w, 4); }
+  }
+
+  function animFor(e) {
+    switch (e.state) {
+      case "walk": return "walk"; case "attack": return "attack"; case "hit": return "hit"; case "die": return "die";
+      case "special": return "special"; case "sweep": return "sweep"; case "summon": return "summon"; case "spit": return "spit";
+      case "windup": return (e.windup && e.windup.kind === "summon") ? "summon" : (e.windup && e.windup.kind.startsWith("spit")) ? "spit" : "sweep";
+      default: return "idle";
+    }
+  }
+
+  function drawEntity(B, e, alpha) {
+    const x = e.px + (e.x - e.px) * alpha;
+    if (x < R.camX - 160 || x > R.camX + R.W + 160) return;          // off-screen skip
+    const sx = x - R.camX, y = B.F.groundY + e.lane * 0.35;
+    const big = e.kind === "boss" ? 1 : 1;
+    const fadeOut = !e.alive && e.dieT > 1.0 ? Math.max(0, 1 - (e.dieT - 1.0) / 0.6) : 1;
+    if (fadeOut <= 0) return;
+    // shadow
+    g.globalAlpha = 0.35 * fadeOut; g.fillStyle = "#000";
+    g.beginPath(); g.ellipse(sx, y, e.s.size * 1.2, e.s.size * 0.32, 0, 0, 7); g.fill();
+    // elite / enrage glow
+    if ((e.elite || e.enraged || (e.kind === "boss" && e.phase2)) && e.alive) {
+      g.globalAlpha = 0.28 + 0.12 * Math.sin(R.t * 6); g.fillStyle = "#ff6a1a";
+      g.beginPath(); g.ellipse(sx, y - e.s.size * 1.8, e.s.size * 1.5, e.s.size * 2.3, 0, 0, 7); g.fill();
+    }
+    g.globalAlpha = fadeOut;
+    let anim = animFor(e), t = e.stateT, fps;
+    if (e.state === "attack") {           // play so the anim's hit frame lands on the sim's hit moment
+      const sp = sprites[e.sprite]; const a = sp && sp.anims.attack;
+      if (a) fps = (a.hit != null ? a.hit : 4) / Math.max(0.12, Math.min(0.32, e.s.rate * 0.35));
+    }
+    if (e.state === "windup" && e.windup) {   // hold the raised pose for the whole warning
+      const sp = sprites[e.sprite]; const a = sp && sp.anims[anim];
+      if (a) { const hf = a.hit != null ? a.hit : 3; t = Math.min(e.stateT, (hf - 1) / (a.fps || 10)); }
+    }
+    if (e.stun > 0) { anim = "hit"; t = 0.05; }
+    const scale = e.elite ? 1.12 : 1;
+    const ok = spriteDraw(e.sprite, anim, t, sx, y, { fps, scale }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale });
+    if (ok && e.flash > 0) { g.globalAlpha = Math.min(1, e.flash / 0.12) * 0.85 * fadeOut; spriteDraw(e.sprite, anim, t, sx, y, { fps, scale, white: true }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale, white: true }); }
+    if (!ok) placeholder(e, sx, y, e.s.size * 3.4 * (e.alive ? 1 : 0.4), e.flash > 0);
+    g.globalAlpha = 1;
+    // health bar when hurt (not for boss: boss has its own bar)
+    if (e.alive && e.hp < e.maxHp && e.kind !== "boss") {
+      const w = Math.max(22, e.s.size * 1.6), hy = y - e.s.size * 3.6 - 16;
+      g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(sx - w / 2 - 1, hy - 1, w + 2, 5);
+      g.fillStyle = e.side === 1 ? "#7fd36b" : "#ff7a3a"; g.fillRect(sx - w / 2, hy, w * Math.max(0, e.hp / e.maxHp), 3);
+    }
+    if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - e.s.size * 3.8 - 6 + Math.sin(a) * 3, 4, 4); } }
+  }
+
+  function drawCastle(B, c, side) {
+    const sx = c.x - R.camX; if (sx < -400 || sx > R.W + 400) return;
+    const f = c.hp / c.max, st = f > 0.6 ? 0 : f > 0.25 ? 1 : 2;
+    const id = (side === 1 ? "keep_" : "maw_") + st;
+    const y = B.F.groundY + 4;
+    const shakeX = c.hitT > 0 ? (Math.random() - 0.5) * 4 : 0;
+    if (!spriteDraw(id, "idle", R.t, sx + shakeX, y)) {
+      g.fillStyle = side === 1 ? "#4b4440" : "#2a2222";
+      g.fillRect(sx - 70 + shakeX, y - 260 * (1 - st * 0.18), 140, 260 * (1 - st * 0.18));
+      g.fillStyle = side === 1 ? "#ffb347" : "#ff6a1a"; g.fillRect(sx - 12, y - 250 * (1 - st * 0.18), 24, 22);
+    }
+    if (c.hitT > 0 && atlases.castles) { g.globalAlpha = c.hitT / 0.15 * 0.5; spriteDraw(id, "idle", R.t, sx + shakeX, y, { white: true }); g.globalAlpha = 1; }
+    if (st >= 1 && R.quality > 0 && Math.random() < 0.25) part(c.x + (Math.random() - 0.5) * 100, y - 120 - Math.random() * 100, (Math.random() - 0.5) * 10, -30, 1.6, 9, "#3c3533", 2, -15);
+    if (c === B.gate && c.sealed) { g.globalAlpha = 0.18 + 0.08 * Math.sin(R.t * 3); g.fillStyle = "#ff5a1a"; g.beginPath(); g.ellipse(sx, y - 120, 110, 150, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+  }
+
+  function drawProj(B, p, alpha) {
+    const x = p.px ? p.px + (p.x - p.px) * alpha : p.x, y = p.py ? p.py + (p.y - p.py) * alpha : p.y;
+    const sx = x - R.camX; if (sx < -50 || sx > R.W + 50) return;
+    const ang = Math.atan2(p.y - (p.py || p.y), p.x - (p.px || p.x));
+    const id = p.kind === "bolt" ? "bolt" : p.kind === "spit" ? "spit" : "arrow";
+    if (!spriteDraw(id, "idle", R.t, sx, y, { rot: id === "spit" ? 0 : ang })) {
+      g.save(); g.translate(sx, y); g.rotate(ang);
+      g.fillStyle = p.kind === "spit" ? "#ff7a1a" : p.kind === "bolt" ? "#e8d0a0" : "#d8c8a8";
+      g.fillRect(p.kind === "bolt" ? -26 : -10, -1.5, p.kind === "bolt" ? 30 : 14, p.kind === "bolt" ? 4 : 2); g.restore();
+    }
+    if ((p.kind === "bolt" || p.kind === "spit") && R.quality > 0 && Math.random() < 0.7) part(x, y, (Math.random() - 0.5) * 30, -10, 0.4, 2.5, "#ffa040", 1, -40);
+  }
+
+  function drawPatches(B) {
+    for (const p of B.patches) {
+      if (p.t <= 0) continue; const sx = p.x - R.camX; if (sx < -80 || sx > R.W + 80) continue;
+      const a = Math.min(1, p.t);
+      if (!spriteDraw("fire_patch", "idle", R.t + p.x, sx, B.F.groundY + 6, { scale: p.r / 45 })) {
+        g.globalAlpha = 0.45 * a; g.fillStyle = "#ff6a1a"; g.beginPath(); g.ellipse(sx, B.F.groundY + 4, p.r, 8, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+      }
+      if (R.quality > 0 && Math.random() < 0.4) part(p.x + (Math.random() - 0.5) * p.r * 1.6, B.F.groundY, 0, -60, 0.7, 3, "#ffb050", 1, -80);
+    }
+  }
+
+  function drawMarks(B) {   // boss attack warnings on the ground
+    for (const m of B.marks) {
+      if (m.t <= 0) continue; const sx = m.x - R.camX;
+      const k = 1 - m.t / m.max, pulse = 0.5 + 0.5 * Math.sin(R.t * 18);
+      g.strokeStyle = `rgba(255,70,30,${0.5 + 0.4 * pulse})`; g.lineWidth = 3;
+      g.beginPath(); g.ellipse(sx, B.F.groundY + 2, m.r, 12, 0, 0, 7); g.stroke();
+      g.fillStyle = `rgba(255,70,30,${0.15 + 0.25 * k})`; g.beginPath(); g.ellipse(sx, B.F.groundY + 2, m.r * k, 12 * k, 0, 0, 7); g.fill();
+    }
+    const boss = B.boss;
+    if (boss && boss.alive && boss.windup && boss.windup.kind === "sweep") {
+      const r = boss.s.boss.sweep.radius, sx = boss.x - R.camX - r * 0.5, pulse = 0.5 + 0.5 * Math.sin(R.t * 20);
+      g.fillStyle = `rgba(255,60,20,${0.18 + 0.22 * pulse})`;
+      g.beginPath(); g.ellipse(sx, B.F.groundY + 2, r * 0.75, 16, 0, 0, 7); g.fill();
+    }
+  }
+
+  function drawAim(B) {
+    const a = R.aim; if (!a) return;
+    const G = B.g.ballista.gravity; let x = B.ballista.x + 40, y = B.ballista.y, vx = a.vx, vy = a.vy;
+    g.fillStyle = "rgba(255,226,160,0.9)";
+    for (let i = 0; i < 60; i++) {
+      const dt = 0.05; vy += G * dt; x += vx * dt; y += vy * dt;
+      if (y > B.F.groundY - 4) break;
+      if (i % 2 === 0) { const r = 3.2 - i * 0.03; g.beginPath(); g.arc(x - R.camX, y, Math.max(1.2, r), 0, 7); g.fill(); }
+    }
+    a.landX = x;
+    g.strokeStyle = "rgba(255,200,120,0.9)"; g.lineWidth = 2.5;
+    g.beginPath(); g.ellipse(x - R.camX, B.F.groundY, B.g.ballista.splash, 9, 0, 0, 7); g.stroke();
+  }
+
+  function drawBallista(B) {
+    const sx = B.ballista.x - R.camX; if (sx < -100) return;
+    const ang = R.aim ? Math.atan2(R.aim.vy, R.aim.vx) : -0.35;
+    if (!spriteDraw("ballista", "idle", 0, sx, B.ballista.y, { rot: ang })) {
+      g.save(); g.translate(sx, B.ballista.y); g.rotate(ang); g.fillStyle = "#6a4a2a"; g.fillRect(-10, -5, 60, 10);
+      g.fillStyle = "#b08a3a"; g.fillRect(0, -18, 6, 36); g.restore();
+    }
+  }
+
+  // ---------------------------------------------------------------- frame
+  R.draw = (B, alpha, dtReal) => {
+    R.t += dtReal;
+    // adaptive quality: watch frame time, step effects (and resolution) down if the phone struggles
+    R.fpsAvg = R.fpsAvg * 0.95 + (1 / Math.max(0.001, dtReal)) * 0.05;
+    if (R.fpsAvg < 45) R.lowFrames++; else R.lowFrames = Math.max(0, R.lowFrames - 2);
+    if (R.lowFrames > 90 && R.quality > 0) { R.quality--; R.lowFrames = 0; if (R.quality === 0 && R.dprCap > 1.5) { R.dprCap = 1.5; R.resize(); } }
+    if (R.camTarget != null) { R.camX += (R.camTarget - R.camX) * Math.min(1, dtReal * 6); if (Math.abs(R.camTarget - R.camX) < 1) R.camTarget = null; }
+    R.clampCam(B);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    // shake (trauma squared), applied as a translate
+    R.shake = Math.max(0, R.shake - dtReal * 1.6);
+    const tr = R.shake * R.shake * 14;
+    R.shakeX = (Math.random() - 0.5) * tr; R.shakeY = (Math.random() - 0.5) * tr;
+    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
+    const L = BG[B.stage.bg] || BG[R.region] || {};
+    if (L.sky) drawLayer(L.sky, R.camX); else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a1418"); gr.addColorStop(1, "#c9602a"); g.fillStyle = gr; g.fillRect(-20, -20, R.W + 40, H + 40); }
+    drawLayer(L.far || (BG.r1 && BG.r1.far), R.camX); drawLayer(L.mid || (BG.r1 && BG.r1.mid), R.camX);
+    if (L.near || (BG.r1 && BG.r1.near)) drawLayer(L.near || BG.r1.near, R.camX);
+    else { g.fillStyle = "#2b2023"; g.fillRect(-20, B.F.groundY - 6, R.W + 40, H); }
+    drawCastle(B, B.keep, 1); drawCastle(B, B.gate, -1); drawBallista(B);
+    drawPatches(B); drawMarks(B);
+    // entities sorted by lane (back to front) — reuse one array
+    const list = R._list || (R._list = []); list.length = 0;
+    for (const e of B.ents) if (!e.gone) list.push(e);
+    list.sort((a, b) => a.lane - b.lane || (b.alive ? 1 : 0) - (a.alive ? 1 : 0));
+    for (const e of list) drawEntity(B, e, alpha);
+    for (const p of B.projs) if (p.alive) drawProj(B, p, alpha);
+    drawAim(B);
+    // particles
+    const dt = dtReal;
+    for (const p of R.parts) {
+      if (p.life <= 0) continue;
+      p.life -= dt; p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.k === 0 && p.y > B.F.groundY + 8) { p.y = B.F.groundY + 8; p.vx *= 0.5; p.vy = 0; }
+      const sx = p.x - R.camX; if (sx < -20 || sx > R.W + 20) continue;
+      const a = Math.max(0, p.life / p.max);
+      if (p.k === 1) { g.globalCompositeOperation = "lighter"; g.globalAlpha = a; g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); g.globalCompositeOperation = "source-over"; }
+      else if (p.k === 2) { g.globalAlpha = a * 0.5; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * (1.6 - a * 0.6), 0, 7); g.fill(); }
+      else { g.globalAlpha = Math.min(1, a * 1.5); g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+    }
+    g.globalAlpha = 1;
+    // ambient embers drifting up (the Ashen Marches feel)
+    if (R.quality > 1 && Math.random() < 0.25) part(R.camX + Math.random() * R.W, H + 4, (Math.random() - 0.5) * 20, -30 - Math.random() * 30, 6, 2, "#ff9a40", 1, -2);
+    // damage numbers
+    g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(20,10,10,.85)";
+    for (const n of R.nums) {
+      if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
+      const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
+      g.globalAlpha = a; g.font = `800 ${Math.round((n.big ? 22 : 15) * pop)}px system-ui, sans-serif`;
+      g.strokeText(n.t, sx, n.y); g.fillStyle = n.c; g.fillText(n.t, sx, n.y);
+    }
+    g.globalAlpha = 1;
+    if (B.rally > 0) { g.fillStyle = `rgba(255,190,90,${0.06 + 0.03 * Math.sin(R.t * 6)})`; g.fillRect(-20, -20, R.W + 40, H + 40); }
+    if (R.flashA > 0) { g.globalAlpha = R.flashA; g.fillStyle = R.flashC; g.fillRect(-20, -20, R.W + 40, H + 40); g.globalAlpha = 1; R.flashA = Math.max(0, R.flashA - dtReal * 2.2); }
+    // edge vignette for depth
+    if (R.quality > 0) {
+      const vg = R._vg || (R._vg = (() => { const v = g.createRadialGradient(R.W / 2, H / 2, H * 0.4, R.W / 2, H / 2, R.W * 0.7); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(10,4,4,.45)"); return v; })());
+      g.fillStyle = vg; g.fillRect(0, 0, R.W, H);
+    }
+  };
+  R.resetForBattle = () => { for (const p of R.parts) p.life = 0; for (const n of R.nums) n.life = 0; R.camX = 0; R.shake = 0; R.flashA = 0; R.aim = null; R.slowmo = 0; R._vg = null; };
+  return R;
+}

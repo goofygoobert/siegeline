@@ -1,0 +1,32 @@
+{
+ "r1": {
+  "sky": "r1_sky.webp",
+  "far": {
+   "file": "r1_far.webp",
+   "parallax": 0.15
+  },
+  "mid": {
+   "file": "r1_mid.webp",
+   "parallax": 0.45
+  },
+  "near": {
+   "file": "r1_near.webp",
+   "parallax": 1.0
+  }
+ },
+ "r1n": {
+  "sky": "r1n_sky.webp",
+  "far": {
+   "file": "r1n_far.webp",
+   "parallax": 0.15
+  },
+  "mid": {
+   "file": "r1n_mid.webp",
+   "parallax": 0.45
+  },
+  "near": {
+   "file": "r1n_near.webp",
+   "parallax": 1.0
+  }
+ }
+}

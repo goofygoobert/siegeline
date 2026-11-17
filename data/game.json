@@ -1,0 +1,18 @@
+{
+  "field": {"width": 2600, "groundY": 400, "playerCastleX": 150, "enemyCastleX": 2450, "laneJitter": 22},
+  "simHz": 30,
+  "speedScale": 1.5,
+  "energy": {"start": 40, "max": 100, "regen": 7, "maxPerLevel": 20, "regenPerLevel": 1.0, "maxLevel": 5},
+  "keep": {"hp": 2000, "hpPerLevel": 250, "maxLevel": 10},
+  "ballista": {"dmg": 90, "dmgPerLevel": 0.12, "splash": 55, "reload": 3.5, "reloadPerLevel": 0.15, "maxLevel": 10,
+               "gravity": 900, "minSpeed": 380, "maxSpeed": 1250, "firePatch": {"dps": 12, "time": 3, "radius": 45}},
+  "hero": {"id": "marshal", "name": "Marshal Edrin Vael", "charge": 25, "hp": 1100, "dmg": 48, "rate": 1.2, "range": 34, "speed": 42, "size": 22,
+           "splash": 50, "flare": {"every": 12, "radius": 150, "stun": 1.5, "dmg": 40}, "hpPerLevel": 0.12, "dmgPerLevel": 0.1, "maxLevel": 10},
+  "abilities": {
+    "ember_rain": {"name": "Ember Rain", "cooldown": 40, "stones": 8, "spread": 170, "dmg": 45, "splash": 42, "duration": 1.2, "dmgPerLevel": 0.12, "maxLevel": 10},
+    "rally": {"name": "Rally Bell", "cooldown": 50, "time": 7, "speedMul": 1.35, "rateMul": 0.8, "heal": 0.15, "timePerLevel": 0.5, "maxLevel": 10}
+  },
+  "upgradeCost": {"unit": [60, 1.45], "keep": [80, 1.4], "ballista": [80, 1.4], "energyMax": [100, 1.6], "energyRegen": [120, 1.6], "hero": [100, 1.45], "ability": [90, 1.45]},
+  "rewards": {"replayFraction": 0.35, "perNewStar": 30},
+  "stars": {"keepHp": 0.6, "desc": ["Win", "Keep above 60% health", "Win under the par time"]}
+}

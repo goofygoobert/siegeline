@@ -1,0 +1,170 @@
+{
+  "sfx": {
+    "ui_tap": {
+      "file": "ui_tap.m4a",
+      "vol": 0.5
+    },
+    "ui_back": {
+      "file": "ui_back.m4a",
+      "vol": 0.5
+    },
+    "ui_upgrade": {
+      "file": "ui_upgrade.m4a",
+      "vol": 0.6
+    },
+    "ui_locked": {
+      "file": "ui_locked.m4a",
+      "vol": 0.5
+    },
+    "unit_send": {
+      "file": "unit_send.m4a",
+      "vol": 0.6
+    },
+    "energy_full": {
+      "file": "energy_full.m4a",
+      "vol": 0.55
+    },
+    "hit_blade": {
+      "file": "hit_blade.m4a",
+      "vol": 0.55
+    },
+    "hit_blunt": {
+      "file": "hit_blunt.m4a",
+      "vol": 0.6
+    },
+    "hit_claw": {
+      "file": "hit_claw.m4a",
+      "vol": 0.55
+    },
+    "arrow_fire": {
+      "file": "arrow_fire.m4a",
+      "vol": 0.45
+    },
+    "arrow_hit": {
+      "file": "arrow_hit.m4a",
+      "vol": 0.45
+    },
+    "bolt_fire": {
+      "file": "bolt_fire.m4a",
+      "vol": 0.7
+    },
+    "bolt_hit": {
+      "file": "bolt_hit.m4a",
+      "vol": 0.75
+    },
+    "ballista_reload": {
+      "file": "ballista_reload.m4a",
+      "vol": 0.45
+    },
+    "spit": {
+      "file": "spit.m4a",
+      "vol": 0.5
+    },
+    "bloater_burst": {
+      "file": "bloater_burst.m4a",
+      "vol": 0.7
+    },
+    "warden_die": {
+      "file": "warden_die.m4a",
+      "vol": 0.6
+    },
+    "hollow_die": {
+      "file": "hollow_die.m4a",
+      "vol": 0.55
+    },
+    "castle_hit": {
+      "file": "castle_hit.m4a",
+      "vol": 0.75
+    },
+    "castle_crumble": {
+      "file": "castle_crumble.m4a",
+      "vol": 0.9
+    },
+    "coin": {
+      "file": "coin.m4a",
+      "vol": 0.45
+    },
+    "star": {
+      "file": "star.m4a",
+      "vol": 0.65
+    },
+    "ember_rain": {
+      "file": "ember_rain.m4a",
+      "vol": 0.6
+    },
+    "rally": {
+      "file": "rally.m4a",
+      "vol": 0.75
+    },
+    "bell": {
+      "file": "bell.m4a",
+      "vol": 0.75
+    },
+    "heal": {
+      "file": "heal.m4a",
+      "vol": 0.55
+    },
+    "hero_call": {
+      "file": "hero_call.m4a",
+      "vol": 0.8
+    },
+    "hero_flare": {
+      "file": "hero_flare.m4a",
+      "vol": 0.7
+    },
+    "boss_roar": {
+      "file": "boss_roar.m4a",
+      "vol": 0.9
+    },
+    "boss_warn": {
+      "file": "boss_warn.m4a",
+      "vol": 0.8
+    },
+    "boss_slam": {
+      "file": "boss_slam.m4a",
+      "vol": 0.9
+    },
+    "win": {
+      "file": "win.m4a",
+      "vol": 0.8
+    },
+    "lose": {
+      "file": "lose.m4a",
+      "vol": 0.75
+    }
+  },
+  "music": {
+    "menu": {
+      "file": "menu.m4a",
+      "vol": 0.5,
+      "loopStart": 0.0,
+      "loopEnd": 50.526327
+    },
+    "map": {
+      "file": "map.m4a",
+      "vol": 0.45,
+      "loopStart": 0.0,
+      "loopEnd": 45.714286
+    },
+    "battle": {
+      "file": "battle.m4a",
+      "vol": 0.45,
+      "loopStart": 0.0,
+      "loopEnd": 58.181814
+    },
+    "boss": {
+      "file": "boss.m4a",
+      "vol": 0.45,
+      "loopStart": 0.0,
+      "loopEnd": 57.6
+    },
+    "victory": {
+      "file": "victory.m4a",
+      "vol": 0.6
+    },
+    "defeat": {
+      "file": "defeat.m4a",
+      "vol": 0.6
+    }
+  }
+}

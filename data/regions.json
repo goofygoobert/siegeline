@@ -1,0 +1,11 @@
+{
+  "regions": [
+    {"id":"r1","name":"Cinderfold Vale","bg":"r1","music":"battle","faction":"hollow","stages":["r1s1","r1s2","r1s3","r1s4","r1s5","r1boss"],
+     "blurb":"The first valley under the ash. The Hollows came up through the vineyards.","playable":true},
+    {"id":"r2","name":"The Bell Marshes","faction":"hollow","stageCount":9,"blurb":"Drowned chapels whose bells still ring at night. Boss: the Mire Choir."},
+    {"id":"r3","name":"Gilded Causeway","faction":"tithe","stageCount":10,"blurb":"The Gilded Tithe sells the dead by the cartload. Boss: Abbot-Banker Corvane."},
+    {"id":"r4","name":"Hollowdeep Mines","faction":"mawborn","stageCount":10,"blurb":"The lanterns' coal came from here. Something hotter lives below. Boss: the Slag Mother."},
+    {"id":"r5","name":"The Ember Wastes","faction":"mawborn","stageCount":10,"blurb":"Burning plains where drakes nest in the slag. Boss: Ashwing."},
+    {"id":"r6","name":"The Cinder Maw","faction":"hollow","stageCount":15,"blurb":"The crater that woke. End of the line. Boss: the Maw itself."}
+  ]
+}
