@@ -1,5 +1,9 @@
 // Save system: on-device only. Versioned, checksummed, with a backup slot, migration and export/import.
-const KEY = "siegeline.save", BAK = "siegeline.save.bak";
+// The design preview (served under /preview/) keeps its own save so it can never damage the live game's progress.
+// On first run it starts from a copy of the live save, so existing progress carries in.
+const PREVIEW = typeof location !== "undefined" && /\/preview\//.test(location.pathname);
+const KEY = PREVIEW ? "siegeline.preview.save" : "siegeline.save", BAK = KEY + ".bak";
+if (PREVIEW) try { const ls = window.localStorage; if (!ls.getItem(KEY) && ls.getItem("siegeline.save")) ls.setItem(KEY, ls.getItem("siegeline.save")); } catch {}
 export const SAVE_VERSION = 2;
 
 export function freshData() {

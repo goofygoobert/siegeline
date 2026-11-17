@@ -698,7 +698,7 @@ function boot() {
   const g = canvas.getContext("2d"); g.fillStyle = "#0b1118"; g.fillRect(0, 0, canvas.width, canvas.height);
   setInterval(() => { D.playTime = D.playTime || 0; }, 60000);
   // register the offline cache after first load settles, so it never competes with the first screen
-  if ("serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
+  if ("serviceWorker" in navigator && import.meta.env.PROD && !/\/preview\//.test(location.pathname)) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
   window.__siegeline = { get D() { return D; }, get battle() { return battle; }, startBattle: (id) => startBattle(stageById[id]), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
     ...(TEST ? { setSpeed: (x) => (testSpeed = x), autoplay: (skill) => (autoBot = skill == null ? null : makeBot({ skill })), save: () => save(D), reload: () => { S = load(); D = S.data; } } : {}) };
   titleScreen();
