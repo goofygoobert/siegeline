@@ -326,10 +326,12 @@ async function startBattle(stage) {
   if (tiers.some((t) => t >= 2)) pages.push(["units2", false]); if (tiers.some((t) => t >= 3)) pages.push(["units3", false]);
   let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
   await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: g !== "ui" }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
+  await loadAtlas("v2");      // carved figures replace old sprites of the same id, so they load after the rest
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
   const st = { ...stage, available: D.unlocked.units.slice(0, 6), hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };
-  const B = createBattle(content, st, prog, (Math.random() * 1e9) | 0);
+  const seedQ = new URLSearchParams(location.search).get("seed");
+  const B = createBattle(content, st, prog, seedQ ? +seedQ : (Math.random() * 1e9) | 0);
   R.resetForBattle(); R.region = stage.bg;
   battle = new BattleView(B, stage);
   playMusic(stage.music || "battle");

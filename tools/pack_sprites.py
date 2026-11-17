@@ -9,7 +9,7 @@ public/assets/<page>.webp (alpha, q82) + <page>.json. Anchor = feet point (fixed
 --sheets also writes art/out/review_<page>.png: one row per id on a dusk background, ground line at the anchor.
 """
 import sys, os, re, json, hashlib, pathlib
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "art" / "blender"))
@@ -52,6 +52,13 @@ def cut_frames(atlas, ppu):
                 warn.append("%s %s[%d] touches the cell edge %s (clipped?)" % (sid, name, i, sides))
             nw, nh = round(cw * scale), round(ch * scale)
             small = cell.convert("RGBa").resize((nw, nh), Image.LANCZOS).convert("RGBA")
+            if A.get("contour"):    # heavy outer ink line so figures read like stickers (docs/design/art-direction.md)
+                ink = (12, 26, 30) if cast.is_enemy(sid) else (34, 21, 43)
+                al = small.getchannel("A")
+                fat = al.filter(ImageFilter.MaxFilter(2 * int(A["contour"]) + 1)).filter(ImageFilter.GaussianBlur(0.7))
+                fat = fat.point(lambda v: min(255, int(v * 1.6)))
+                under = Image.new("RGBA", small.size, ink + (0,)); under.putalpha(fat)
+                small = Image.alpha_composite(under, small)
             ax, ay = cast.cell_anchor(job, sid)
             ax, ay = ax * scale, ay * scale
             if not still:

@@ -5,7 +5,7 @@
 # as one EEVEE animation on the 5070 (all characters on a grid). Review sheets: tools/pack_sprites.py --sheets
 cd "$(dirname "$0")/.."
 CHARS=$(ls art/blender/chars/_*.py; ls art/blender/chars/*.py | grep -v '/_' | grep -v -E '/(a|b|c)_[a-z]+\.py$')
-LIBS=""; for f in art/blender/cast.py $CHARS; do LIBS="$LIBS --lib $f"; done
+LIBS=""; for f in art/blender/cast.py art/blender/kit2.py $CHARS; do LIBS="$LIBS --lib $f"; done
 mkdir -p art/build art/out
 for J in "$@"; do
   if [[ $J == one:* ]]; then

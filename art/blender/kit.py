@@ -821,6 +821,19 @@ def place(sid, J, pos):
         return 1
     base = sid[2:] if sid.startswith("p_") else sid
     spec = REG[base]
+    if "v2" in spec:            # carved-figure kit (kit2.py): builds and animates itself
+        fig = spec["v2"](spec)
+        facing = spec.get("facing", 1); s = 1.0
+        if sid.startswith("p_"):
+            s = 1.22 / spec.get("pscale", 1.0)
+            holder.location.z -= fig.head_c.z * s + 0.02; holder.location.x -= 0.06
+        holder.scale = (facing * s, s, s)
+        holder.rotation_euler = (0, 0, math.radians(-J["yaw"] * facing))
+        _parent_keep_local(fig.root, holder)
+        if sid.startswith("p_"):
+            pose(fig, 1, spec["anims"]["idle"](0.0, 0, 1))
+            return 1
+        return run_anims(fig, spec["anims"], anims_of(sid))
     rig = build_char(spec)
     facing = spec.get("facing", 1)
     s = 1.0

@@ -15,6 +15,9 @@ ANIMSETS = {
              ("summon", 8, 8, False, 5), ("spit", 8, 10, False, 5), ("hit", 3, 10, False, None),
              ("die", 9, 7, False, None)],
     "still": [("idle", 1, 1, True, None)],
+    # carved figures (kit2): more frames, a held anticipation, the strike on frame 5
+    "v2": [("idle", 8, 8, True, None), ("walk", 8, 12, True, None), ("attack", 10, 14, False, 5),
+           ("hit", 4, 12, False, None), ("die", 10, 12, False, None)],
 }
 
 UNITS = ["ashguard", "torchbow", "cinder_runner", "bellringer", "maulwright", "lamplighter"]
@@ -22,7 +25,8 @@ ENEMIES = ["husk", "gnawer", "spitter", "bloater", "brute", "husk_warden"]
 ICONS = ["i_ember_rain", "i_rally", "i_mark", "i_star", "i_star_empty", "i_energy", "i_lock"]
 PORTRAITS = ["p_" + u for u in UNITS] + ["p_marshal"]
 
-ANIMSET_OF = {"marshal": "hero", "cinder_matron": "boss", "cinder_runner": "fast", "cinder_runner_t2": "fast",
+V2_IDS = ["ashguard", "ashguard_t2", "ashguard_t3", "husk"]
+ANIMSET_OF = {**{i: "v2" for i in V2_IDS}, "marshal": "hero", "cinder_matron": "boss", "cinder_runner": "fast", "cinder_runner_t2": "fast",
               "cinder_runner_t3": "fast", "gnawer": "fast", "bloater": "slow", "brute": "slow"}
 
 # ax: anchor x as a fraction of the cell (players; enemies use 1-ax), gy: ground px above the cell bottom
@@ -32,6 +36,8 @@ JOBS = {
     "field": dict(cell=(672, 672), cols=4, ppu=96, ax=0.5, gy=100, yaw=25, mode="anim",
                   ids=["marshal"] + ENEMIES),
     "boss": dict(cell=(1024, 1024), cols=1, ppu=96, ax=0.44, gy=150, yaw=20, mode="anim", ids=["cinder_matron"]),
+    "v2": dict(cell=(840, 624), cols=4, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=V2_IDS),
+    "look": dict(cell=(720, 624), cols=2, ppu=144, ax=0.44, gy=96, yaw=25, mode="anim", ids=["ashguard", "husk"]),
     # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
     "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
                ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * 14 + [x for p in ICONS for x in (p, "_")]),
@@ -41,6 +47,7 @@ JOBS = {
 ATLASES = {
     "units": dict(job="units", ids=JOBS["units"]["ids"], ppu=72,   # pages: units = base, units2 = _t2, units3 = _t3
                   pages=[UNITS, [u + "_t2" for u in UNITS], [u + "_t3" for u in UNITS]]),
+    "v2": dict(job="v2", ids=V2_IDS, ppu=96, contour=2),     # carved figures; loaded last so they replace the old sprites of the same id
     "hero": dict(job="field", ids=["marshal"], ppu=72),
     "enemies": dict(job="field", ids=ENEMIES, ppu=72),
     "boss": dict(job="boss", ids=["cinder_matron"], ppu=72),
