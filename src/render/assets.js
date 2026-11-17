@@ -29,7 +29,13 @@ export async function loadAtlas(group, { white = true } = {}) {
     const json = await r.json(); const img = await loadImage(BASE + json.image); if (!img) throw 0;
     const a = { img, json, white: white ? whiteCopy(img) : null, scale: 44 / (json.ppu || 72) };
     atlases[group] = a;
-    for (const [id, sp] of Object.entries(json.sprites)) sprites[id] = { atlas: a, anims: sp.anims, id };
+    // a sprite's animations may be spread over several pages of the same group: merge, and let each anim keep its page
+    for (const [id, sp] of Object.entries(json.sprites)) {
+      for (const an of Object.values(sp.anims)) an.atlas = a;
+      const cur = sprites[id];
+      if (cur && cur.group === group.replace(/\d+$/, "")) Object.assign(cur.anims, sp.anims);
+      else sprites[id] = { atlas: a, anims: sp.anims, id, group: group.replace(/\d+$/, "") };
+    }
     return a;
   } catch { done.delete(group); return null; }
 }

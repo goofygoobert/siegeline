@@ -61,7 +61,7 @@ pack_scenery.py writes every file atomically (temp file + os.replace; atlas imag
 | castles.json | 0.7 KB |
 | fx.webp | 199.1 KB |
 | fx.json | 1.2 KB |
-| title.webp | 114.3 KB |
+| title.webp | 134.5 KB |
 | worldmap.webp | 76.5 KB |
 | worldmap.json | 0.3 KB |
 | bg/r1_far.webp | 33.7 KB |
@@ -73,5 +73,5 @@ pack_scenery.py writes every file atomically (temp file + os.replace; atlas imag
 | bg/r1n_near.webp | 63.3 KB |
 | bg/r1n_sky.webp | 20.9 KB |
 | bg/manifest.json | 0.4 KB |
-| **total** | **983.0 KB** |
+| **total** | **1003.2 KB** |
 <!-- /sizes -->

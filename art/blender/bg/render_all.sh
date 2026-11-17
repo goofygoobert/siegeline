@@ -8,7 +8,7 @@ for j in "${@:-bg castles fx title worldmap}"; do for k in $j; do
   case $k in
     bg) L="$SC --lib art/blender/bg/r1_lib.py";;
     worldmap) L="$SC --lib art/blender/bg/map_lib.py";;
-    title) L="$(cat art/build/title_libs.txt)";;
+    title) L="$(cat art/blender/bg/title_libs.txt)";;
     castles) L="$SC --lib art/blender/kit2.py";;
     *) L="$SC";;
   esac

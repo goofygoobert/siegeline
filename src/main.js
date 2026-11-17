@@ -12,7 +12,7 @@ import { load, save, saveSoon, exportCode, importCode, wipe, freshData } from ".
 import { initAudio, sfx, playMusic, setVolumes, duck, preload } from "./audio/audio.js";
 import { createRenderer } from "./render/renderer.js";
 import { loadGroup, loadAtlas as loadOne, loadBackgrounds, loadImageAsset, sprites } from "./render/assets.js";
-const loadAtlas = (g, o) => (g === "units" ? loadOne("units", o) : loadGroup(g, o));
+const loadAtlas = (g, o) => loadGroup(g, o);
 
 const content = { units, enemies, game, regions, stages: r1.stages, tutorials: r1.tutorials };
 const stageById = Object.fromEntries(content.stages.map((s) => [s.id, s]));
@@ -335,10 +335,9 @@ async function startBattle(stage) {
   const groups = ["units", "enemies", "castles", "fx", "ui"]; if (D.unlocked.hero) groups.push("hero"); if (stage.boss) groups.push("boss");
   const tiers = D.unlocked.units.map((u) => tierFor(D.unitLevels[u] || 1));
   const pages = groups.map((g) => [g, true]);
-  if (tiers.some((t) => t >= 2)) pages.push(["units2", false]); if (tiers.some((t) => t >= 3)) pages.push(["units3", false]);
+  if (tiers.some((t) => t >= 2)) pages.push(["unitsb", true]); if (tiers.some((t) => t >= 3)) pages.push(["unitsc", true]);
   let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
-  await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: g !== "ui" }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
-  await loadAtlas("v2");      // carved figures replace old sprites of the same id, so they load after the rest
+  await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: false }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
   const st = { ...stage, available: D.unlocked.units.slice(0, 6), hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };

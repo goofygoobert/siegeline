@@ -111,60 +111,76 @@ def pack(atlas, sheets=False):
     A = cast.ATLASES[atlas]
     for ppu in (A["ppu"], 64, 60, 56, 52, 48):
         data, warn = cut_frames(atlas, ppu)
-        # unique images per id
+        # unique images per (id, anim): an id normally stays on one page, but a very large one (the boss) may be
+        # split by animation across pages; the engine merges the pages and each anim remembers its own page.
         uniq = {}
         for sid in A["ids"]:
             for name, frames in data[sid].items():
                 for (img, ax, ay) in frames:
                     hsh = hashlib.md5(img.tobytes() + bytes(str(img.size), "ascii")).hexdigest()
-                    uniq.setdefault((sid, hsh), img)
+                    uniq.setdefault((sid, name, hsh), img)
         too_big = False
-        byid = {sid: [(k, v) for k, v in uniq.items() if k[0] == sid] for sid in A["ids"]}
+        units_of = {sid: [(sid, an[0]) for an in cast.anims_of(sid)] for sid in A["ids"]}
 
-        def try_pack(ids):
-            items = sorted([kv for i in ids for kv in byid[i]], key=lambda kv: -(kv[1].height * kv[1].width))
+        def try_pack(units):
+            want = set(units)
+            items = sorted([kv for kv in uniq.items() if (kv[0][0], kv[0][1]) in want], key=lambda kv: -(kv[1].height * kv[1].width))
             sh = Shelf(); place = {}
             for k, v in items:
-                p = sh.add(v.width, v.height)
-                if p is None:
+                q = sh.add(v.width, v.height)
+                if q is None:
                     return None
-                place[k] = p
-            return dict(shelf=sh, ids=list(ids), place=place)
+                place[k] = q
+            return dict(shelf=sh, units=list(units), place=place)
 
-        pages = []
-        for group in A.get("pages", [A["ids"]]):     # pinned page split (stable file names for the engine)
-            cur_ids = []; cur = None
-            for sid in group:
-                nxt = try_pack(cur_ids + [sid])
+        pages = []; cur_u = []; cur = None
+        for sid in A["ids"]:
+            nxt = try_pack(cur_u + units_of[sid])
+            if nxt is not None:
+                cur_u = cur_u + units_of[sid]; cur = nxt; continue
+            if cur_u:
+                pages.append(cur); cur_u = []; cur = None
+                nxt = try_pack(units_of[sid])
+                if nxt is not None:
+                    cur_u = list(units_of[sid]); cur = nxt; continue
+            print("  NOTE %s is split by animation across pages" % sid)
+            for u in units_of[sid]:
+                nxt = try_pack(cur_u + [u])
                 if nxt is None:
-                    if not cur_ids:
+                    if not cur_u:
                         too_big = True; break
-                    print("  NOTE page overflow: %s starts a new page" % sid)
-                    pages.append(cur); cur_ids = [sid]; cur = try_pack(cur_ids)
+                    pages.append(cur); cur_u = [u]; cur = try_pack(cur_u)
                     if cur is None:
                         too_big = True; break
                 else:
-                    cur_ids = cur_ids + [sid]; cur = nxt
+                    cur_u = cur_u + [u]; cur = nxt
             if too_big:
                 break
-            if cur is not None:
-                pages.append(cur)
+        if cur is not None and not too_big:
+            pages.append(cur)
         if not too_big:
             break
-        print("  %s does not fit one page at ppu %d, trying smaller" % (atlas, ppu))
+        print("  %s does not fit at ppu %d, trying smaller" % (atlas, ppu))
     out = []
     for pi, pg in enumerate(pages):
         name = atlas if pi == 0 else "%s%d" % (atlas, pi + 1)
         W = (pg["shelf"].w + 3) // 4 * 4; H = (pg["shelf"].h + 3) // 4 * 4
         sheet = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         js = {"image": name + ".webp", "w": W, "h": H, "ppu": ppu, "sprites": {}}
-        for sid in pg["ids"]:
+        ids_here = []
+        for (sid, aname) in pg["units"]:
+            if sid not in ids_here:
+                ids_here.append(sid)
+        pg["ids"] = ids_here
+        for sid in ids_here:
             anims = {}
             for (aname, n, fps, loop, hit) in cast.anims_of(sid):
+                if (sid, aname) not in pg["units"]:
+                    continue
                 fr = []
                 for (img, ax, ay) in data[sid][aname]:
                     hsh = hashlib.md5(img.tobytes() + bytes(str(img.size), "ascii")).hexdigest()
-                    x, y = pg["place"][(sid, hsh)]
+                    x, y = pg["place"][(sid, aname, hsh)]
                     sheet.paste(img, (x, y))
                     fr.append([x, y, img.width, img.height, ax, ay])
                 a = {"fps": fps, "loop": loop, "frames": fr}

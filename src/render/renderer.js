@@ -204,15 +204,19 @@ export function createRenderer(canvas, hooks) {
     const sp = sprites[id];
     if (!sp) return false;
     const fr = frameAt(sp, anim, t, opts.fps); if (!fr) return false;
-    const a = sp.atlas, s = a.scale * (opts.scale || 1);
+    const an = sp.anims[anim] || sp.anims.idle || sp.anims.walk;
+    const a = (an && an.atlas) || sp.atlas, s = a.scale * (opts.scale || 1);
     const [fx, fy, fw, fh, ax, ay] = fr;
     const src = opts.white && a.white ? a.white : a.img;
+    // no white copy of the page (they doubled texture memory): a hit flash is the sprite added onto itself
+    const addFlash = opts.white && !a.white; if (addFlash) g.globalCompositeOperation = "lighter";
     const vy = opts.sy || 1;
     const dx = x - ax * s, dy = y - ay * s * vy;
-    if (vy !== 1) { g.drawImage(src, fx, fy, fw, fh, dx, dy, fw * s, fh * s * vy); return true; }
-    if (opts.rot) {
+    if (vy !== 1) g.drawImage(src, fx, fy, fw, fh, dx, dy, fw * s, fh * s * vy);
+    else if (opts.rot) {
       g.save(); g.translate(x, y); g.rotate(opts.rot); g.drawImage(src, fx, fy, fw, fh, -ax * s, -ay * s, fw * s, fh * s); g.restore();
     } else g.drawImage(src, fx, fy, fw, fh, dx, dy, fw * s, fh * s);
+    if (addFlash) g.globalCompositeOperation = "source-over";
     return true;
   }
   R.spriteDraw = spriteDraw;
