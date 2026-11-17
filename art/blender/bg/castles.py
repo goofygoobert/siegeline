@@ -4,6 +4,21 @@ from scenery import *
 # frames: 1-3 keep_0..2 (The Gullwake), 4-6 maw_0..2 (The Drowned Grotto), 7 ballista (Long Tom barrel).  Layout constants are mirrored in tools/pack_scenery.py.
 reset()
 S = bpy.context.scene
+
+
+class _SceneFig:      # forts are painted with the figures' sunset lighting (kit2.paint) instead of the old toon bands
+    def __init__(self):
+        self.mats = {}; self.h = 9.0; self.ink = INK_CREW
+        self.root = bpy.data.objects.new("scene_root", None); S.collection.objects.link(self.root)
+
+
+_SF = _SceneFig()
+
+
+def toon(color, name=None, glow=0.0, rim=0.25):
+    return paint(_SF, color, glow=min(glow, 2.0))
+
+
 S.eevee.taa_render_samples = 32
 CELL, PPU_R = 864, 96
 S.render.resolution_x = S.render.resolution_y = CELL

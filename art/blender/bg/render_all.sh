@@ -9,6 +9,7 @@ for j in "${@:-bg castles fx title worldmap}"; do for k in $j; do
     bg) L="$SC --lib art/blender/bg/r1_lib.py";;
     worldmap) L="$SC --lib art/blender/bg/map_lib.py";;
     title) L="$(cat art/build/title_libs.txt)";;
+    castles) L="$SC --lib art/blender/kit2.py";;
     *) L="$SC";;
   esac
   python3 tools/bundle_blend.py art/blender/bg/${SRC[$k]}.py art/build/sc_$k.py $L >/dev/null
