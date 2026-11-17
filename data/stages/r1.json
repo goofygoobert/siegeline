@@ -75,7 +75,7 @@
      ]
     }
    ],
-   "power": 2.42
+   "power": 2.6
   },
   {
    "id": "r1s2",
@@ -177,7 +177,7 @@
      ]
     }
    ],
-   "power": 2.38
+   "power": 2.58
   },
   {
    "id": "r1s3",
@@ -290,7 +290,7 @@
      ]
     }
    ],
-   "power": 1.99
+   "power": 2.2
   },
   {
    "id": "r1s4",
@@ -413,7 +413,7 @@
      ]
     }
    ],
-   "power": 1.18
+   "power": 1.31
   },
   {
    "id": "r1s5",
@@ -543,7 +543,7 @@
      ]
     }
    ],
-   "power": 0.97
+   "power": 1.09
   },
   {
    "id": "r1boss",
@@ -552,7 +552,7 @@
    "bg": "r1n",
    "music": "boss",
    "enemyCastleHp": 2500,
-   "par": 215,
+   "par": 260,
    "reward": 400,
    "boss": "cinder_matron",
    "bossAt": 20,
@@ -611,7 +611,7 @@
    },
    "triggers": [],
    "power": 0.97,
-   "bossPower": 1.64
+   "bossPower": 1.91
   }
  ],
  "tutorials": {

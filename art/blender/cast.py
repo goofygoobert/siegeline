@@ -15,6 +15,18 @@ ANIMSETS = {
              ("summon", 8, 8, False, 5), ("spit", 8, 10, False, 5), ("hit", 3, 10, False, None),
              ("die", 9, 7, False, None)],
     "still": [("idle", 1, 1, True, None)],
+    # carved figures (kit2): more frames, a held anticipation, the strike on frame 5
+    "v2": [("idle", 8, 8, True, None), ("walk", 8, 12, True, None), ("attack", 10, 14, False, 5),
+           ("hit", 4, 12, False, None), ("die", 10, 12, False, None)],
+    "v2fast": [("idle", 8, 8, True, None), ("walk", 8, 16, True, None), ("attack", 10, 16, False, 5),
+               ("hit", 4, 12, False, None), ("die", 10, 12, False, None)],
+    "v2slow": [("idle", 8, 7, True, None), ("walk", 8, 9, True, None), ("attack", 10, 11, False, 5),
+               ("hit", 4, 12, False, None), ("die", 10, 11, False, None)],
+    "v2hero": [("idle", 8, 8, True, None), ("walk", 8, 12, True, None), ("attack", 10, 14, False, 5),
+               ("hit", 4, 12, False, None), ("die", 10, 12, False, None), ("special", 10, 12, False, 5)],
+    "v2boss": [("idle", 8, 7, True, None), ("walk", 8, 7, True, None), ("sweep", 12, 10, False, 8),
+               ("summon", 10, 10, False, 6), ("spit", 10, 10, False, 6), ("hit", 4, 10, False, None),
+               ("die", 14, 9, False, None)],
 }
 
 UNITS = ["ashguard", "torchbow", "cinder_runner", "bellringer", "maulwright", "lamplighter"]
@@ -22,28 +34,41 @@ ENEMIES = ["husk", "gnawer", "spitter", "bloater", "brute", "husk_warden"]
 ICONS = ["i_ember_rain", "i_rally", "i_mark", "i_star", "i_star_empty", "i_energy", "i_lock"]
 PORTRAITS = ["p_" + u for u in UNITS] + ["p_marshal"]
 
-ANIMSET_OF = {"marshal": "hero", "cinder_matron": "boss", "cinder_runner": "fast", "cinder_runner_t2": "fast",
-              "cinder_runner_t3": "fast", "gnawer": "fast", "bloater": "slow", "brute": "slow"}
+TIERED = UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]
+V2_IDS = TIERED + ENEMIES + ["marshal", "cinder_matron"]
+ANIMSET_OF = {i: "v2" for i in V2_IDS}
+ANIMSET_OF.update({"marshal": "v2hero", "cinder_matron": "v2boss", "cinder_runner": "v2fast", "cinder_runner_t2": "v2fast",
+                   "cinder_runner_t3": "v2fast", "gnawer": "v2fast", "bloater": "v2slow", "brute": "v2slow"})
 
 # ax: anchor x as a fraction of the cell (players; enemies use 1-ax), gy: ground px above the cell bottom
+_FIELD = dict(cell=(1152, 912), cols=4, ppu=144, ax=0.5, gy=120, yaw=25, mode="anim")
+_BOSS = dict(cell=(1568, 1232), cols=1, ppu=112, ax=0.45, gy=168, yaw=20, mode="anim")
 JOBS = {
-    "units": dict(cell=(560, 480), cols=6, ppu=96, ax=0.48, gy=88, yaw=25, mode="anim",
-                  ids=UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]),
-    "field": dict(cell=(672, 672), cols=4, ppu=96, ax=0.5, gy=100, yaw=25, mode="anim",
-                  ids=["marshal"] + ENEMIES),
-    "boss": dict(cell=(1024, 1024), cols=1, ppu=96, ax=0.44, gy=150, yaw=20, mode="anim", ids=["cinder_matron"]),
+    # carved figures (kit2). Rendered at 144 px/u, packed at 96.
+    "v2": dict(cell=(840, 624), cols=6, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=TIERED),
+    "v2field": dict(_FIELD, ids=["marshal"] + ENEMIES),
+    "v2boss": dict(_BOSS, ids=["cinder_matron"]),
+    # helpers' test jobs (same cells as the final jobs)
+    "look_h1": dict(cell=(840, 624), cols=3, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=["torchbow", "cinder_runner", "bellringer"]),
+    "look_h2": dict(_FIELD, cols=3, ids=["maulwright", "lamplighter", "marshal"]),
+    "look_h3": dict(_FIELD, cols=3, ids=["gnawer", "spitter", "bloater"]),
+    "look_h4": dict(_FIELD, cols=2, ids=["brute", "husk_warden"]),
+    "look_boss": dict(_BOSS, ids=["cinder_matron"]),
+    "look": dict(cell=(840, 624), cols=2, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=["ashguard", "husk"]),
     # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
     "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
                ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * 14 + [x for p in ICONS for x in (p, "_")]),
 }
 
-# atlas groups: name -> (job, ids, ppu, out_scale). out_scale only for ui (render px -> atlas px).
+# atlas groups: name -> (job, ids, ppu). Pages overflow to <group>2, <group>3... Upgrade looks live in their own groups
+# (unitsb = level 5, unitsc = level 10) so they load only when a unit has reached that level.
 ATLASES = {
-    "units": dict(job="units", ids=JOBS["units"]["ids"], ppu=72,   # pages: units = base, units2 = _t2, units3 = _t3
-                  pages=[UNITS, [u + "_t2" for u in UNITS], [u + "_t3" for u in UNITS]]),
-    "hero": dict(job="field", ids=["marshal"], ppu=72),
-    "enemies": dict(job="field", ids=ENEMIES, ppu=72),
-    "boss": dict(job="boss", ids=["cinder_matron"], ppu=72),
+    "units": dict(job="v2", ids=UNITS, ppu=80, contour=2),
+    "unitsb": dict(job="v2", ids=[u + "_t2" for u in UNITS], ppu=80, contour=2),
+    "unitsc": dict(job="v2", ids=[u + "_t3" for u in UNITS], ppu=80, contour=2),
+    "hero": dict(job="v2field", ids=["marshal"], ppu=80, contour=2),
+    "enemies": dict(job="v2field", ids=ENEMIES, ppu=80, contour=2),
+    "boss": dict(job="v2boss", ids=["cinder_matron"], ppu=64, contour=2),
     "ui": dict(job="ui", ids=PORTRAITS + ICONS, ppu=72, out_scale=0.5),
 }
 

@@ -12,7 +12,7 @@ import { load, save, saveSoon, exportCode, importCode, wipe, freshData } from ".
 import { initAudio, sfx, playMusic, setVolumes, duck, preload } from "./audio/audio.js";
 import { createRenderer } from "./render/renderer.js";
 import { loadGroup, loadAtlas as loadOne, loadBackgrounds, loadImageAsset, sprites } from "./render/assets.js";
-const loadAtlas = (g, o) => (g === "units" ? loadOne("units", o) : loadGroup(g, o));
+const loadAtlas = (g, o) => loadGroup(g, o);
 
 const content = { units, enemies, game, regions, stages: r1.stages, tutorials: r1.tutorials };
 const stageById = Object.fromEntries(content.stages.map((s) => [s.id, s]));
@@ -28,7 +28,7 @@ let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
-const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
+const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onSalvage: (n) => { if (battle) { const el = battle.energy; el.classList.remove("gain"); void el.offsetWidth; el.classList.add("gain"); const f = h("span", { class: "gainfx" }, "+" + n); el.append(f); setTimeout(() => f.remove(), 900); } }, onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
 
@@ -49,7 +49,7 @@ const I = {
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
   hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4l6 6-3 3-6-6zM11 7L3.5 14.5a2 2 0 000 2.8l3.2 3.2a2 2 0 002.8 0L17 13"/></svg>',
-  ballista: '<svg viewBox="0 0 48 48"><rect x="10" y="17" width="28" height="11" rx="5" transform="rotate(-25 24 22)" fill="#3a332e" stroke="#f3d9a8" stroke-width="2"/><circle cx="17" cy="33" r="6" fill="none" stroke="#d49a3a" stroke-width="3"/><circle cx="41" cy="10" r="3" fill="#ffb347"/></svg>',
+  ballista: '<svg viewBox="0 0 48 48"><g transform="rotate(-22 22 26)"><path d="M6 20h6l2-2h20c4 0 7 1 9 3v6c-2 2-5 3-9 3H14l-2-2H6z" fill="#3b4048" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><rect x="15" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="27" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="39" y="19.5" width="3.5" height="9" rx="1" fill="currentColor"/><circle cx="5" cy="24" r="3.4" fill="currentColor" stroke="#14161a" stroke-width="1.5"/></g><path d="M10 33h20l3 6H7z" fill="#6a4426" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><circle cx="13" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/><circle cx="28" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/></svg>',
   rain: '<svg viewBox="0 0 48 48"><g fill="#ff9a40"><circle cx="14" cy="30" r="5"/><circle cx="28" cy="20" r="6"/><circle cx="36" cy="34" r="4.5"/></g><g stroke="#ffcf7a" stroke-width="2.4" stroke-linecap="round"><path d="M10 22l4 6M24 10l4 8M33 25l3 7"/></g></svg>',
   bell: '<svg viewBox="0 0 48 48"><path d="M24 8c-7 0-11 6-11 13v8l-4 6h30l-4-6v-8c0-7-4-13-11-13z" fill="#e0a84a" stroke="#6a4214" stroke-width="2"/><circle cx="24" cy="38" r="3.5" fill="#6a4214"/></svg>',
   speed: (s) => `<span style="font-size:14px">${s}×</span>`,
@@ -127,7 +127,7 @@ async function titleScreen() {
       h("div", { class: "row" },
         h("button", { class: "btn primary big", onclick: tap(() => worldMap()) }, cleared("r1s1") ? "Continue" : "Play"),
         h("button", { class: "btn icon big", "aria-label": "Settings", onclick: tap(() => openSettings()) }, icon(I.gear)))),
-    h("div", { class: "foot" }, "v" + (import.meta.env.VITE_VERSION || "0.1") + " · saves stay on this device"));
+    h("div", { class: "foot" }, "Saves stay on this device · v" + (import.meta.env.VITE_VERSION || "0.1").split(" ")[0]));
   show(el);
   if (S.note === "restored") toast("Your save was damaged. Restored the last good copy.", 4000);
   if (S.note === "corrupt") toast("Your save could not be read. Started fresh (the old copy was kept).", 5000);
@@ -151,7 +151,7 @@ async function worldMap() {
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, W.regionCleared.title),
     W.regionCleared.text,
-    h("div", { style: "margin-top:10px" }, h("button", { class: "btn", onclick: tap(() => ann.remove()) }, "Got it"))) : null;
+    h("div", { style: "margin-top:10px" }, h("button", { class: "btn primary", onclick: tap(() => ann.remove()) }, "Aye"))) : null;
   if (ann) { D.seen.regionCleared = "shown"; persist(); }
   show(h("div", { class: "screen" }, ann,
     topbar(W.mapTitle, titleScreen, [h("button", { class: "btn", onclick: tap(() => armoury(worldMap)) }, icon(I.hammer), W.armoury.title)]),
@@ -166,7 +166,7 @@ async function regionScreen(region) {
   const pts = [[0.1, 0.72], [0.25, 0.4], [0.4, 0.68], [0.55, 0.36], [0.7, 0.66], [0.87, 0.42]];
   const path = h("div", { class: "path" });
   const svgPts = pts.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
-  path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="rgba(255,200,140,.35)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>` }));
+  path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="#2a1b11" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke" style="stroke-width:9px"/><polyline points="${svgPts}" fill="none" stroke="#d9bb82" stroke-linecap="round" stroke-dasharray="7 5" vector-effect="non-scaling-stroke" style="stroke-width:5px"/>` }));
   let nextIdx = regionStages.findIndex((s, i) => stageOpen(i) && !cleared(s.id));
   regionStages.forEach((s, i) => {
     const open = stageOpen(i), st = starsOf(s.id);
@@ -174,14 +174,15 @@ async function regionScreen(region) {
       style: `left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%`, "aria-label": `${s.name}${open ? "" : " (locked)"}`,
       onclick: open ? tap(() => stageSheet(s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
       s.boss ? "☠︎" : String(i + 1),
-      h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))));
+      h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))),
+      open ? h("span", { class: "nm" }, s.name) : null);
     if (!open) node.prepend(icon(I.lock));
     if (!open) node.childNodes[1].remove();
     path.append(node);
   });
   const back = bgs && (bgs.mid || bgs.far);
   show(h("div", { class: "screen" },
-    h("div", { class: "bgimg", style: back ? `background-image:url(${(bgs.sky || back).img.src})` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
+    h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
     topbar(region.name, worldMap, [h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
     path));
   if (nextIdx >= 0 && !D.seen.firstSheet) { D.seen.firstSheet = true; stageSheet(regionStages[nextIdx], region); }
@@ -213,55 +214,66 @@ async function armoury(backFn) {
   const tabs = h("div", { class: "tabs", role: "tablist" });
   const list = h("div", { class: "list" });
   const setTab = (t) => { armouryTab = t; render(); };
-  const mkTab = (id, label) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label);
-  function upRow(pic, title, lvl, max, det, next, cost, onBuy, locked) {
-    const can = !locked && lvl < max && D.marks >= cost;
-    const btn = h("button", { class: "btn upbtn" + (can ? " primary" : ""), disabled: locked || lvl >= max || null,
-      onclick: () => { if (D.marks < cost) { sfx("ui_locked"); toast(`Not enough ${W.currency}. Replay stages for more.`); return; } D.marks -= cost; onBuy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${title}"]`); if (c) c.classList.add("pop"); } },
-      lvl >= max ? "Max" : "Upgrade", lvl >= max ? null : h("small", {}, coin(), cost + ""));
-    return h("div", { class: "card" + (locked ? " locked" : ""), "data-k": title },
-      h("div", { class: "pic" }, pic),
-      h("div", {}, h("h3", {}, title, " ", h("span", { class: "lv" }, locked ? "Locked" : `Lv ${lvl}`)), h("div", { class: "det" }, det), next ? h("div", { class: "next" }, next) : null),
-      locked ? icon(I.lock) : btn);
+  const mkTab = (id, label, can) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label, can ? h("span", { class: "dot", "aria-label": "upgrade available" }) : null);
+  /** One upgrade row. o: {pic, title, role, lvl, max, stats: [[label, now, next]], miles, note, cost, buy, locked, hint} */
+  function upRow(o) {
+    const maxed = o.lvl >= o.max, can = !o.locked && !maxed && D.marks >= o.cost, shortBy = o.cost - D.marks;
+    const btn = h("button", { class: "btn upbtn" + (can ? " primary" : maxed ? " maxed" : " short"), disabled: maxed || null,
+      "aria-label": maxed ? `${o.title} is at its highest level` : `Upgrade ${o.title} for ${o.cost} ${W.currency}`,
+      onclick: () => { if (D.marks < o.cost) { sfx("ui_locked"); toast(`${shortBy} more ${W.currency} needed. Replay a stage to earn them.`); return; }
+        D.marks -= o.cost; o.buy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${o.title}"]`); if (c) c.classList.add("pop"); } },
+      maxed ? "Highest level" : "Upgrade", maxed ? null : h("small", {}, coin(), o.cost + ""), !maxed && !can ? h("em", {}, `need ${shortBy} more`) : null);
+    const pips = h("div", { class: "pips", "aria-label": `Level ${o.lvl} of ${o.max}` });
+    for (let i = 1; i <= o.max; i++) pips.append(h("i", { class: (i <= o.lvl ? "on" : "") + (o.miles && (i === 5 || i === 10) ? " mile" : "") }));
+    if (o.note) pips.append(h("span", {}, o.note));
+    return h("div", { class: "card" + (o.locked ? " locked" : can ? " can" : ""), "data-k": o.title },
+      h("div", { class: "pic" }, o.pic, o.locked ? null : h("span", { class: "lvb" }, o.lvl + "")),
+      h("div", {}, h("h3", {}, o.title), o.role ? h("div", { class: "role" }, o.role) : null,
+        o.locked ? h("div", { class: "hint" }, o.hint) : h("div", { class: "stats" }, ...o.stats.map(([k, a, b]) => h("span", { class: "stat" }, h("small", {}, k), a + "", !maxed && b != null && b + "" !== a + "" ? h("b", {}, "→ " + b) : null))),
+        o.locked ? null : pips),
+      o.locked ? icon(I.lock) : btn);
   }
-  function render() {
-    tabs.replaceChildren(mkTab("units", "Units"), mkTab("keep", `${W.keep} & ${W.weapon}`), mkTab("hero", "Hero & Powers"));
-    list.replaceChildren();
-    document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
-    if (armouryTab === "units") {
+  function rows(tab) {
+    const out = [];
+    if (tab === "units") {
       for (const u of units.units.filter((u) => u.region === 1)) {
         const locked = !D.unlocked.units.includes(u.id), L = D.unitLevels[u.id] || 1;
-        const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels);
-        const nextTier = L < 5 ? `Lv 5: ${u.tiers["5"]}` : L < 10 ? `Lv 10: ${u.tiers["10"]}` : u.tiers["10"];
-        const from = content.stages.find((st) => st.unlocks.includes(u.id));
-        void from;
-        if (locked) { list.append(upRow(portrait(u.id), u.name, L, 10, `${u.role} · ${u.cost} ${W.energy} · ${u.counter.toLowerCase().startsWith("any") ? "" : "weak to: " + u.counter.toLowerCase()}`, from ? unlockHint(u.id) : "Unlocks later", 0, () => {}, true)); continue; }
-        list.append(upRow(portrait(u.id), u.name, L, 10,
-          `${u.role} · ${u.cost} ${W.energy} · HP ${Math.round(a.hp)} · ${u.id === "lamplighter" ? "heal " + Math.round(a.traits.heal) : "DMG " + Math.round(a.dmg)}`,
-          L < 10 ? `Next: HP ${Math.round(b.hp)}, ${u.id === "lamplighter" ? "heal " + Math.round(b.traits.heal) : "DMG " + Math.round(b.dmg)} · ${nextTier}` : nextTier,
-          upgradeCost("unit", L, game), () => (D.unitLevels[u.id] = L + 1), locked));
+        const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels), heal = u.id === "lamplighter";
+        out.push({ pic: portrait(u.id), title: u.name, role: `${u.role} · ${u.cost} ${W.energy}`, lvl: L, max: 10, miles: true,
+          stats: [["HP", Math.round(a.hp), Math.round(b.hp)], [heal ? "Heal" : "Dmg", Math.round(heal ? a.traits.heal : a.dmg), Math.round(heal ? b.traits.heal : b.dmg)]],
+          note: L < 5 ? "new look at 5" : L < 10 ? "new look at 10" : "", cost: upgradeCost("unit", L, game), buy: () => (D.unitLevels[u.id] = L + 1), locked, hint: unlockHint(u.id) });
       }
-    } else if (armouryTab === "keep") {
-      const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen;
-      list.append(upRow(h("span", { html: I.lock.replace("currentColor", "#d49a3a") }), W.armoury.keepWalls, k, 10, fill(W.armoury.keepHp, { hp: game.keep.hp + game.keep.hpPerLevel * (k - 1) }), `Next: ${game.keep.hp + game.keep.hpPerLevel * k}`, upgradeCost("keep", k, game), () => D.keep++));
-      list.append(upRow(icon(I.ballista), W.armoury.weapon, bl, 10, fill(W.armoury.weaponDesc, { d: Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * (bl - 1))), r: Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * (bl - 1)).toFixed(2) }), `Next: ${Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * bl))} dmg, ${Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * bl).toFixed(2)}s`, upgradeCost("ballista", bl, game), () => D.ballista++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ff8a3a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.store, em, game.energy.maxLevel, fill(W.armoury.storeDesc, { n: game.energy.max + game.energy.maxPerLevel * (em - 1) }), `Next: ${game.energy.max + game.energy.maxPerLevel * em}`, upgradeCost("energyMax", em, game), () => D.energyMax++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ffcf6a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.flow, er, game.energy.maxLevel, fill(W.armoury.flowDesc, { n: (game.energy.regen + game.energy.regenPerLevel * (er - 1)).toFixed(1) }), `Next: ${(game.energy.regen + game.energy.regenPerLevel * er).toFixed(1)}/s`, upgradeCost("energyRegen", er, game), () => D.energyRegen++));
+    } else if (tab === "keep") {
+      const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen, gb = game.ballista, ge = game.energy;
+      const keg = (c) => h("span", { style: `display:block;width:30px;height:36px;border-radius:8px/14px;background:linear-gradient(90deg,#5a3516,${c} 45%,#6a421c);box-shadow:inset 0 9px 0 -6px #2a1a10,inset 0 -9px 0 -6px #2a1a10` });
+      out.push({ pic: icon(I.shield || I.lock), title: W.armoury.keepWalls, role: `The ${W.keep} takes more of a beating`, lvl: k, max: 10, stats: [["Fort HP", game.keep.hp + game.keep.hpPerLevel * (k - 1), game.keep.hp + game.keep.hpPerLevel * k]], cost: upgradeCost("keep", k, game), buy: () => D.keep++ });
+      out.push({ pic: icon(I.ballista), title: W.armoury.weapon, role: "Your cannon: harder hits, faster reload", lvl: bl, max: 10,
+        stats: [["Dmg", Math.round(gb.dmg * (1 + gb.dmgPerLevel * (bl - 1))), Math.round(gb.dmg * (1 + gb.dmgPerLevel * bl))], ["Reload", Math.max(1.2, gb.reload - gb.reloadPerLevel * (bl - 1)).toFixed(2) + "s", Math.max(1.2, gb.reload - gb.reloadPerLevel * bl).toFixed(2) + "s"]],
+        cost: upgradeCost("ballista", bl, game), buy: () => D.ballista++ });
+      out.push({ pic: keg("#a8703a"), title: W.armoury.store, role: `Hold more ${W.energy} between sends`, lvl: em, max: ge.maxLevel, stats: [["Holds", ge.max + ge.maxPerLevel * (em - 1), ge.max + ge.maxPerLevel * em]], cost: upgradeCost("energyMax", em, game), buy: () => D.energyMax++ });
+      out.push({ pic: keg("#d9a04a"), title: W.armoury.flow, role: `${W.energy[0].toUpperCase() + W.energy.slice(1)} arrives faster`, lvl: er, max: ge.maxLevel, stats: [["Per second", (ge.regen + ge.regenPerLevel * (er - 1)).toFixed(1), (ge.regen + ge.regenPerLevel * er).toFixed(1)]], cost: upgradeCost("energyRegen", er, game), buy: () => D.energyRegen++ });
     } else {
       const hl = D.hero, hg = game.hero;
-      list.append(upRow(portrait("marshal"), hg.name, hl, hg.maxLevel, fill(W.armoury.heroDesc, { hp: Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1))), d: Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1))) }), `Next: HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * hl))}, DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))}`, upgradeCost("hero", hl, game), () => D.hero++, !D.unlocked.hero));
-      if (!D.unlocked.hero) list.lastChild.querySelector(".next").textContent = unlockHint("hero");
+      out.push({ pic: portrait("marshal"), title: hg.name, role: "Hero · flare pistol stuns nearby monsters", lvl: hl, max: hg.maxLevel,
+        stats: [["HP", Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1))), Math.round(hg.hp * (1 + hg.hpPerLevel * hl))], ["Dmg", Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1))), Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))]],
+        cost: upgradeCost("hero", hl, game), buy: () => D.hero++, locked: !D.unlocked.hero, hint: unlockHint("hero") });
       for (const id of ["ember_rain", "rally"]) {
-        const a = game.abilities[id], L = D.abilities[id] || 1;
-        const det = fill(W.abilityDesc[id], { n: a.stones, d: Math.round((a.dmg || 0) * (1 + (a.dmgPerLevel || 0) * (L - 1))), cd: a.cooldown, t: ((a.time || 0) + (a.timePerLevel || 0) * (L - 1)).toFixed(1) });
-        const nx = id === "ember_rain" ? `Next: ${Math.round(a.dmg * (1 + a.dmgPerLevel * L))} dmg each` : `Next: lasts ${(a.time + a.timePerLevel * L).toFixed(1)}s`;
-        list.append(upRow(iconImg("i_" + id, id === "rally" ? I.bell : I.rain), abilityNames[id], L, a.maxLevel, det, nx, upgradeCost("ability", L, game), () => (D.abilities[id] = L + 1), !D.unlocked.abilities.includes(id)));
-        if (!D.unlocked.abilities.includes(id)) list.lastChild.querySelector(".next").textContent = unlockHint(id);
+        const a = game.abilities[id], L = D.abilities[id] || 1, rain = id === "ember_rain";
+        out.push({ pic: iconImg("i_" + id, rain ? I.rain : I.bell), title: abilityNames[id], role: rain ? `${a.stones} cannonballs where you tap · every ${a.cooldown}s` : `Crew fights faster and heals · every ${a.cooldown}s`, lvl: L, max: a.maxLevel,
+          stats: rain ? [["Dmg each", Math.round(a.dmg * (1 + a.dmgPerLevel * (L - 1))), Math.round(a.dmg * (1 + a.dmgPerLevel * L))]] : [["Lasts", (a.time + a.timePerLevel * (L - 1)).toFixed(1) + "s", (a.time + a.timePerLevel * L).toFixed(1) + "s"]],
+          cost: upgradeCost("ability", L, game), buy: () => (D.abilities[id] = L + 1), locked: !D.unlocked.abilities.includes(id), hint: unlockHint(id) });
       }
     }
+    return out;
+  }
+  const affordable = (tab) => rows(tab).some((o) => !o.locked && o.lvl < o.max && D.marks >= o.cost);
+  function render() {
+    tabs.replaceChildren(mkTab("units", "Crew", affordable("units")), mkTab("keep", `${W.keep} & ${W.weapon}`, affordable("keep")), mkTab("hero", "Captain & Powers", affordable("hero")));
+    document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
+    list.replaceChildren(...rows(armouryTab).map(upRow));
   }
   render();
-  show(h("div", { class: "screen" }, topbar(W.armoury.title, backFn), tabs, list));
+  show(h("div", { class: "screen qm" }, topbar(W.armoury.title, backFn), tabs, list));
 }
 
 // ---------------------------------------------------------------- settings
@@ -323,14 +335,15 @@ async function startBattle(stage) {
   const groups = ["units", "enemies", "castles", "fx", "ui"]; if (D.unlocked.hero) groups.push("hero"); if (stage.boss) groups.push("boss");
   const tiers = D.unlocked.units.map((u) => tierFor(D.unitLevels[u] || 1));
   const pages = groups.map((g) => [g, true]);
-  if (tiers.some((t) => t >= 2)) pages.push(["units2", false]); if (tiers.some((t) => t >= 3)) pages.push(["units3", false]);
+  if (tiers.some((t) => t >= 2)) pages.push(["unitsb", true]); if (tiers.some((t) => t >= 3)) pages.push(["unitsc", true]);
   let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
-  await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: g !== "ui" }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
+  await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: false }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
   const st = { ...stage, available: D.unlocked.units.slice(0, 6), hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };
-  const B = createBattle(content, st, prog, (Math.random() * 1e9) | 0);
-  R.resetForBattle(); R.region = stage.bg;
+  const seedQ = new URLSearchParams(location.search).get("seed");
+  const B = createBattle(content, st, prog, seedQ ? +seedQ : (Math.random() * 1e9) | 0);
+  R.resetForBattle(); R.region = stage.bg; R.grade = (W.fx.grades || {})[stage.bg] || null;
   battle = new BattleView(B, stage);
   playMusic(stage.music || "battle");
 }
@@ -350,8 +363,8 @@ class BattleView {
   }
   buildHud() {
     const B = this.B;
-    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, W.keep), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
-    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? W.gate + " · sealed" : W.gate), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
+    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, W.keep), h("span", { class: "v" })), h("div", { class: "bar" }, h("u"), h("i")));
+    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? W.gate + " · sealed" : W.gate), h("span", { class: "v" })), h("div", { class: "bar" }, h("u"), h("i")));
     this.speedBtn = h("button", { class: "pill", "aria-label": "Game speed", onclick: tap(() => { this.speed = this.speed === 1 ? 2 : 1; D.settings.speed = this.speed; persist(); this.speedBtn.innerHTML = I.speed(this.speed); }) });
     this.speedBtn.innerHTML = I.speed(this.speed);
     this.timer = h("div", { class: "pill", style: "pointer-events:none", "aria-label": "Battle time" }, "0:00");
@@ -375,7 +388,7 @@ class BattleView {
     });
     this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": W.heroCall, onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
     const side = h("div", { class: "side row-side" }, this.heroEl, ...this.abilEls);
-    const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
+    const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.weapon, this.energy), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
   }
@@ -523,8 +536,8 @@ class BattleView {
   updateHud() {
     const B = this.B;
     const kf = B.keep.hp / B.keep.max, gf = B.gate.hp / B.gate.max;
-    this.hpKeep.querySelector(".bar > i").style.transform = `scaleX(${kf})`; this.hpKeep.querySelector(".v").textContent = Math.ceil(B.keep.hp);
-    this.hpGate.querySelector(".bar > i").style.transform = `scaleX(${gf})`; this.hpGate.querySelector(".v").textContent = B.gate.sealed ? "" : Math.ceil(B.gate.hp);
+    this.hpKeep.querySelector(".bar > i").style.transform = this.hpKeep.querySelector(".bar > u").style.transform = `scaleX(${kf})`; this.hpKeep.querySelector(".v").textContent = Math.ceil(B.keep.hp);
+    this.hpGate.querySelector(".bar > i").style.transform = this.hpGate.querySelector(".bar > u").style.transform = `scaleX(${gf})`; this.hpGate.querySelector(".v").textContent = B.gate.sealed ? "" : Math.ceil(B.gate.hp);
     if (B.keep.hitT > 0.12) { this.hpKeep.classList.remove("hit"); void this.hpKeep.offsetWidth; this.hpKeep.classList.add("hit"); }
     const en = Math.floor(B.energy);
     if (en !== this._en) { this._en = en; this.energy.querySelector(".n").textContent = en; this.energy.querySelector(".mx").textContent = "/" + B.energyMax; const full = B.energy >= B.energyMax; if (full && !this._full) sfx("energy_full", { gain: 0.5 }); this._full = full; this.energy.classList.toggle("full", full); }
@@ -559,6 +572,7 @@ class BattleView {
     if (!this.paused) {
       let scale = this.speed * testSpeed;
       if (R.slowmo > 0) { R.slowmo -= dt; scale *= 0.25; }
+      if (R.hitstop > 0) { R.hitstop -= dt; scale = 0; }      // a held frame on heavy impacts
       this.acc += dt * scale;
       let steps = 0;
       const s0 = performance.now();
@@ -573,7 +587,11 @@ class BattleView {
     R.draw(B, this.paused ? 1 : Math.min(1, this.acc / B.dt), this.paused ? 0 : dt);
     this.updateHud();
     const work = performance.now() - w0; (this.work || (this.work = [])).push(work); if (this.work.length > 600) this.work.shift();
-    if (B.result && !this.ending) { this.ending = true; setTimeout(() => this.finish(), B.result === "win" ? 1700 : 1500); }
+    if (B.result && !this.ending) {     // watch the fall before the tally: pan to the loser, name the moment
+      R.camTarget = B.result === "win" ? Math.max(0, B.F.width - R.W) : 0; this.lastPan = now + 5000;
+      this.callout(B.result === "win" ? (this.stage.boss ? W.results.bossWin : W.results.win) : W.results.lose, true);
+    }
+    if (B.result && !this.ending) { this.ending = true; setTimeout(() => this.finish(), B.result === "win" ? 2300 : 2100); }
   }
   /** When the player isn't panning or aiming, ease the camera toward where the armies meet. */
   followFight(now) {
@@ -623,7 +641,7 @@ class BattleView {
         tip),
       win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
       h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " " + W.currency)),
-      unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
+      unlocks.length ? h("div", { class: "unlock" }, h("span", { class: "star on", style: "width:26px;height:26px" }), h("span", {}, h("small", {}, "New aboard"), unlocks.join(" · "))) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
         win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { D.seen.regionCleared = D.seen.regionCleared || "new"; worldMap(); }) }, "Continue") : null,
@@ -680,7 +698,7 @@ function boot() {
   const g = canvas.getContext("2d"); g.fillStyle = "#0b1118"; g.fillRect(0, 0, canvas.width, canvas.height);
   setInterval(() => { D.playTime = D.playTime || 0; }, 60000);
   // register the offline cache after first load settles, so it never competes with the first screen
-  if ("serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
+  if ("serviceWorker" in navigator && import.meta.env.PROD && !/\/preview\//.test(location.pathname)) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
   window.__siegeline = { get D() { return D; }, get battle() { return battle; }, startBattle: (id) => startBattle(stageById[id]), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
     ...(TEST ? { setSpeed: (x) => (testSpeed = x), autoplay: (skill) => (autoBot = skill == null ? null : makeBot({ skill })), save: () => save(D), reload: () => { S = load(); D = S.data; } } : {}) };
   titleScreen();

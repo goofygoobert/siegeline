@@ -100,10 +100,25 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 ## Atlas sizes (written by tools/pack_sprites.py)
 | file | size | ppu | bytes | ids |
 |---|---|---|---|---|
-| units.webp | 1664x2048 | 72 | 720 KB | ashguard, torchbow, cinder_runner, bellringer, maulwright, lamplighter |
-| units2.webp | 2036x2040 | 72 | 822 KB | ashguard_t2, torchbow_t2, cinder_runner_t2, bellringer_t2, maulwright_t2, lamplighter_t2 |
-| units3.webp | 2044x2040 | 72 | 901 KB | ashguard_t3, torchbow_t3, cinder_runner_t3, bellringer_t3, maulwright_t3, lamplighter_t3 |
-| hero.webp | 888x2048 | 72 | 257 KB | marshal |
-| enemies.webp | 2048x2048 | 72 | 913 KB | husk, gnawer, spitter, bloater, brute, husk_warden |
-| boss.webp | 2048x2040 | 56 | 727 KB | cinder_matron |
-| ui.webp | 1372x100 | 72 | 29 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
+| units.webp | 2040x2048 | 80 | 770 KB | ashguard, torchbow, cinder_runner, bellringer |
+| units2.webp | 2032x2044 | 80 | 359 KB | maulwright |
+| units3.webp | 928x2032 | 80 | 270 KB | lamplighter |
+| unitsb.webp | 1716x2044 | 80 | 584 KB | ashguard_t2, torchbow_t2, cinder_runner_t2 |
+| unitsb2.webp | 1928x968 | 80 | 211 KB | bellringer_t2 |
+| unitsb3.webp | 1916x2012 | 80 | 370 KB | maulwright_t2 |
+| unitsb4.webp | 1072x1996 | 80 | 274 KB | lamplighter_t2 |
+| unitsc.webp | 1712x2048 | 80 | 609 KB | ashguard_t3, torchbow_t3, cinder_runner_t3 |
+| unitsc2.webp | 1928x968 | 80 | 215 KB | bellringer_t3 |
+| unitsc3.webp | 1656x1984 | 80 | 394 KB | maulwright_t3 |
+| unitsc4.webp | 880x2040 | 80 | 276 KB | lamplighter_t3 |
+| hero.webp | 1364x2012 | 80 | 389 KB | marshal |
+| enemies.webp | 2048x2048 | 80 | 757 KB | husk, gnawer, spitter, bloater |
+| enemies2.webp | 1992x2044 | 80 | 447 KB | brute |
+| enemies3.webp | 1348x2044 | 80 | 397 KB | husk_warden |
+| boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
+| boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
+| boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |
+| boss4.webp | 1220x1684 | 64 | 213 KB | cinder_matron |
+| boss5.webp | 2004x2044 | 64 | 325 KB | cinder_matron |
+| boss6.webp | 1876x2012 | 64 | 258 KB | cinder_matron |
+| ui.webp | 1372x100 | 72 | 37 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |

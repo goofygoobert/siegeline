@@ -1228,9 +1228,9 @@ def grotto(ox, state=0):
             spike((X(fx), -1.32, 0.92), (0.25 if i == 0 else 0.05, 0, 1), l, 0.13, BONE, seg=7)
         # eye sockets with green glow (big fish-skull orbit on the left, a smaller one right)
         for (ex, ez, er, g) in ((-1.25, 4.15, 0.55, 1.8), (0.95, 4.45, 0.42, 1.5)):
-            cyl(er + 0.14, 0.12, BONE_D, (X(ex), -1.25, ez), rot=(math.radians(90), 0, 0), seg=18, name="orbit")
-            cyl(er, 0.12, (0.04, 0.07, 0.07), (X(ex), -1.3, ez), rot=(math.radians(90), 0, 0), seg=18, name="socket", outline=0.0)
-            ball(er * 0.42, SICK, (X(ex - 0.05), -1.32, ez - 0.05), scale=(1, 0.5, 1), glow=g if state == 0 else g * 0.7, name="eye")
+            # empty hollows, no eyes: a dead thing's skull, not a face (docs/design/art-direction.md)
+            ball(er * 1.05, (0.03, 0.06, 0.07), (X(ex), -1.1, ez), scale=(1.15, 0.5, 0.85), name="socket", outline=0.0)
+            kelp(X(ex - er * 0.4), -1.3, ez - er * 0.2, 0.7, seed=int(ex * 7)); kelp(X(ex + er * 0.3), -1.3, ez - er * 0.35, 0.5, seed=int(ex * 9))
         # dorsal fin rays sweeping back (right) with ragged webbing
         rays = [(-0.6, 5.1, 1.3, 0.5), (0.2, 5.45, 1.7, 0.65), (1.0, 5.45, 1.5, 0.8), (1.8, 5.1, 1.2, 0.95), (2.5, 4.5, 0.9, 1.1)]
         tips = []

@@ -93,6 +93,14 @@ flush()
 def figure(sid, x, y, z=0.0, anim="idle", tt=0.0, yaw=25, size=1.0):
     """Build a registered cast member (art/blender/chars) holding one pose, placed like the sprite renders."""
     spec = REG[sid]; st = spec.get("style", {})
+    if "v2" in spec:        # carved figures (kit2)
+        fig = spec["v2"](spec); facing = spec.get("facing", 1)
+        holder = empty("H_" + sid, (x, y, z)); holder.scale = (facing * size, size, size)
+        holder.rotation_euler = (0, 0, math.radians(-yaw * facing))
+        _parent_keep_local(fig.root, holder)
+        a = anim if anim in spec["anims"] else "idle"
+        pose(fig, 1, spec["anims"][a](tt, int(tt * 10), 10))
+        return fig
     rig = build_char(spec)
     facing = spec.get("facing", 1)
     holder = empty("H_" + sid, (x, y, z))

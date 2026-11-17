@@ -5,9 +5,16 @@
 # as one EEVEE animation on the 5070 (all characters on a grid). Review sheets: tools/pack_sprites.py --sheets
 cd "$(dirname "$0")/.."
 CHARS=$(ls art/blender/chars/_*.py; ls art/blender/chars/*.py | grep -v '/_' | grep -v -E '/(a|b|c)_[a-z]+\.py$')
-LIBS=""; for f in art/blender/cast.py $CHARS; do LIBS="$LIBS --lib $f"; done
+LIBS=""; for f in art/blender/cast.py art/blender/kit2.py $CHARS; do LIBS="$LIBS --lib $f"; done
 mkdir -p art/build art/out
+OLDCHARS=$(echo "$CHARS" | tr ' ' '\n' | grep -v '/v2_')
+declare -A MINE=([look_h1]="torchbow cinder_runner bellringer" [look_h2]="maulwright lamplighter marshal" [look_h3]="gnawer spitter bloater" [look_h4]="brute husk_warden" [look_boss]="cinder_matron" [look]="ashguard husk" [v2]="ashguard torchbow cinder_runner bellringer maulwright lamplighter")
 for J in "$@"; do
+  # a helper's test job bundles only that helper's own new files, so one broken file cannot stop the others
+  if [[ -n "${MINE[$J]}" ]]; then
+    LIBS=""; for f in art/blender/cast.py art/blender/kit2.py $OLDCHARS; do LIBS="$LIBS --lib $f"; done
+    for id in ${MINE[$J]}; do [ -f art/blender/chars/v2_$id.py ] && LIBS="$LIBS --lib art/blender/chars/v2_$id.py"; done
+  fi
   if [[ $J == one:* ]]; then
     ids=${J#one:}; name="one_${ids//,/_}"
     job=$(python3 -c "import sys;sys.path.insert(0,'art/blender');import cast;i='$ids'.split(',')[0];print(next(k for k,v in cast.JOBS.items() if i in v['ids']))")

@@ -79,6 +79,10 @@
   "ambient": "#cfe9f2",
   "ambientGlow": false,
   "elite": "#5dff8a",
-  "fire": "#ff8a2a"
+  "fire": "#ff8a2a",
+  "sand": "#d9b488",
+  "energyWord": "powder",
+  "directWord": "Direct hit!",
+  "grades": { "r1n": "#d3e2e0" }
  }
 }
