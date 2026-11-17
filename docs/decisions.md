@@ -53,3 +53,15 @@ Format: decision — reason — alternative considered.
 - **Bodies stay on the beach** ~3 s (monsters melt into an ink puddle); hit-stop on heavy impacts; end of battle pans to the falling side before the tally.
 - **Preview lives at /preview/** on the same site, built from branch `redesign` by the same workflow and added only if its own tests and play-through pass. It keeps its own save slot (starts from a copy of the live save) and installs no offline worker. The live offline worker now ignores /preview/ and /worlds/ pages (it used to store any page it saw as the game's offline start page).
 - **Foreground layer not built** — listed in the art direction, deferred to phase 3.
+
+## Roll-out (2026-11-17, phase 3)
+- **Whole region 1 cast is on the carved-figure kit**: 6 crew x 3 looks, the Captain, 6 monsters, Mother Fathom. Built by four helpers from `docs/design/helper-brief.md`, one file per character (`art/blender/chars/v2_*.py`). The old character files stay in the repo unused; the old atlases are gone.
+- **Atlas groups changed**: `units` (base looks), `unitsb` (level 5), `unitsc` (level 10), `hero`, `enemies`, `boss`, each with numbered overflow pages. A very large sprite (the boss) may be split by animation across pages; the engine merges pages and each animation remembers its page. `docs/asset-contract.md` describes the old `units2/units3` naming and still needs this update.
+- **Sprites packed at 80 px per unit (boss 64)**: exactly 1:1 on a 390-point-high phone with the 2x canvas cap. 96 was wasted memory.
+- **No white copies of atlas pages**: the hit flash is the sprite added onto itself. Halves texture memory.
+- **Night stage = colour grade** (`fx.grades` in `data/world.json`), one multiply fill over figures and forts, instead of a second set of night sprites.
+- **Gullwake and Long Tom drawn 1.2x**, cannon pivot in the sim moved to match (balance grid re-run, inside the curve). A full re-model of the fort with deck crew and a gangplank is still open.
+- **Stage select shows the cove itself** (the four background layers) with a rope between markers and stage names under them.
+- **Sound**: no new audio was made. New events reuse existing cues at different pitch. Unheard.
+- **Not done**: foreground parallax layer; fort re-model; new sound cues; dedicated boss-stage night props.
+- **Going live is the owner's call**: the roll-out is on `redesign` and at /preview/. Merging to `main` publishes it through the same gate.
