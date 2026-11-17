@@ -73,7 +73,7 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
           const enemy = t.side === -1;
-          num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
+          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, EMBER, 120, 2, 1, 200, 0.5);
           if (e.kind === "blade") R.sfx("hit_blade", { pan: panOf(t.x), gain: 0.8 });
@@ -136,14 +136,28 @@ export function createRenderer(canvas, hooks) {
   };
 
   // ---------------------------------------------------------------- drawing helpers
-  function drawLayer(L, camX, y = 0) {
+  /** Background layers are pre-scaled once to screen resolution, so each frame is a plain unscaled copy. */
+  const layerCache = new Map();
+  function scaledLayer(L) {
+    const key = L.img.src + "@" + R.scale.toFixed(3) + "x" + Math.round(R.W);
+    let c = layerCache.get(key);
+    if (!c) {
+      const f = L.parallax || 0, wLog = f === 0 ? R.W : 1170 + (2600 - 1170) * f;
+      c = document.createElement("canvas"); c.width = Math.ceil(wLog * R.scale); c.height = Math.ceil(H * R.scale);
+      const cg = c.getContext("2d"); cg.imageSmoothingQuality = "high"; cg.drawImage(L.img, 0, 0, c.width, c.height);
+      if (layerCache.size > 12) layerCache.clear();
+      layerCache.set(key, c);
+    }
+    return c;
+  }
+  function drawLayer(L, camX) {
     if (!L || !L.img) return;
-    const img = L.img, f = L.parallax || 0;
-    const wLog = 1170 + (2600 - 1170) * f;           // contract width in logical px
-    const k = img.width / wLog;                       // image px per logical px
-    const sx = camX * f * k, sw = R.W * k;
-    if (f === 0) { g.drawImage(img, 0, 0, img.width, img.height, 0, y, R.W, H); return; }
-    g.drawImage(img, Math.max(0, sx), 0, Math.min(sw, img.width - sx), img.height, 0, y, Math.min(sw, img.width - sx) / k, img.height / k);
+    const c = scaledLayer(L), f = L.parallax || 0;
+    const sx = Math.max(0, Math.min(c.width - 1, Math.round(camX * f * R.scale)));
+    const sw = Math.min(c.width - sx, Math.ceil(R.W * R.scale));
+    g.setTransform(1, 0, 0, 1, Math.round(R.shakeX * R.scale), Math.round(R.shakeY * R.scale));
+    g.drawImage(c, sx, 0, sw, c.height, 0, 0, sw, c.height);
+    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
   }
 
   function spriteDraw(id, anim, t, x, y, opts = {}) {
@@ -182,6 +196,11 @@ export function createRenderer(canvas, hooks) {
     }
   }
 
+  // soft shadow + ember glow pre-rendered once; drawn as images instead of path fills per entity
+  const blob = (r, g2, b2, a) => { const c = document.createElement("canvas"); c.width = 64; c.height = 64; const cg = c.getContext("2d");
+    const gr = cg.createRadialGradient(32, 32, 4, 32, 32, 32); gr.addColorStop(0, `rgba(${r},${g2},${b2},${a})`); gr.addColorStop(1, `rgba(${r},${g2},${b2},0)`);
+    cg.fillStyle = gr; cg.fillRect(0, 0, 64, 64); return c; };
+  const SHADOW = blob(0, 0, 0, 0.55), GLOW = blob(255, 106, 26, 0.6);
   function drawEntity(B, e, alpha) {
     const x = e.px + (e.x - e.px) * alpha;
     if (x < R.camX - 160 || x > R.camX + R.W + 160) return;          // off-screen skip
@@ -190,12 +209,12 @@ export function createRenderer(canvas, hooks) {
     const fadeOut = !e.alive && e.dieT > 1.0 ? Math.max(0, 1 - (e.dieT - 1.0) / 0.6) : 1;
     if (fadeOut <= 0) return;
     // shadow
-    g.globalAlpha = 0.35 * fadeOut; g.fillStyle = "#000";
-    g.beginPath(); g.ellipse(sx, y, e.s.size * 1.2, e.s.size * 0.32, 0, 0, 7); g.fill();
+    g.globalAlpha = 0.8 * fadeOut;
+    g.drawImage(SHADOW, sx - e.s.size * 1.5, y - e.s.size * 0.45, e.s.size * 3, e.s.size * 0.9);
     // elite / enrage glow
     if ((e.elite || e.enraged || (e.kind === "boss" && e.phase2)) && e.alive) {
-      g.globalAlpha = 0.28 + 0.12 * Math.sin(R.t * 6); g.fillStyle = "#ff6a1a";
-      g.beginPath(); g.ellipse(sx, y - e.s.size * 1.8, e.s.size * 1.5, e.s.size * 2.3, 0, 0, 7); g.fill();
+      g.globalAlpha = 0.55 + 0.25 * Math.sin(R.t * 6);
+      g.drawImage(GLOW, sx - e.s.size * 2, y - e.s.size * 4.8, e.s.size * 4, e.s.size * 5.4);
     }
     g.globalAlpha = fadeOut;
     let anim = animFor(e), t = e.stateT, fps;
@@ -318,7 +337,7 @@ export function createRenderer(canvas, hooks) {
     R.shakeX = (Math.random() - 0.5) * tr; R.shakeY = (Math.random() - 0.5) * tr;
     g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
     const L = BG[B.stage.bg] || BG[R.region] || {};
-    if (L.sky) drawLayer(L.sky, R.camX); else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a1418"); gr.addColorStop(1, "#c9602a"); g.fillStyle = gr; g.fillRect(-20, -20, R.W + 40, H + 40); }
+    if (L.sky) drawLayer(L.sky, 0); else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a1418"); gr.addColorStop(1, "#c9602a"); g.fillStyle = gr; g.fillRect(-20, -20, R.W + 40, H + 40); }
     drawLayer(L.far || (BG.r1 && BG.r1.far), R.camX); drawLayer(L.mid || (BG.r1 && BG.r1.mid), R.camX);
     if (L.near || (BG.r1 && BG.r1.near)) drawLayer(L.near || BG.r1.near, R.camX);
     else { g.fillStyle = "#2b2023"; g.fillRect(-20, B.F.groundY - 6, R.W + 40, H); }
@@ -336,18 +355,22 @@ export function createRenderer(canvas, hooks) {
       if (!a || f.t * (a.fps || 14) >= a.frames.length) { f.t = -1; continue; }
       g.globalCompositeOperation = "lighter"; spriteDraw(f.id, "idle", f.t, f.x - R.camX, f.y, { scale: f.s }); g.globalCompositeOperation = "source-over";
     }
-    // particles
+    // particles: update + draw normal ones, then all glowing ones in a single additive pass
     const dt = dtReal;
-    for (const p of R.parts) {
-      if (p.life <= 0) continue;
-      p.life -= dt; p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt;
-      if (p.k === 0 && p.y > B.F.groundY + 8) { p.y = B.F.groundY + 8; p.vx *= 0.5; p.vy = 0; }
-      const sx = p.x - R.camX; if (sx < -20 || sx > R.W + 20) continue;
-      const a = Math.max(0, p.life / p.max);
-      if (p.k === 1) { g.globalCompositeOperation = "lighter"; g.globalAlpha = a; g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); g.globalCompositeOperation = "source-over"; }
-      else if (p.k === 2) { g.globalAlpha = a * 0.5; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * (1.6 - a * 0.6), 0, 7); g.fill(); }
-      else { g.globalAlpha = Math.min(1, a * 1.5); g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+    for (let pass = 0; pass < 2; pass++) {
+      if (pass === 1) g.globalCompositeOperation = "lighter";
+      for (const p of R.parts) {
+        if (p.life <= 0 || (pass === 1) !== (p.k === 1)) continue;
+        p.life -= dt; p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.k === 0 && p.y > B.F.groundY + 8) { p.y = B.F.groundY + 8; p.vx *= 0.5; p.vy = 0; }
+        const sx = p.x - R.camX; if (sx < -20 || sx > R.W + 20) continue;
+        const a = Math.max(0, p.life / p.max);
+        if (p.k === 1) { g.globalAlpha = a; g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+        else if (p.k === 2) { g.globalAlpha = a * 0.5; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * (1.6 - a * 0.6), 0, 7); g.fill(); }
+        else { g.globalAlpha = Math.min(1, a * 1.5); g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+      }
     }
+    g.globalCompositeOperation = "source-over";
     g.globalAlpha = 1;
     // ambient embers drifting up (the Ashen Marches feel)
     if (R.quality > 1 && Math.random() < 0.25) part(R.camX + Math.random() * R.W, H + 4, (Math.random() - 0.5) * 20, -30 - Math.random() * 30, 6, 2, "#ff9a40", 1, -2);
@@ -364,8 +387,12 @@ export function createRenderer(canvas, hooks) {
     if (R.flashA > 0) { g.globalAlpha = R.flashA; g.fillStyle = R.flashC; g.fillRect(-20, -20, R.W + 40, H + 40); g.globalAlpha = 1; R.flashA = Math.max(0, R.flashA - dtReal * 2.2); }
     // edge vignette for depth
     if (R.quality > 0) {
-      const vg = R._vg || (R._vg = (() => { const v = g.createRadialGradient(R.W / 2, H / 2, H * 0.4, R.W / 2, H / 2, R.W * 0.7); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(10,4,4,.45)"); return v; })());
-      g.fillStyle = vg; g.fillRect(0, 0, R.W, H);
+      if (!R._vg) {   // vignette rendered once at low resolution, stretched (soft by nature)
+        const c = document.createElement("canvas"); c.width = 256; c.height = 128; const cg = c.getContext("2d");
+        const v = cg.createRadialGradient(128, 64, 40, 128, 64, 150); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(10,4,4,.45)");
+        cg.fillStyle = v; cg.fillRect(0, 0, 256, 128); R._vg = c;
+      }
+      g.drawImage(R._vg, 0, 0, R.W, H);
     }
   };
   R.resetForBattle = () => { for (const p of R.parts) p.life = 0; for (const n of R.nums) n.life = 0; R.camX = 0; R.shake = 0; R.flashA = 0; R.aim = null; R.slowmo = 0; R._vg = null; };

@@ -526,6 +526,7 @@ class BattleView {
   frame(now) {
     if (this.over && !this.ending) return;
     this.raf = requestAnimationFrame((t) => this.frame(t));
+    const w0 = performance.now();
     let dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     const B = this.B;
     if (!this.paused) {
@@ -533,15 +534,18 @@ class BattleView {
       if (R.slowmo > 0) { R.slowmo -= dt; scale *= 0.25; }
       this.acc += dt * scale;
       let steps = 0;
+      const s0 = performance.now();
       const maxSteps = 8 * testSpeed;
       while (this.acc >= B.dt && steps < maxSteps) { if (autoBot && !(this.tutor && this.tutor.shown)) autoBot(B); step(B); this.acc -= B.dt; steps++; }
       if (steps === maxSteps) this.acc = 0;
+      (this.simWork || (this.simWork = [])).push(performance.now() - s0); if (this.simWork.length > 600) this.simWork.shift();
       this.tutorialTick();
     }
     this.followFight(now);
     R.consume(B);
     R.draw(B, this.paused ? 1 : Math.min(1, this.acc / B.dt), this.paused ? 0 : dt);
     this.updateHud();
+    const work = performance.now() - w0; (this.work || (this.work = [])).push(work); if (this.work.length > 600) this.work.shift();
     if (B.result && !this.ending) { this.ending = true; setTimeout(() => this.finish(), B.result === "win" ? 1700 : 1500); }
   }
   /** When the player isn't panning or aiming, ease the camera toward where the armies meet. */
