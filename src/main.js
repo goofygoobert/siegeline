@@ -151,7 +151,7 @@ async function worldMap() {
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, W.regionCleared.title),
     W.regionCleared.text,
-    h("div", { style: "margin-top:10px" }, h("button", { class: "btn", onclick: tap(() => ann.remove()) }, "Got it"))) : null;
+    h("div", { style: "margin-top:10px" }, h("button", { class: "btn primary", onclick: tap(() => ann.remove()) }, "Aye"))) : null;
   if (ann) { D.seen.regionCleared = "shown"; persist(); }
   show(h("div", { class: "screen" }, ann,
     topbar(W.mapTitle, titleScreen, [h("button", { class: "btn", onclick: tap(() => armoury(worldMap)) }, icon(I.hammer), W.armoury.title)]),

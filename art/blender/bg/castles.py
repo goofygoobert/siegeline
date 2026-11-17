@@ -13,6 +13,8 @@ class _SceneFig:      # forts are painted with the figures' sunset lighting (kit
 
 
 _SF = _SceneFig()
+# the Grotto is the darkest large shape on screen so monsters (mid-teal) stand clear of it (review 4)
+GR = (0.17, 0.22, 0.25); GR_D = (0.10, 0.14, 0.17); GR_L = (0.26, 0.32, 0.33)
 
 
 def toon(color, name=None, glow=0.0, rim=0.25):

@@ -92,7 +92,7 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
           const enemy = t.side === -1;
-          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60, t.uid, e.amt);
+          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#fff2b8" : "#ff7a6a", e.amt >= 60, t.uid, e.amt);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (e.kind !== "fire") spark(t.x + t.side * t.s.size * 0.7, gy - t.s.size * (2.2 + Math.random()), e.amt >= 40 ? 26 : 17);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, GLOWE, 120, 2, 1, 200, 0.5);
@@ -460,7 +460,7 @@ export function createRenderer(canvas, hooks) {
     // ambient embers drifting up (the Ashen Marches feel)
     if (R.quality > 1 && Math.random() < 0.25) part(R.camX + Math.random() * R.W, TH.ambientGlow === false ? Math.random() * H * 0.7 : H + 4, TH.ambientGlow === false ? 20 + Math.random() * 25 : (Math.random() - 0.5) * 20, TH.ambientGlow === false ? 4 - Math.random() * 8 : -30 - Math.random() * 30, 6, 2, TH.ambient || "#ff9a40", TH.ambientGlow === false ? 3 : 1, -2);
     // damage numbers
-    g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(20,10,10,.85)";
+    g.textAlign = "center"; g.lineWidth = 4.5; g.lineJoin = "round"; g.strokeStyle = "rgba(20,10,10,.95)";
     for (const n of R.nums) {
       if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
       const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
