@@ -168,10 +168,10 @@ Elite versions: HP x2.2, damage x1.4, speed x1.1, green glow and 12% larger.
 
 | Stage | Name | Enemy gate HP | Enemy power | Par time | First-clear marks | Unlocks | Scripted waves |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| r1s1 | Tide Turns Green | 1200 | x2.42 | 110 s | 120 | cinder_runner, ember_rain | 2s 2x husk; 20s 3x husk; 38s 2x gnawer; 52s 4x husk |
-| r1s2 | The Smugglers' Steps | 1600 | x2.38 | 140 s | 150 | maulwright, hero | 2s 3x husk; 22s 1x spitter; 26s 3x husk; 45s 4x gnawer; 60s 2x spitter; 64s 4x husk |
-| r1s3 | Pufferghast Shoals | 2000 | x1.99 | 155 s | 180 | bellringer, rally | 2s 4x husk; 22s 1x bloater; 30s 2x spitter; 45s 5x gnawer; 60s 2x bloater; 75s 6x husk; 90s 1x brute |
-| r1s4 | The Broken Lighthouse | 2500 | x1.18 | 190 s | 210 | lamplighter | 2s 4x husk; 18s 2x spitter; 32s 1x brute; 34s 3x husk; 55s 6x gnawer; 70s 2x bloater; 85s 1x husk_warden; 88s 4x husk |
-| r1s5 | Wreckers' Reef | 3000 | x0.97 | 205 s | 240 | - | 2s 5x husk; 15s 4x gnawer; 28s 1x brute; 30s 3x spitter; 50s 3x bloater; 65s 4x husk (elite); 80s 2x brute; 100s 1x husk_warden; 102s 6x gnawer |
-| r1boss | Mother Fathom | sealed (defeat the boss) | x0.97, boss x1.64 | 215 s | 400 | - | 2s 4x husk; 12s 2x spitter |
+| r1s1 | Tide Turns Green | 1200 | x2.6 | 110 s | 120 | cinder_runner, ember_rain | 2s 2x husk; 20s 3x husk; 38s 2x gnawer; 52s 4x husk |
+| r1s2 | The Smugglers' Steps | 1600 | x2.58 | 140 s | 150 | maulwright, hero | 2s 3x husk; 22s 1x spitter; 26s 3x husk; 45s 4x gnawer; 60s 2x spitter; 64s 4x husk |
+| r1s3 | Pufferghast Shoals | 2000 | x2.2 | 155 s | 180 | bellringer, rally | 2s 4x husk; 22s 1x bloater; 30s 2x spitter; 45s 5x gnawer; 60s 2x bloater; 75s 6x husk; 90s 1x brute |
+| r1s4 | The Broken Lighthouse | 2500 | x1.31 | 190 s | 210 | lamplighter | 2s 4x husk; 18s 2x spitter; 32s 1x brute; 34s 3x husk; 55s 6x gnawer; 70s 2x bloater; 85s 1x husk_warden; 88s 4x husk |
+| r1s5 | Wreckers' Reef | 3000 | x1.09 | 205 s | 240 | - | 2s 5x husk; 15s 4x gnawer; 28s 1x brute; 30s 3x spitter; 50s 3x bloater; 65s 4x husk (elite); 80s 2x brute; 100s 1x husk_warden; 102s 6x gnawer |
+| r1boss | Mother Fathom | sealed (defeat the boss) | x0.97, boss x1.91 | 260 s | 400 | - | 2s 4x husk; 12s 2x spitter |
 <!-- /GENERATED -->

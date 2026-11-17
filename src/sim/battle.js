@@ -310,7 +310,7 @@ function stepEntity(B, e, dt) {
   if (e.flash > 0) e.flash -= dt;
   if (!e.alive) {
     e.dieT += dt;
-    if (e.dieT > 1.6) e.gone = true;
+    if (e.dieT > (e.side === -1 ? 4.2 : 3.0)) e.gone = true;      // bodies lie on the beach for a moment
     return;
   }
   if (e.slowT > 0) e.slowT -= dt;
@@ -392,11 +392,11 @@ function stepProjectiles(B, dt) {
     p.t += dt; p.px = p.x; p.py = p.y;
     if (p.kind === "bolt") {
       p.vy += G * dt; p.x += p.vx * dt; p.y += p.vy * dt;
-      let hit = p.y >= ground - 4;
+      let hit = p.y >= ground - 4, direct = null;
       if (!hit) for (const o of B.ents) {
         if (!o.alive || o.side !== -1) continue;
         const h = Math.min(260, o.s.size * (o.kind === "boss" ? 5 : 5.4));
-        if (Math.abs(o.x - p.x) < o.s.size * 0.7 + 6 && p.y > ground - h) { hit = true; break; }
+        if (Math.abs(o.x - p.x) < o.s.size * 0.7 + 6 && p.y > ground - h) { hit = true; direct = o; break; }
       }
       if (!hit && p.x > B.gate.front - 10 && p.y > ground - 260) {
         hit = true; hitCastle(B, 1, p.dmg * 0.5);
@@ -406,8 +406,15 @@ function stepProjectiles(B, dt) {
         if (hit) {
           const before = B.stats.kills; let hits = 0;
           for (const o of B.ents) if (o.alive && o.side === -1 && Math.abs(o.x - p.x) <= p.splash + o.s.size * 0.5) hits++;
-          explode(B, p.x, p.splash, p.dmg, { side: 1 }, "enemies", { kb: 18, kind: "fire" });
+          // a ball that strikes a body (not the sand) hits that monster half again as hard
+          const bl = B.g.ballista;
+          if (direct && direct.alive && direct.kind !== "boss") damage(B, direct, p.dmg * (bl.directBonus || 0), { side: 1 }, { kind: "fire" });
+          explode(B, p.x, p.splash, p.dmg, { side: 1 }, "enemies", { kb: bl.knockback || 18, kind: "fire" });
           if (hits) B.stats.shotHits++;
+          // salvage: every monster the cannon kills pays powder back, so a shot into a pack buys the next deckhand
+          const got = (B.stats.kills - before) * (bl.salvage || 0);
+          if (got > 0) { B.energy = Math.min(B.energyMax, B.energy + got); B.stats.salvage = (B.stats.salvage || 0) + got; ev(B, "salvage", { x: p.x, amt: got }); }
+          if (direct && direct.kind !== "boss") ev(B, "directHit", { x: p.x, y: p.y });
           const fp = B.g.ballista.firePatch;
           B.patches.push({ x: p.x, r: fp.radius, dps: fp.dps, t: fp.time, side: 1 });
           ev(B, "boltHit", { x: p.x, y: Math.min(p.y, ground), hits, kills: B.stats.kills - before });

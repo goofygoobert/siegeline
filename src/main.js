@@ -28,7 +28,7 @@ let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
-const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
+const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onSalvage: () => { if (battle) { const el = battle.energy; el.classList.remove("gain"); void el.offsetWidth; el.classList.add("gain"); } }, onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
 
@@ -213,55 +213,66 @@ async function armoury(backFn) {
   const tabs = h("div", { class: "tabs", role: "tablist" });
   const list = h("div", { class: "list" });
   const setTab = (t) => { armouryTab = t; render(); };
-  const mkTab = (id, label) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label);
-  function upRow(pic, title, lvl, max, det, next, cost, onBuy, locked) {
-    const can = !locked && lvl < max && D.marks >= cost;
-    const btn = h("button", { class: "btn upbtn" + (can ? " primary" : ""), disabled: locked || lvl >= max || null,
-      onclick: () => { if (D.marks < cost) { sfx("ui_locked"); toast(`Not enough ${W.currency}. Replay stages for more.`); return; } D.marks -= cost; onBuy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${title}"]`); if (c) c.classList.add("pop"); } },
-      lvl >= max ? "Max" : "Upgrade", lvl >= max ? null : h("small", {}, coin(), cost + ""));
-    return h("div", { class: "card" + (locked ? " locked" : ""), "data-k": title },
-      h("div", { class: "pic" }, pic),
-      h("div", {}, h("h3", {}, title, " ", h("span", { class: "lv" }, locked ? "Locked" : `Lv ${lvl}`)), h("div", { class: "det" }, det), next ? h("div", { class: "next" }, next) : null),
-      locked ? icon(I.lock) : btn);
+  const mkTab = (id, label, can) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label, can ? h("span", { class: "dot", "aria-label": "upgrade available" }) : null);
+  /** One upgrade row. o: {pic, title, role, lvl, max, stats: [[label, now, next]], miles, note, cost, buy, locked, hint} */
+  function upRow(o) {
+    const maxed = o.lvl >= o.max, can = !o.locked && !maxed && D.marks >= o.cost, shortBy = o.cost - D.marks;
+    const btn = h("button", { class: "btn upbtn" + (can ? " primary" : maxed ? " maxed" : " short"), disabled: maxed || null,
+      "aria-label": maxed ? `${o.title} is at its highest level` : `Upgrade ${o.title} for ${o.cost} ${W.currency}`,
+      onclick: () => { if (D.marks < o.cost) { sfx("ui_locked"); toast(`${shortBy} more ${W.currency} needed. Replay a stage to earn them.`); return; }
+        D.marks -= o.cost; o.buy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${o.title}"]`); if (c) c.classList.add("pop"); } },
+      maxed ? "Highest level" : "Upgrade", maxed ? null : h("small", {}, coin(), o.cost + ""), !maxed && !can ? h("em", {}, `need ${shortBy} more`) : null);
+    const pips = h("div", { class: "pips", "aria-label": `Level ${o.lvl} of ${o.max}` });
+    for (let i = 1; i <= o.max; i++) pips.append(h("i", { class: (i <= o.lvl ? "on" : "") + (o.miles && (i === 5 || i === 10) ? " mile" : "") }));
+    if (o.note) pips.append(h("span", {}, o.note));
+    return h("div", { class: "card" + (o.locked ? " locked" : can ? " can" : ""), "data-k": o.title },
+      h("div", { class: "pic" }, o.pic, o.locked ? null : h("span", { class: "lvb" }, o.lvl + "")),
+      h("div", {}, h("h3", {}, o.title), o.role ? h("div", { class: "role" }, o.role) : null,
+        o.locked ? h("div", { class: "hint" }, o.hint) : h("div", { class: "stats" }, ...o.stats.map(([k, a, b]) => h("span", { class: "stat" }, h("small", {}, k), a + "", !maxed && b != null && b + "" !== a + "" ? h("b", {}, "→ " + b) : null))),
+        o.locked ? null : pips),
+      o.locked ? icon(I.lock) : btn);
   }
-  function render() {
-    tabs.replaceChildren(mkTab("units", "Units"), mkTab("keep", `${W.keep} & ${W.weapon}`), mkTab("hero", "Hero & Powers"));
-    list.replaceChildren();
-    document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
-    if (armouryTab === "units") {
+  function rows(tab) {
+    const out = [];
+    if (tab === "units") {
       for (const u of units.units.filter((u) => u.region === 1)) {
         const locked = !D.unlocked.units.includes(u.id), L = D.unitLevels[u.id] || 1;
-        const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels);
-        const nextTier = L < 5 ? `Lv 5: ${u.tiers["5"]}` : L < 10 ? `Lv 10: ${u.tiers["10"]}` : u.tiers["10"];
-        const from = content.stages.find((st) => st.unlocks.includes(u.id));
-        void from;
-        if (locked) { list.append(upRow(portrait(u.id), u.name, L, 10, `${u.role} · ${u.cost} ${W.energy} · ${u.counter.toLowerCase().startsWith("any") ? "" : "weak to: " + u.counter.toLowerCase()}`, from ? unlockHint(u.id) : "Unlocks later", 0, () => {}, true)); continue; }
-        list.append(upRow(portrait(u.id), u.name, L, 10,
-          `${u.role} · ${u.cost} ${W.energy} · HP ${Math.round(a.hp)} · ${u.id === "lamplighter" ? "heal " + Math.round(a.traits.heal) : "DMG " + Math.round(a.dmg)}`,
-          L < 10 ? `Next: HP ${Math.round(b.hp)}, ${u.id === "lamplighter" ? "heal " + Math.round(b.traits.heal) : "DMG " + Math.round(b.dmg)} · ${nextTier}` : nextTier,
-          upgradeCost("unit", L, game), () => (D.unitLevels[u.id] = L + 1), locked));
+        const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels), heal = u.id === "lamplighter";
+        out.push({ pic: portrait(u.id), title: u.name, role: `${u.role} · ${u.cost} ${W.energy}`, lvl: L, max: 10, miles: true,
+          stats: [["HP", Math.round(a.hp), Math.round(b.hp)], [heal ? "Heal" : "Dmg", Math.round(heal ? a.traits.heal : a.dmg), Math.round(heal ? b.traits.heal : b.dmg)]],
+          note: L < 5 ? "new look at 5" : L < 10 ? "new look at 10" : "", cost: upgradeCost("unit", L, game), buy: () => (D.unitLevels[u.id] = L + 1), locked, hint: unlockHint(u.id) });
       }
-    } else if (armouryTab === "keep") {
-      const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen;
-      list.append(upRow(h("span", { html: I.lock.replace("currentColor", "#d49a3a") }), W.armoury.keepWalls, k, 10, fill(W.armoury.keepHp, { hp: game.keep.hp + game.keep.hpPerLevel * (k - 1) }), `Next: ${game.keep.hp + game.keep.hpPerLevel * k}`, upgradeCost("keep", k, game), () => D.keep++));
-      list.append(upRow(icon(I.ballista), W.armoury.weapon, bl, 10, fill(W.armoury.weaponDesc, { d: Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * (bl - 1))), r: Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * (bl - 1)).toFixed(2) }), `Next: ${Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * bl))} dmg, ${Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * bl).toFixed(2)}s`, upgradeCost("ballista", bl, game), () => D.ballista++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ff8a3a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.store, em, game.energy.maxLevel, fill(W.armoury.storeDesc, { n: game.energy.max + game.energy.maxPerLevel * (em - 1) }), `Next: ${game.energy.max + game.energy.maxPerLevel * em}`, upgradeCost("energyMax", em, game), () => D.energyMax++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ffcf6a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.flow, er, game.energy.maxLevel, fill(W.armoury.flowDesc, { n: (game.energy.regen + game.energy.regenPerLevel * (er - 1)).toFixed(1) }), `Next: ${(game.energy.regen + game.energy.regenPerLevel * er).toFixed(1)}/s`, upgradeCost("energyRegen", er, game), () => D.energyRegen++));
+    } else if (tab === "keep") {
+      const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen, gb = game.ballista, ge = game.energy;
+      const keg = (c) => h("span", { style: `display:block;width:30px;height:36px;border-radius:8px/14px;background:linear-gradient(90deg,#5a3516,${c} 45%,#6a421c);box-shadow:inset 0 9px 0 -6px #2a1a10,inset 0 -9px 0 -6px #2a1a10` });
+      out.push({ pic: icon(I.shield || I.lock), title: W.armoury.keepWalls, role: `The ${W.keep} takes more of a beating`, lvl: k, max: 10, stats: [["Fort HP", game.keep.hp + game.keep.hpPerLevel * (k - 1), game.keep.hp + game.keep.hpPerLevel * k]], cost: upgradeCost("keep", k, game), buy: () => D.keep++ });
+      out.push({ pic: icon(I.ballista), title: W.armoury.weapon, role: "Your cannon: harder hits, faster reload", lvl: bl, max: 10,
+        stats: [["Dmg", Math.round(gb.dmg * (1 + gb.dmgPerLevel * (bl - 1))), Math.round(gb.dmg * (1 + gb.dmgPerLevel * bl))], ["Reload", Math.max(1.2, gb.reload - gb.reloadPerLevel * (bl - 1)).toFixed(2) + "s", Math.max(1.2, gb.reload - gb.reloadPerLevel * bl).toFixed(2) + "s"]],
+        cost: upgradeCost("ballista", bl, game), buy: () => D.ballista++ });
+      out.push({ pic: keg("#a8703a"), title: W.armoury.store, role: `Hold more ${W.energy} between sends`, lvl: em, max: ge.maxLevel, stats: [["Holds", ge.max + ge.maxPerLevel * (em - 1), ge.max + ge.maxPerLevel * em]], cost: upgradeCost("energyMax", em, game), buy: () => D.energyMax++ });
+      out.push({ pic: keg("#d9a04a"), title: W.armoury.flow, role: `${W.energy[0].toUpperCase() + W.energy.slice(1)} arrives faster`, lvl: er, max: ge.maxLevel, stats: [["Per second", (ge.regen + ge.regenPerLevel * (er - 1)).toFixed(1), (ge.regen + ge.regenPerLevel * er).toFixed(1)]], cost: upgradeCost("energyRegen", er, game), buy: () => D.energyRegen++ });
     } else {
       const hl = D.hero, hg = game.hero;
-      list.append(upRow(portrait("marshal"), hg.name, hl, hg.maxLevel, fill(W.armoury.heroDesc, { hp: Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1))), d: Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1))) }), `Next: HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * hl))}, DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))}`, upgradeCost("hero", hl, game), () => D.hero++, !D.unlocked.hero));
-      if (!D.unlocked.hero) list.lastChild.querySelector(".next").textContent = unlockHint("hero");
+      out.push({ pic: portrait("marshal"), title: hg.name, role: "Hero · flare pistol stuns nearby monsters", lvl: hl, max: hg.maxLevel,
+        stats: [["HP", Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1))), Math.round(hg.hp * (1 + hg.hpPerLevel * hl))], ["Dmg", Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1))), Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))]],
+        cost: upgradeCost("hero", hl, game), buy: () => D.hero++, locked: !D.unlocked.hero, hint: unlockHint("hero") });
       for (const id of ["ember_rain", "rally"]) {
-        const a = game.abilities[id], L = D.abilities[id] || 1;
-        const det = fill(W.abilityDesc[id], { n: a.stones, d: Math.round((a.dmg || 0) * (1 + (a.dmgPerLevel || 0) * (L - 1))), cd: a.cooldown, t: ((a.time || 0) + (a.timePerLevel || 0) * (L - 1)).toFixed(1) });
-        const nx = id === "ember_rain" ? `Next: ${Math.round(a.dmg * (1 + a.dmgPerLevel * L))} dmg each` : `Next: lasts ${(a.time + a.timePerLevel * L).toFixed(1)}s`;
-        list.append(upRow(iconImg("i_" + id, id === "rally" ? I.bell : I.rain), abilityNames[id], L, a.maxLevel, det, nx, upgradeCost("ability", L, game), () => (D.abilities[id] = L + 1), !D.unlocked.abilities.includes(id)));
-        if (!D.unlocked.abilities.includes(id)) list.lastChild.querySelector(".next").textContent = unlockHint(id);
+        const a = game.abilities[id], L = D.abilities[id] || 1, rain = id === "ember_rain";
+        out.push({ pic: iconImg("i_" + id, rain ? I.rain : I.bell), title: abilityNames[id], role: rain ? `${a.stones} cannonballs where you tap · every ${a.cooldown}s` : `Crew fights faster and heals · every ${a.cooldown}s`, lvl: L, max: a.maxLevel,
+          stats: rain ? [["Dmg each", Math.round(a.dmg * (1 + a.dmgPerLevel * (L - 1))), Math.round(a.dmg * (1 + a.dmgPerLevel * L))]] : [["Lasts", (a.time + a.timePerLevel * (L - 1)).toFixed(1) + "s", (a.time + a.timePerLevel * L).toFixed(1) + "s"]],
+          cost: upgradeCost("ability", L, game), buy: () => (D.abilities[id] = L + 1), locked: !D.unlocked.abilities.includes(id), hint: unlockHint(id) });
       }
     }
+    return out;
+  }
+  const affordable = (tab) => rows(tab).some((o) => !o.locked && o.lvl < o.max && D.marks >= o.cost);
+  function render() {
+    tabs.replaceChildren(mkTab("units", "Crew", affordable("units")), mkTab("keep", `${W.keep} & ${W.weapon}`, affordable("keep")), mkTab("hero", "Captain & Powers", affordable("hero")));
+    document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
+    list.replaceChildren(...rows(armouryTab).map(upRow));
   }
   render();
-  show(h("div", { class: "screen" }, topbar(W.armoury.title, backFn), tabs, list));
+  show(h("div", { class: "screen qm" }, topbar(W.armoury.title, backFn), tabs, list));
 }
 
 // ---------------------------------------------------------------- settings
@@ -352,8 +363,8 @@ class BattleView {
   }
   buildHud() {
     const B = this.B;
-    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, W.keep), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
-    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? W.gate + " · sealed" : W.gate), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
+    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, W.keep), h("span", { class: "v" })), h("div", { class: "bar" }, h("u"), h("i")));
+    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? W.gate + " · sealed" : W.gate), h("span", { class: "v" })), h("div", { class: "bar" }, h("u"), h("i")));
     this.speedBtn = h("button", { class: "pill", "aria-label": "Game speed", onclick: tap(() => { this.speed = this.speed === 1 ? 2 : 1; D.settings.speed = this.speed; persist(); this.speedBtn.innerHTML = I.speed(this.speed); }) });
     this.speedBtn.innerHTML = I.speed(this.speed);
     this.timer = h("div", { class: "pill", style: "pointer-events:none", "aria-label": "Battle time" }, "0:00");
@@ -377,7 +388,7 @@ class BattleView {
     });
     this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": W.heroCall, onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
     const side = h("div", { class: "side row-side" }, this.heroEl, ...this.abilEls);
-    const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
+    const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.weapon, this.energy), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
   }
@@ -525,8 +536,8 @@ class BattleView {
   updateHud() {
     const B = this.B;
     const kf = B.keep.hp / B.keep.max, gf = B.gate.hp / B.gate.max;
-    this.hpKeep.querySelector(".bar > i").style.transform = `scaleX(${kf})`; this.hpKeep.querySelector(".v").textContent = Math.ceil(B.keep.hp);
-    this.hpGate.querySelector(".bar > i").style.transform = `scaleX(${gf})`; this.hpGate.querySelector(".v").textContent = B.gate.sealed ? "" : Math.ceil(B.gate.hp);
+    this.hpKeep.querySelector(".bar > i").style.transform = this.hpKeep.querySelector(".bar > u").style.transform = `scaleX(${kf})`; this.hpKeep.querySelector(".v").textContent = Math.ceil(B.keep.hp);
+    this.hpGate.querySelector(".bar > i").style.transform = this.hpGate.querySelector(".bar > u").style.transform = `scaleX(${gf})`; this.hpGate.querySelector(".v").textContent = B.gate.sealed ? "" : Math.ceil(B.gate.hp);
     if (B.keep.hitT > 0.12) { this.hpKeep.classList.remove("hit"); void this.hpKeep.offsetWidth; this.hpKeep.classList.add("hit"); }
     const en = Math.floor(B.energy);
     if (en !== this._en) { this._en = en; this.energy.querySelector(".n").textContent = en; this.energy.querySelector(".mx").textContent = "/" + B.energyMax; const full = B.energy >= B.energyMax; if (full && !this._full) sfx("energy_full", { gain: 0.5 }); this._full = full; this.energy.classList.toggle("full", full); }
@@ -561,6 +572,7 @@ class BattleView {
     if (!this.paused) {
       let scale = this.speed * testSpeed;
       if (R.slowmo > 0) { R.slowmo -= dt; scale *= 0.25; }
+      if (R.hitstop > 0) { R.hitstop -= dt; scale = 0; }      // a held frame on heavy impacts
       this.acc += dt * scale;
       let steps = 0;
       const s0 = performance.now();
@@ -575,7 +587,11 @@ class BattleView {
     R.draw(B, this.paused ? 1 : Math.min(1, this.acc / B.dt), this.paused ? 0 : dt);
     this.updateHud();
     const work = performance.now() - w0; (this.work || (this.work = [])).push(work); if (this.work.length > 600) this.work.shift();
-    if (B.result && !this.ending) { this.ending = true; setTimeout(() => this.finish(), B.result === "win" ? 1700 : 1500); }
+    if (B.result && !this.ending) {     // watch the fall before the tally: pan to the loser, name the moment
+      R.camTarget = B.result === "win" ? Math.max(0, B.F.width - R.W) : 0; this.lastPan = now + 5000;
+      this.callout(B.result === "win" ? (this.stage.boss ? W.results.bossWin : W.results.win) : W.results.lose, true);
+    }
+    if (B.result && !this.ending) { this.ending = true; setTimeout(() => this.finish(), B.result === "win" ? 2300 : 2100); }
   }
   /** When the player isn't panning or aiming, ease the camera toward where the armies meet. */
   followFight(now) {
@@ -625,7 +641,7 @@ class BattleView {
         tip),
       win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
       h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " " + W.currency)),
-      unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
+      unlocks.length ? h("div", { class: "unlock" }, h("span", { class: "star on", style: "width:26px;height:26px" }), h("span", {}, h("small", {}, "New aboard"), unlocks.join(" · "))) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
         win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { D.seen.regionCleared = D.seen.regionCleared || "new"; worldMap(); }) }, "Continue") : null,

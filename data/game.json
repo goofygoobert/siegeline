@@ -22,6 +22,9 @@
   "maxLevel": 10
  },
  "ballista": {
+  "directBonus": 0.5,
+  "knockback": 34,
+  "salvage": 4,
   "dmg": 90,
   "dmgPerLevel": 0.12,
   "splash": 55,
