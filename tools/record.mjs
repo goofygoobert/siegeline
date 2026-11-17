@@ -12,7 +12,11 @@ await page.setViewport({ width: 844, height: 390, deviceScaleFactor: 1, isMobile
 const sl = (ms) => new Promise((r) => setTimeout(r, ms));
 await page.goto(base + "?test=1", { waitUntil: "networkidle0" });
 await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: "networkidle0" });
-const rec = await page.screencast({ path: `${out}/playthrough.webm` });
+// capture JPEG frames via CDP (works without a GPU), assembled with ffmpeg afterwards
+const cdp = await page.createCDPSession(); const frames = [];
+cdp.on("Page.screencastFrame", async (f) => { frames.push({ t: f.metadata.timestamp, d: f.data }); await cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {}); });
+await cdp.send("Page.startScreencast", { format: "jpeg", quality: 70, everyNthFrame: 1 });
+const rec = { stop: async () => { await cdp.send("Page.stopScreencast"); } };
 await sl(1500);
 await page.evaluate(() => __siegeline.worldMap()); await sl(1800);
 await page.evaluate(() => __siegeline.regionScreen()); await sl(1800);
@@ -35,4 +39,9 @@ await page.waitForSelector(".result", { timeout: 45000 }).catch(() => {});
 await page.evaluate(() => __siegeline.setSpeed(1)); await sl(5000);
 await rec.stop();
 await browser.close();
-console.log("recorded", `${out}/playthrough.webm`);
+const { writeFileSync, mkdirSync: mk } = await import("node:fs"); const { execSync } = await import("node:child_process");
+const dir = (process.env.TMPDIR || "/tmp") + "/recframes"; mk(dir, { recursive: true });
+let list = ""; frames.forEach((f, i) => { writeFileSync(`${dir}/f${i}.jpg`, Buffer.from(f.d, "base64")); const dur = i + 1 < frames.length ? Math.min(0.5, frames[i + 1].t - f.t) : 0.1; list += `file '${dir}/f${i}.jpg'\nduration ${dur.toFixed(3)}\n`; });
+writeFileSync(`${dir}/list.txt`, list);
+execSync(`ffmpeg -loglevel error -y -f concat -safe 0 -i ${dir}/list.txt -vf "fps=20,scale=844:-2" -c:v libx264 -preset veryfast -crf 30 -pix_fmt yuv420p -movflags +faststart ${out}/playthrough.mp4`);
+console.log("recorded", frames.length, "frames ->", `${out}/playthrough.mp4`);

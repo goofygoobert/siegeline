@@ -25,3 +25,7 @@ Format: decision — reason — alternative considered.
 - **Auto-follow camera after 3.5 s without panning** — a 2600 px field on a phone screen needs the camera to find the fight; panning and aiming always take over.
 - **Every unlocked unit, power and the hero are usable in any stage** (replays included) — simpler and friendlier than per-stage loadouts.
 - **A loss still pays a few marks (2 per kill, max 40)** — so a loss is never wasted time, without making grinding losses worthwhile.
+- **Battle bar layout: ember meter above the ballista, hero + powers in a right-hand column, cards centred** — fits the ~750 px usable width of a notched iPhone in landscape and a 667 px iPhone SE.
+- **Service worker: page network-first, versioned files cache-first, never answer a missing file with the page** — the first version could blank the screen after an update.
+- **Burning and fire-patch damage never trigger the white hit flash** — the boss was permanently white while standing in fire.
+- **Recording assembled from captured frames and encoded on the 5070** — headless Chrome's own screencast produced empty files here, and this ffmpeg has no software H.264 encoder.

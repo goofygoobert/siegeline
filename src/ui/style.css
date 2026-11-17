@@ -156,12 +156,14 @@ button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent
 .ucard.sent { animation: sent .3s var(--ease); }
 @keyframes sent { 30% { transform: translateY(-6px) scale(1.05); } }
 .ucard .ph { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 46px; height: 52px; border-radius: 10px 10px 4px 4px; }
-.energy { width: 150px; align-self: center; margin-bottom: 4px; pointer-events: none !important; }
+.hud-bottom .left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; pointer-events: none; }
+.hud-bottom .left > .weapon { pointer-events: auto; }
+.energy { width: 128px; pointer-events: none !important; }
 .energy .val { font-weight: 900; font-size: var(--fs-l); text-shadow: 0 2px 3px #000; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
 .energy .val .fl { width: 14px; height: 18px; background: var(--accent); clip-path: polygon(50% 0, 90% 55%, 75% 100%, 25% 100%, 10% 55%); }
 .energy .bar > i { background: linear-gradient(90deg, #ff7a2a, #ffcf6a); transition: none; }
 .energy.full .val { color: var(--accent-2); }
-.side { display: flex; flex-direction: column; gap: 6px; }
+.side { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .abil { width: 62px; height: 62px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5a2a1a, #1e0e09); border: 2px solid #c06a3a; position: relative; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.5); overflow: hidden; }
 .abil img, .abil svg { width: 38px; height: 38px; }
 .abil .cdtxt { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); font-weight: 900; }
@@ -209,6 +211,7 @@ textarea { width: 100%; min-height: 90px; border-radius: var(--r-s); background:
 .loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); }
 .loading .bar { width: 200px; }
 
+@media (max-width: 760px) { .ucard { width: 60px; height: 76px; } .ucard img { width: 56px; height: 56px; } .cards { gap: 4px; } }
 @media (max-height: 360px) { .ucard { width: 62px; height: 76px; } .ucard img { width: 56px; height: 56px; } .weapon { width: 76px; height: 76px; } .abil { width: 56px; height: 56px; } }
 .reduced *, .reduced *::before, .reduced *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

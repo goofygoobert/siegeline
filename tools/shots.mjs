@@ -6,18 +6,19 @@ import os from "node:os";
 
 const base = process.argv[2] || "http://127.0.0.1:5194/";
 const out = process.argv[3] || "docs/shots";
+const VW = +(process.env.VW || 844), VH = +(process.env.VH || 390);
 mkdirSync(out, { recursive: true });
 const free = os.freemem() / 1048576;
 if (free < 500) { console.error(`only ${free.toFixed(0)} MB free; not starting Chrome`); process.exit(2); }
 
 const browser = await puppeteer.launch({
   executablePath: "/usr/bin/google-chrome", headless: "new",
-  args: ["--no-sandbox", "--disable-dev-shm-usage", "--mute-audio", `--user-data-dir=${process.env.TMPDIR || "/tmp"}/shots-chrome`, "--js-flags=--max-old-space-size=256"],
+  args: ["--no-sandbox", "--disable-dev-shm-usage", "--mute-audio", `--user-data-dir=${process.env.TMPDIR || "/tmp"}/shots-chrome-${Date.now()}`, "--js-flags=--max-old-space-size=256"],
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true, isLandscape: true });
+await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 2, isMobile: true, hasTouch: true, isLandscape: true });
 const errors = [];
-page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
+page.on("pageerror", (e) => { errors.push("pageerror: " + e.message); console.log("PAGEERROR", e.message); });
 page.on("console", (m) => { if (m.type() === "error") errors.push("console: " + m.text()); });
 const shot = async (name) => { await new Promise((r) => setTimeout(r, 450)); await page.screenshot({ path: `${out}/${name}.png` }); console.log("shot", name); };
 const sl = (ms) => new Promise((r) => setTimeout(r, ms));

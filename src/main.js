@@ -359,8 +359,8 @@ class BattleView {
       return el;
     });
     this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": "Call the Marshal", onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
-    const side = h("div", { class: "side" }, ...this.abilEls);
-    const bottom = h("div", { class: "hud-bottom" }, this.weapon, this.energy, cards, this.heroEl, side);
+    const side = h("div", { class: "side" }, ...this.abilEls, this.heroEl);
+    const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
   }

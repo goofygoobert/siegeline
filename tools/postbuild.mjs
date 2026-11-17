@@ -15,11 +15,18 @@ const PRE = ${JSON.stringify(["./", ...pre])};
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", (e) => {
-  const r = e.request; if (r.method !== "GET") return;
+  const r = e.request; if (r.method !== "GET" || new URL(r.url).origin !== location.origin) return;
+  if (r.mode === "navigate") {
+    // the page: network first so updates arrive at once; cached copy only when offline
+    e.respondWith(fetch(r).then((res) => { const cp = res.clone(); caches.open(CACHE).then((c) => c.put("./", cp)); return res; })
+      .catch(() => caches.match("./")));
+    return;
+  }
+  // versioned files (hashed code, art, audio): cache first, fill the cache from the network
   e.respondWith(caches.match(r, { ignoreSearch: true }).then((hit) => hit || fetch(r).then((res) => {
-    if (res.ok && new URL(r.url).origin === location.origin) { const cp = res.clone(); caches.open(CACHE).then((c) => c.put(r, cp)); }
+    if (res.ok) { const cp = res.clone(); caches.open(CACHE).then((c) => c.put(r, cp)); }
     return res;
-  }).catch(() => caches.match("./"))));
+  })));
 });
 `;
 writeFileSync(join(dist, "sw.js"), sw);

@@ -130,7 +130,7 @@ function damage(B, e, amt, src, opts) {
   let d = amt;
   if (e.s.traits && e.s.traits.meleeGuard && opts && opts.melee) d *= 1 - e.s.traits.meleeGuard;
   if (e.s.traits && e.s.traits.armor) d *= 1 - e.s.traits.armor;
-  e.hp -= d; e.flash = 0.12;
+  e.hp -= d; if (!opts || opts.kind !== "burn") e.flash = 0.12;   // damage-over-time never flashes
   if (src && src.side === 1) B.stats.dmgDealt += d;
   ev(B, "dmg", { e, amt: d, crit: opts && opts.crit, kind: opts && opts.kind });
   if (e.hp <= 0) kill(B, e);
