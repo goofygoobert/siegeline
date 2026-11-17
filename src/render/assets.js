@@ -9,7 +9,9 @@ const done = new Set();
 function loadImage(src) {
   return new Promise((res) => {
     const im = new Image(); im.decoding = "async";
-    im.onload = () => res(im); im.onerror = () => res(null); im.src = src;
+    // decode during loading, not on the first frame that draws the page (that caused a visible hitch)
+    im.onload = () => { (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(() => res(im)); };
+    im.onerror = () => res(null); im.src = src;
   });
 }
 
@@ -27,6 +29,7 @@ export async function loadAtlas(group, { white = true } = {}) {
   try {
     const r = await fetch(BASE + group + ".json", { cache: "no-cache" }); if (!r.ok) throw 0;
     const json = await r.json(); const img = await loadImage(BASE + json.image); if (!img) throw 0;
+    try { const w = document.createElement("canvas"); w.width = w.height = 2; w.getContext("2d").drawImage(img, 0, 0, 2, 2); } catch {}   // warm the page once, off-screen
     const a = { img, json, white: white ? whiteCopy(img) : null, scale: 44 / (json.ppu || 72) };
     atlases[group] = a;
     // a sprite's animations may be spread over several pages of the same group: merge, and let each anim keep its page

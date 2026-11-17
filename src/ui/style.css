@@ -491,3 +491,5 @@ textarea { background: #f6ecd2; color: #2a1a10; border: 2px solid var(--wood-3);
 .loading .bar { height: 10px; border-radius: 3px; background: #130c08; border: 2px solid var(--brass-dk); }
 .loading .bar > i { background: repeating-linear-gradient(90deg, #ffd884 0 8px, #d99a36 8px 9px); }
 .pin.locked .lbl > span { gap: 7px !important; }
+.title-s { white-space: nowrap; }
+@media (max-width: 760px) { .pin.locked .lbl { font-size: 8px; padding: 0 5px; letter-spacing: 0; } .pin.locked .lbl .icon { display: none !important; } .pin .lbl { font-size: 10px; } }
