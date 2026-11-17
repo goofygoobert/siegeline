@@ -4,7 +4,7 @@ from kit import *
 
 def drowner_fig(spec):
     fig = Fig("dr", INK_DEEP, h=1.7, line=0.024)
-    T = V2["teal"]; D = V2["deep"]
+    T = (0.27, 0.50, 0.49); D = (0.12, 0.25, 0.30)
     C = dict(skin=T, body=(0.50, 0.54, 0.47), sleeve=(0.50, 0.54, 0.47), arm=T, legs=D, boots=D, hand=(0.13, 0.27, 0.30), claw=V2["bone"], shin=T)
     P = dict(hip=0.56, chest_h=0.64, wy=0.29, wx=0.25, shoulder=0.35, head_r=0.27, belly=0.82, arm_r=0.085, upper_arm=0.33, lower_arm=0.37,
              leg_r=0.105, thigh=0.26, shin=0.26, hip_w=0.14, lean=15, head_rest=-2, neck_x=0.07, arm_k=dict(R=1.14, L=0.95),
@@ -24,7 +24,7 @@ def drowner_fig(spec):
         fig.add(cone((cx + r * (0.95 + 0.1 * (i % 2)), r * y, cz - r * 0.62), (cx + r * 1.0, r * y, cz - r * 0.26), r * 0.10, 0.0, seg=5), "jaw", V2["bone"], line=0.01)
         fig.add(cone((cx + r * (1.02 - 0.1 * (i % 2)), r * y * 0.9, cz - r * 0.40), (cx + r * 1.05, r * y * 0.9, cz - r * 0.72), r * 0.09, 0.0, seg=5), "head", V2["bone"], line=0.01)
     for y in (-1, 1):
-        fig.add(orb(r * 0.27, (cx + r * 0.78, y * r * 0.50, cz + r * 0.10), (0.7, 0.8, 0.9), seg=8, name="eye"), "head", V2["glow"], glow=1.3)
+        fig.add(orb(r * 0.34, (cx + r * 0.80, y * r * 0.50, cz + r * 0.10), (0.7, 0.85, 0.95), seg=8, name="eye"), "head", V2["glow"], glow=1.3)
         fig.add(block((r * 0.5, r * 0.34, r * 0.13), (cx + r * 0.74, y * r * 0.50, cz + r * 0.40), rot=(-24, "Y"), bevel=0.02, name="lid"), "head", D, line=0.008)
     # kelp hair: long strands down the back, one over the face
     for i, (y, ln, ph) in enumerate(((-0.6, 0.30, 0.0), (0.0, 0.36, 0.25), (0.6, 0.28, 0.5), (-0.3, 0.24, 0.7))):
@@ -55,7 +55,7 @@ def drowner_fig(spec):
         for i in range(7):
             a = math.radians(95 - i * 17); arc.append((0.25 + R * math.cos(a), 0.85 + R * math.sin(a)))
         for i in range(6, -1, -1):
-            a = math.radians(95 - i * 17); w = 0.955 + 0.035 * abs(i - 3) / 3
+            a = math.radians(95 - i * 17); w = 0.90 + 0.09 * abs(i - 3) / 3
             arc.append((0.25 + R * w * math.cos(a), 0.85 + R * w * math.sin(a)))
         fig.add(slab(arc, 0.02, at=(0, -0.36, 0), name="streak"), "swipe", (0.75, 1.0, 0.82), glow=1.0)
     return fig

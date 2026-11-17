@@ -409,3 +409,26 @@ textarea { width: 100%; min-height: 90px; border-radius: var(--r-s); background:
 .unlock { padding: 4px 14px 4px 8px; }
 @media (max-height: 380px) { .result .starrow { display: none; } }
 @media (max-width: 760px) { .ucard .nm { font-size: 7.5px; } }
+
+/* ---- fixes from the fresh review (docs/review/review-3.md) */
+.tut { left: 0; right: 0; margin: 0 auto; width: fit-content; transform: none; }
+.cards { min-width: 0; margin-bottom: 5px; gap: 6px; }
+.ucard { flex: 0 1 68px; min-width: 50px; height: 86px; transform: translateY(3px); }
+.ucard img { width: 100%; max-width: 62px; height: auto; aspect-ratio: 1; }
+.ucard.ready { transform: none; }
+.ucard.poor { transform: translateY(6px); filter: saturate(.6) brightness(.76); }
+.side, .hud-bottom .left { flex: none; }
+.energy { width: 84px; }
+.bossbar .bar > i { background: linear-gradient(180deg, #ffb08a, #d0402a); }
+.bossbar .name { color: #ffd9c8; text-shadow: 0 2px 0 #000, 0 0 10px rgba(0,0,0,.8); }
+.callout.warn { top: 36%; }
+.card h3 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+.card > div:nth-child(2) { min-width: 0; }
+.pips i { height: 8px; }
+.pips i.mile { height: 11px; width: 11px; }
+.btnrow .btn { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: 14px; }
+.unlock .star.on { background: linear-gradient(180deg, #e9a23b, #a8641a); }
+.modal { background: rgba(10, 6, 5, .8); }
+.gainfx { position: absolute; left: 30px; top: -18px; font: 900 16px/1 system-ui, sans-serif; color: var(--brass-2); text-shadow: 0 2px 0 #000; pointer-events: none; animation: gainfx .9s ease-out both; }
+@keyframes gainfx { from { opacity: 0; transform: translateY(8px); } 20% { opacity: 1; } to { opacity: 0; transform: translateY(-22px); } }
+.energy { position: relative; }

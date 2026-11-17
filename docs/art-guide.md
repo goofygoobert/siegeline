@@ -104,7 +104,7 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 | units2.webp | 2036x2040 | 72 | 822 KB | ashguard_t2, torchbow_t2, cinder_runner_t2, bellringer_t2, maulwright_t2, lamplighter_t2 |
 | units3.webp | 2044x2040 | 72 | 901 KB | ashguard_t3, torchbow_t3, cinder_runner_t3, bellringer_t3, maulwright_t3, lamplighter_t3 |
 | v2.webp | 1596x2048 | 96 | 501 KB | ashguard, ashguard_t2 |
-| v22.webp | 1340x2048 | 96 | 437 KB | ashguard_t3, husk |
+| v22.webp | 1340x2048 | 96 | 440 KB | ashguard_t3, husk |
 | hero.webp | 888x2048 | 72 | 257 KB | marshal |
 | enemies.webp | 2048x2048 | 72 | 913 KB | husk, gnawer, spitter, bloater, brute, husk_warden |
 | boss.webp | 2048x2040 | 56 | 727 KB | cinder_matron |

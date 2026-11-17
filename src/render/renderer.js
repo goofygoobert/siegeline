@@ -127,15 +127,15 @@ export function createRenderer(canvas, hooks) {
           else { burst(t.x, gy - 30, 8, GLOWE, 150, 2.6, 1, -60, 0.8); burst(t.x, gy - 4, 5, "#27484a", 80, 8, 2, -15, 0.9); }
           break;
         }
-        case "salvage": num(e.x, gy - 96, "+" + e.amt + " " + (TH.energyWord || "powder"), "#ffe28a", true); R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;
-        case "directHit": num(e.x, e.y - 34, TH.directWord || "Direct hit!", "#fff1c8", true); spark(e.x, e.y, 46); hitstop(0.09); break;
+        case "salvage": R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;     // shown at the powder counter, not in the fight
+        case "directHit": num(e.x, e.y - 150, TH.directWord || "Direct hit!", "#fff1c8", true); spark(e.x, e.y, 46); hitstop(0.09); break;
         case "boltHit":
           burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
           for (let i = 0; i < 16; i++) { const a = -Math.PI * (0.15 + 0.7 * Math.random()), v = 180 + Math.random() * 260; part(e.x, gy - 4, Math.cos(a) * v, Math.sin(a) * v, 0.5 + Math.random() * 0.5, 3 + Math.random() * 3, SAND, 0, 900); }
-          decal(e.x, B.g.ballista.splash * 0.9, 9, "#3a2630", false); ring(e.x, gy, B.g.ballista.splash * 1.25);
+          decal(e.x, B.g.ballista.splash * 0.8, 5, "#3a2630", false); ring(e.x, gy, B.g.ballista.splash * 1.25);
           addShake(e.hits ? 0.5 : 0.22); if (e.hits) hitstop(e.kills ? 0.08 : 0.05); if (e.kills >= 2) flash(0.14, "#ffe2a0");
           R.sfx("bolt_hit", { pan: panOf(e.x) }); fxAt("blast", e.x, e.y - 20, 1.15);
-          if (e.kills >= 2) num(e.x, e.y - 70, e.kills + " down!", "#ffe28a", true);
+          if (e.kills >= 2) num(e.x, e.y - 118, e.kills + " down!", "#ffe28a", true);
           break;
         case "reloaded": R.sfx("ballista_reload", { gain: 0.6 }); break;
         case "shoot": if (onScreen(e.e.x)) R.sfx(e.kind === "spit" ? "spit" : "arrow_fire", { pan: panOf(e.e.x), gain: 0.6, minGap: 0.08 }); break;
