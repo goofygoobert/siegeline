@@ -15,6 +15,7 @@
 **Final results** (win rate; average win time and Keep health for the *average* player; 3-star rate for the average player)
 
 Runs per cell: 200. Skill = bot reaction speed and aim error (sloppy 0.35, average 0.6, sharp 0.9). Profiles: none = all level 1; light = units 2, keep/ballista 2; modest = units 3, keep/ballista 3, ember 2/2, hero 2, powers 2; strong = units 6, keep/ballista 6, ember 4/4, hero 5, powers 5.
+
 | Stage | Upgrades | Sloppy win | Average win | Sharp win | Avg win time (average) | Keep HP left (average) | 3-star rate (average) |
 |---|---|---|---|---|---|---|---|
 | r1s1 | none | 93% | 100% | 100% | 111 s (par 110) | 100% | 49% |
@@ -37,14 +38,14 @@ Runs per cell: 200. Skill = bot reaction speed and aim error (sloppy 0.35, avera
 | r1s5 | light | 91% | 100% | 100% | 194 s (par 205) | 100% | 70% |
 | r1s5 | modest | 100% | 100% | 100% | 183 s (par 205) | 99% | 97% |
 | r1s5 | strong | 100% | 100% | 100% | 136 s (par 205) | 100% | 100% |
-| r1boss | none | 16% | 39% | 63% | 252 s (par 240) | 39% | 3% |
-| r1boss | light | 85% | 96% | 99% | 234 s (par 240) | 74% | 55% |
-| r1boss | modest | 100% | 100% | 100% | 203 s (par 240) | 92% | 97% |
-| r1boss | strong | 100% | 100% | 100% | 121 s (par 240) | 100% | 100% |
+| r1boss | none | 8% | 33% | 50% | 227 s (par 215) | 32% | 2% |
+| r1boss | light | 78% | 89% | 97% | 212 s (par 215) | 67% | 48% |
+| r1boss | modest | 99% | 100% | 100% | 187 s (par 215) | 89% | 97% |
+| r1boss | strong | 100% | 100% | 100% | 114 s (par 215) | 100% | 100% |
 
 **Reading it**
-- **No upgrades, average player:** stage 1 100%, 2 85%, 3 93%, 4 80%, 5 57%, boss 39%. Early stages are winnable cold and later ones push you toward the Armoury. Nothing is impossible: a sharp player beats the boss cold 63% of the time.
-- **Light upgrades** (units level 2, Keep/ballista 2, about 600 marks, roughly what the first clears pay): 96–100% on every stage. This is the intended path.
-- **Nothing trivial at first contact:** a sloppy player with no upgrades wins the boss 16% and stage 5 34%.
+- **No upgrades, average player:** stage 1 100%, 2 85%, 3 93%, 4 80%, 5 57%, boss 33%. Early stages are winnable cold and later ones push you toward the Armoury. Nothing is impossible: a sharp player beats the boss cold 50% of the time.
+- **Light upgrades** (units level 2, Keep/ballista 2, about 600 marks, roughly what the first clears pay): 89–100% on every stage. This is the intended path.
+- **Nothing trivial at first contact:** a sloppy player with no upgrades wins the boss 8% and stage 5 34%.
 - **Stars give replay value:** the time star needs either upgrades or sharp play (3-star rates of 3–49% with no upgrades, 55–99% with light).
 - **Caveat:** the bot plays very consistently, so its win rate jumps once its army passes a threshold, which makes the curve between "none" and "light" look steeper than a person will feel. Its decisions are reasonable but it doesn't deliberately exploit boss windows or save up embers for heavies the way a good player does.

@@ -55,7 +55,13 @@ export function createRenderer(canvas, hooks) {
   function num(x, y, text, color, big = false, key = 0, amt = 0) {
     if (key) for (const m of R.nums) if (m.life > 0.65 && m.key === key) { m.amt += amt; m.t = String(Math.round(m.amt)); m.big = m.big || m.amt >= 60; m.life = 0.9; return; }
     const n = R.nums[R.ni]; R.ni = (R.ni + 1) % MAXN;
-    n.x = x + (Math.random() - 0.5) * 24; n.y = y - Math.random() * 10; n.t = text; n.c = color; n.life = 0.9; n.big = big; n.key = key; n.amt = amt;
+    let ny = y - Math.random() * 6; const nx = x + (Math.random() - 0.5) * 16;
+    for (let pass = 0; pass < 4; pass++) {           // stack above any number already near this spot
+      let bump = false;
+      for (const m of R.nums) if (m !== n && m.life > 0.4 && Math.abs(m.x - nx) < 34 && Math.abs(m.y - ny) < 16) { ny = m.y - 17; bump = true; }
+      if (!bump) break;
+    }
+    n.x = nx; n.y = ny; n.t = text; n.c = color; n.life = 0.9; n.big = big; n.key = key; n.amt = amt;
   }
   function addShake(a) { if (!R.reduced) R.shake = Math.min(1, R.shake + a); }
   R.addShake = addShake;
