@@ -8,7 +8,7 @@ pages <= 2048x2048 (an id never spans two pages; overflow pages are named <group
 public/assets/<page>.webp (alpha, q82) + <page>.json. Anchor = feet point (fixed cell anchor -> no jitter).
 --sheets also writes art/out/review_<page>.png: one row per id on a dusk background, ground line at the anchor.
 """
-import sys, json, hashlib, pathlib
+import sys, os, re, json, hashlib, pathlib
 from PIL import Image, ImageDraw
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -46,10 +46,10 @@ def cut_frames(atlas, ppu):
             x, y, cw, ch = rects[sid]
             cell = im.crop((x, y, x + cw, y + ch))
             a = cell.getchannel("A")
-            edge = max(a.crop((0, 0, cw, 2)).getextrema()[1], a.crop((0, ch - 2, cw, ch)).getextrema()[1],
-                       a.crop((0, 0, 2, ch)).getextrema()[1], a.crop((cw - 2, 0, cw, ch)).getextrema()[1])
-            if edge > 0 and not still:
-                warn.append("%s %s[%d] touches the cell edge (clipped?)" % (sid, name, i))
+            sides = "".join(k for k, box in (("T", (0, 0, cw, 2)), ("B", (0, ch - 2, cw, ch)), ("L", (0, 0, 2, ch)),
+                                              ("R", (cw - 2, 0, cw, ch))) if a.crop(box).getextrema()[1] > 0)
+            if sides and not still:
+                warn.append("%s %s[%d] touches the cell edge %s (clipped?)" % (sid, name, i, sides))
             nw, nh = round(cw * scale), round(ch * scale)
             small = cell.convert("RGBa").resize((nw, nh), Image.LANCZOS).convert("RGBA")
             ax, ay = cast.cell_anchor(job, sid)
@@ -59,35 +59,50 @@ def cut_frames(atlas, ppu):
                 if bb is None:
                     bb = (int(ax), int(ay) - 1, int(ax) + 1, int(ay))
                 small = small.crop(bb); ax -= bb[0]; ay -= bb[1]
-            res[sid].setdefault(name, []).append((small, round(ax, 1), round(ay, 1)))
+            num = lambda v: int(round(v)) if abs(v - round(v)) < 0.05 else round(v, 1)
+            res[sid].setdefault(name, []).append((small, num(ax), num(ay)))
         im.close()
     return res, warn
 
 
 class Shelf:
+    """MaxRects bin (best-short-side-fit) on a MAX x MAX page; add() returns (x, y) or None."""
     def __init__(self):
-        self.shelves = []; self.h = 0; self.w = 0
-
-    def fits_all(self, sizes):
-        saved = ([s[:] for s in self.shelves], self.h, self.w)
-        ok = all(self.add(w, h) is not None for w, h in sizes)
-        self.shelves, self.h, self.w = saved
-        return ok
+        self.free = [(0, 0, MAX, MAX)]; self.w = 0; self.h = 0
 
     def add(self, w, h):
         w += PAD; h += PAD
-        for s in self.shelves:     # s = [y, height, x]
-            if h <= s[1] and s[2] + w <= MAX:
-                p = (s[2], s[0]); s[2] += w; self.w = max(self.w, s[2]); return p
-        if self.h + h > MAX or w > MAX:
+        best = None
+        for (fx, fy, fw, fh) in self.free:
+            if w <= fw and h <= fh:
+                score = (min(fw - w, fh - h), max(fw - w, fh - h), fy)
+                if best is None or score < best[0]:
+                    best = (score, fx, fy)
+        if best is None:
             return None
-        self.shelves.append([self.h, h, w]); p = (0, self.h); self.h += h; self.w = max(self.w, w)
-        return p
+        _, x, y = best
+        nf = []
+        for (fx, fy, fw, fh) in self.free:
+            if x >= fx + fw or x + w <= fx or y >= fy + fh or y + h <= fy:
+                nf.append((fx, fy, fw, fh)); continue
+            if x > fx: nf.append((fx, fy, x - fx, fh))
+            if x + w < fx + fw: nf.append((x + w, fy, fx + fw - x - w, fh))
+            if y > fy: nf.append((fx, fy, fw, y - fy))
+            if y + h < fy + fh: nf.append((fx, y + h, fw, fy + fh - y - h))
+        # prune contained rects
+        nf.sort(key=lambda r: -r[2] * r[3])
+        keep = []
+        for r in nf:
+            if not any(r[0] >= k[0] and r[1] >= k[1] and r[0] + r[2] <= k[0] + k[2] and r[1] + r[3] <= k[1] + k[3] for k in keep):
+                keep.append(r)
+        self.free = keep
+        self.w = max(self.w, x + w); self.h = max(self.h, y + h)
+        return (x, y)
 
 
 def pack(atlas, sheets=False):
     A = cast.ATLASES[atlas]
-    for ppu in (A["ppu"], 64, 56, 48):
+    for ppu in (A["ppu"], 64, 60, 56, 48):
         data, warn = cut_frames(atlas, ppu)
         # unique images per id
         uniq = {}
@@ -97,17 +112,36 @@ def pack(atlas, sheets=False):
                     hsh = hashlib.md5(img.tobytes() + bytes(str(img.size), "ascii")).hexdigest()
                     uniq.setdefault((sid, hsh), img)
         too_big = False
-        pages = []; cur = None
-        for sid in A["ids"]:
-            items = sorted([(k, v) for k, v in uniq.items() if k[0] == sid], key=lambda kv: -kv[1].height)
-            sizes = [(v.width, v.height) for k, v in items]
-            if cur is None or not cur["shelf"].fits_all(sizes):
-                cur = dict(shelf=Shelf(), ids=[], place={}); pages.append(cur)
-                if not cur["shelf"].fits_all(sizes):
-                    too_big = True; break
-            for (k, v) in items:
-                cur["place"][k] = cur["shelf"].add(v.width, v.height)
-            cur["ids"].append(sid)
+        byid = {sid: [(k, v) for k, v in uniq.items() if k[0] == sid] for sid in A["ids"]}
+
+        def try_pack(ids):
+            items = sorted([kv for i in ids for kv in byid[i]], key=lambda kv: -(kv[1].height * kv[1].width))
+            sh = Shelf(); place = {}
+            for k, v in items:
+                p = sh.add(v.width, v.height)
+                if p is None:
+                    return None
+                place[k] = p
+            return dict(shelf=sh, ids=list(ids), place=place)
+
+        pages = []
+        for group in A.get("pages", [A["ids"]]):     # pinned page split (stable file names for the engine)
+            cur_ids = []; cur = None
+            for sid in group:
+                nxt = try_pack(cur_ids + [sid])
+                if nxt is None:
+                    if not cur_ids:
+                        too_big = True; break
+                    print("  NOTE page overflow: %s starts a new page" % sid)
+                    pages.append(cur); cur_ids = [sid]; cur = try_pack(cur_ids)
+                    if cur is None:
+                        too_big = True; break
+                else:
+                    cur_ids = cur_ids + [sid]; cur = nxt
+            if too_big:
+                break
+            if cur is not None:
+                pages.append(cur)
         if not too_big:
             break
         print("  %s does not fit one page at ppu %d, trying smaller" % (atlas, ppu))
@@ -132,13 +166,23 @@ def pack(atlas, sheets=False):
                 anims[aname] = a
             js["sprites"][sid] = {"anims": anims}
         OUT.mkdir(parents=True, exist_ok=True)
-        sheet.save(OUT / (name + ".webp"), "WEBP", quality=82, method=6)
-        (OUT / (name + ".json")).write_text(json.dumps(js, separators=(",", ":")))
-        kb = (OUT / (name + ".webp")).stat().st_size / 1024
+        # write to temp names first; swapped into place once the whole set is written (engine loads live)
+        sheet.save(OUT / (name + ".webp.tmp"), "WEBP", quality=82, method=4)
+        (OUT / (name + ".json.tmp")).write_text(json.dumps(js, separators=(",", ":")))
+        kb = (OUT / (name + ".webp.tmp")).stat().st_size / 1024
         print("%-9s %4dx%-4d ppu %d  %6.0f KB  ids: %s" % (name, W, H, ppu, kb, " ".join(pg["ids"])))
         out.append((name, W, H, ppu, kb, pg["ids"]))
         if sheets:
             review(name, js, sheet)
+    names = [o[0] for o in out]
+    for n in names:      # webp first, then json, so a json never points at a missing/old image
+        os.replace(OUT / (n + ".webp.tmp"), OUT / (n + ".webp"))
+        os.replace(OUT / (n + ".json.tmp"), OUT / (n + ".json"))
+    pat = re.compile(r"^%s(\d*)\.(json|webp)$" % re.escape(atlas))
+    for f in OUT.iterdir():   # stale overflow pages from an older, longer split
+        m = pat.match(f.name)
+        if m and (atlas + m.group(1)) not in names:
+            f.unlink(); print("  removed stale", f.name)
     for w in warn[:12]:
         print("  WARN", w)
     if len(warn) > 12:
@@ -171,6 +215,23 @@ def review(name, js, sheet, per=12):
     img.save(p); print("  review:", p)
 
 
+def write_size_table():
+    """Refresh the 'Atlas sizes' section of docs/art-guide.md from what is in public/assets."""
+    rows = []
+    for g in cast.ATLASES:
+        for f in sorted(OUT.glob(g + "*.json")):
+            if not re.match(r"^%s\d*$" % g, f.stem):
+                continue
+            j = json.loads(f.read_text()); w = OUT / j["image"]
+            rows.append("| %s | %dx%d | %d | %.0f KB | %s |" % (j["image"], j["w"], j["h"], j["ppu"], w.stat().st_size / 1024,
+                                                        ", ".join(j["sprites"])))
+    doc = ROOT / "docs" / "art-guide.md"; t = doc.read_text()
+    head = "## Atlas sizes"
+    t = t[:t.index(head)] if head in t else t + "\n"
+    t += head + " (written by tools/pack_sprites.py)\n| file | size | ppu | bytes | ids |\n|---|---|---|---|---|\n" + "\n".join(rows) + "\n"
+    doc.write_text(t)
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     sheets = "--sheets" in args
@@ -179,3 +240,4 @@ if __name__ == "__main__":
         if not (ROOT / "art" / "out" / cast.ATLASES[n]["job"]).exists():
             print("skip", n, "(job not rendered)"); continue
         pack(n, sheets)
+    write_size_table()

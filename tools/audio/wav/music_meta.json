@@ -1,34 +1,38 @@
 {
  "menu": {
-  "loopStart": 0.0,
-  "loopEnd": 50.526327,
+  "loopStart": 0.789478,
+  "loopEnd": 51.315805,
   "samples": 2228211,
+  "preroll_samples": 34816,
   "vol": 0.5
  },
  "map": {
-  "loopStart": 0.0,
-  "loopEnd": 45.714286,
+  "loopStart": 0.714286,
+  "loopEnd": 46.428571,
   "samples": 2016000,
+  "preroll_samples": 31500,
   "vol": 0.45
  },
  "battle": {
-  "loopStart": 0.0,
-  "loopEnd": 58.181814,
+  "loopStart": 0.454535,
+  "loopEnd": 58.636349,
   "samples": 2565818,
+  "preroll_samples": 20045,
   "vol": 0.45
  },
  "boss": {
-  "loopStart": 0.0,
-  "loopEnd": 57.6,
+  "loopStart": 0.4,
+  "loopEnd": 58.0,
   "samples": 2540160,
+  "preroll_samples": 17640,
   "vol": 0.45
  },
  "victory": {
-  "samples": 343980,
+  "samples": 264600,
   "vol": 0.6
  },
  "defeat": {
-  "samples": 282240,
+  "samples": 246960,
   "vol": 0.6
  }
 }

@@ -1,14 +1,36 @@
-name: pages
+name: test-and-publish
 on: { push: { branches: [main] }, workflow_dispatch: {} }
 permissions: { contents: read, pages: write, id-token: write }
 concurrency: { group: pages, cancel-in-progress: true }
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Data checks and simulation tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Play-through (first launch to boss, saves) — publish only if this passes
+        env: { CI: "1" }
+        run: |
+          npx vite preview --host 127.0.0.1 --port 5194 --strictPort &
+          sleep 3
+          node tools/playthrough.mjs http://127.0.0.1:5194/ playthrough-shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: playthrough-shots, path: playthrough-shots, retention-days: 7 }
+      - name: Add the worlds page
+        run: mkdir -p dist/worlds && cp -r docs/worlds/* dist/worlds/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: site }
       - id: d
         uses: actions/deploy-pages@v4

@@ -13,9 +13,9 @@ def ribcage(rig, C):
     # hump + spikes on the bigger shoulder
     attach(ball(0.3 * sc, C["body"], (-bw * 0.15, -bw * 0.3, rig["shoulder_z"]), scale=(1, 1, 0.8), name="hump"), rig["torso"])
 
-register(dict(HOLLOW, id="brute", scale=1.6, bulk=1.3, head=0.72, torso=1.05, leg=0.85, limb=1.0, arm=1.3, hand=1.7,
-              arm_scale=dict(R=1.55, L=1.2), head_fwd=0.2, weapon="boneclub", grip=25,
+register(dict(HOLLOW, id="brute", scale=1.6, bulk=1.3, head=0.72, torso=1.05, leg=0.85, limb=1.0, arm=1.1, hand=1.7,
+              arm_scale=dict(R=1.55, L=1.2), head_fwd=0.2, weapon="boneclub", grip=60,
               extras=[ribcage, lambda r, C: hollow_horns(r, C, 1.2, "R"), hollow_maw, lambda r, C: hollow_spikes(r, C, 4, 1.1),
                       lambda r, C: hollow_cracks(r, C, 3)],
-              style=dict(attack="heavy", lean=24, headc=0.7, die="fwd", aR0=-10, aL0=5, heavy=1.4, stride=24),
+              style=dict(die_rz=0.62, attack="heavy", lean=24, headc=0.7, die="fwd", aR0=-10, aL0=5, heavy=1.4, stride=24),
               colors=hollow_colors()))

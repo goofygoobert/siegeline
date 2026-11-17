@@ -8,6 +8,8 @@ S.eevee.taa_render_samples = 48
 S.render.resolution_x, S.render.resolution_y = MAP_W, MAP_H
 S.render.film_transparent = False
 sprite_lights()
+for L_ in bpy.data.lights:
+    L_.use_shadow = False      # no stair-step shadow banding on the faceted terrain
 rnd = random.Random(4)
 
 
@@ -109,8 +111,15 @@ for w, dz, col in ((0.34, 0.07, (0.2, 0.16, 0.14)), (0.2, 0.1, (0.66, 0.58, 0.46
         prev = (v1, v2)
     ob = _mesh_obj("road", bm); ob.data.materials.append(fmat(col))
 
-# marker plinths
-for rid, _, (x, y), _ in REGIONS:
+# marsh pools (r2)
+for i in range(40):
+    x, y = rnd.uniform(8.0, 15.5), rnd.uniform(13.0, 20.5)
+    if height(x, y) < 0.2:
+        ob = cyl(rnd.uniform(0.3, 0.8), 0.04, (0.24, 0.32, 0.33), (x, y, max(height(x, y), 0) + 0.06), seg=12, outline=0.0, name="pool")
+        ob.scale = (rnd.uniform(1.0, 1.8), rnd.uniform(0.6, 1.0), 1); ob.rotation_euler = (0, 0, rnd.uniform(0, 3))
+
+# marker plinths (r6's marker is the glowing pool itself)
+for rid, _, (x, y), _ in REGIONS[:-1]:
     z = ground_z(x, y)
     cyl(0.55, 0.16, (0.62, 0.58, 0.52), (x, y, z + 0.08), seg=20, outline=0.02, name="plinth")
     cyl(0.42, 0.04, (0.86, 0.64, 0.26), (x, y, z + 0.18), seg=20, outline=0.0, name="plinthring")
@@ -173,6 +182,14 @@ for sx in (-0.25, 0.25):
     box((0.07, 0.07, 1.4), WOOD_D, (hx_ + sx, hy_, hz_ + 0.7), rot=(0, sx * 0.4, 0), outline=0.015)
 cyl(0.18, 0.06, IRON, (hx_, hy_ - 0.05, hz_ + 1.35), rot=(math.radians(90), 0, 0), seg=10, outline=0.015)
 box((0.06, 0.06, 0.06), GLOW, (24.2, 15.3, ground_z(24.2, 15.3) + 0.3), glow=2, outline=0.0)
+# Hollowdeep peaks
+for i in range(14):
+    x, y = rnd.uniform(21.5, 30.0), rnd.uniform(17.0, 22.5)
+    if near_road(x, y, 1.2) or height(x, y) < 0.5:
+        continue
+    hgt = rnd.uniform(1.2, 2.4); r_ = rnd.uniform(0.6, 1.1); z = ground_z(x, y)
+    cyl(r_, hgt, (0.4, 0.38, 0.41), (x, y, z + hgt / 2 - 0.2), r2=0.05, seg=6, rot=(0, 0, rnd.uniform(0, 1)), outline=0.02, name="peak")
+    cyl(r_ * 0.38, hgt * 0.36, (0.74, 0.72, 0.7), (x, y, z + hgt - 0.2 - hgt * 0.18 + 0.02), r2=0.04, seg=6, outline=0.0, name="ashcap")
 # r5 Ember Wastes: glowing fissures, mesas, smoking vents
 for i in range(22):
     x, y = rnd.uniform(27.0, 34.5), rnd.uniform(3.0, 11.0)
@@ -188,8 +205,13 @@ for i in range(25):
         dead(x, y, rnd.uniform(0.6, 0.9))
 # r6 the Cinder Maw: glowing crater pool, Maw gate on the rim, smoke
 mz = ground_z(36.0, 15.5)
-cyl(2.3, 0.08, (1.0, 0.5, 0.12), (36.0, 15.5, 0.25), seg=32, glow=2.0, outline=0.0, name="lava")
-cyl(1.2, 0.1, (1.0, 0.82, 0.4), (36.0, 15.5, 0.29), seg=32, glow=2.4, outline=0.0, name="lavacore")
+cyl(2.3, 0.08, (0.85, 0.28, 0.06), (36.0, 15.5, 0.25), seg=32, glow=0.4, outline=0.0, name="lava")
+cyl(1.5, 0.1, (1.0, 0.5, 0.12), (36.0, 15.5, 0.29), seg=32, glow=0.6, outline=0.0, name="lavamid")
+cyl(0.7, 0.12, (1.0, 0.8, 0.4), (36.0, 15.5, 0.33), seg=24, glow=0.8, outline=0.0, name="lavacore")
+for i in range(16):
+    a = rnd.uniform(0, math.tau); d = rnd.uniform(3.2, 4.4)
+    x, y = 36.0 + math.cos(a) * d, 15.5 + math.sin(a) * d / 1.1
+    cyl(rnd.uniform(0.12, 0.25), rnd.uniform(0.5, 1.1), (0.16, 0.13, 0.14), (x, y, ground_z(x, y) + 0.3), r2=0.0, seg=5, outline=0.015, name="crag")
 for i in range(10):
     a = i / 10 * math.tau
     box((0.5, 0.06, 0.03), (0.15, 0.08, 0.06), (36.0 + math.cos(a) * 1.6, 15.5 + math.sin(a) * 1.5, 0.31), rot=(0, 0, a + 1.2), outline=0.0, bevel=0.0)

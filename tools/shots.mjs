@@ -41,7 +41,6 @@ const w = await page.$(".weapon"); if (w) {
   await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.move(cx - 60, cy + 40, { steps: 6 }); await sl(300); await shot("07-aiming"); await page.mouse.up();
 }
 // let the bot play to see a busy battle
-await G(`(async () => { const m = await import('/src/sim/bot.js').catch(() => null); })()`);
 await G(`(() => { const S = __siegeline; const b = S.battle; if (!b) return; b.tutor && b.endTutor(true);
   const sendAll = setInterval(() => { const bt = S.battle; if (!bt) return clearInterval(sendAll); for (const c of bt.B.cards) if (bt.B.energy >= c.stats.cost && c.cd <= 0) { bt.send(c.id, bt.cardEls[0]); break; } }, 700); })()`);
 await sl(16000); await shot("08-battle-busy");

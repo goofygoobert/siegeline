@@ -454,7 +454,9 @@ def keep(ox, state=0):
         box((1.25, 1.25, 0.35), STONE_D, (X(0.3), 0, top + 0.45), bevel=0.04, name="pedestal")
         lz = top + 0.62
         if state == 0:
-            box((0.82, 0.82, 1.0), GLOW, (X(0.3), 0, lz + 0.52), glow=2.2, bevel=0.03, name="lanternglow")
+            box((0.82, 0.82, 1.0), (1.0, 0.66, 0.28), (X(0.3), 0, lz + 0.52), glow=1.2, bevel=0.03, name="lanternglow")
+            ball(0.26, (1.0, 0.9, 0.62), (X(0.3), -0.3, lz + 0.48), scale=(1, 0.6, 1.35), glow=2.0, name="lanternflame")
+            cyl(0.13, 0.32, (1.0, 0.95, 0.75), (X(0.3), -0.38, lz + 0.72), r2=0.0, seg=8, glow=2.2, name="lanterntip")
         else:
             box((0.82, 0.82, 1.0), (0.95, 0.55, 0.25), (X(0.3), 0, lz + 0.52), glow=1.0, bevel=0.03, name="lanternglow")
             box((0.3, 0.1, 0.4), (0.15, 0.1, 0.1), (X(0.15), -0.42, lz + 0.62), rot=(0, 0.4, 0), name="crackglass")

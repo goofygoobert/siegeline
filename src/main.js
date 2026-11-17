@@ -5,11 +5,13 @@ import game from "../data/game.json";
 import regions from "../data/regions.json";
 import r1 from "../data/stages/r1.json";
 import { createBattle, step, input, canSend, stars as starCount } from "./sim/battle.js";
+import { makeBot } from "./sim/bot.js";
 import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
 import { load, save, saveSoon, exportCode, importCode, wipe, freshData } from "./save/save.js";
 import { initAudio, sfx, playMusic, setVolumes, duck, preload } from "./audio/audio.js";
 import { createRenderer } from "./render/renderer.js";
-import { loadAtlas, loadBackgrounds, loadImageAsset, sprites } from "./render/assets.js";
+import { loadGroup, loadAtlas as loadOne, loadBackgrounds, loadImageAsset, sprites } from "./render/assets.js";
+const loadAtlas = (g, o) => (g === "units" ? loadOne("units", o) : loadGroup(g, o));
 
 const content = { units, enemies, game, regions, stages: r1.stages, tutorials: r1.tutorials };
 const stageById = Object.fromEntries(content.stages.map((s) => [s.id, s]));
@@ -18,6 +20,8 @@ const enemyById = Object.fromEntries(enemies.enemies.map((e) => [e.id, e]));
 const abilityNames = { ember_rain: "Ember Rain", rally: "Rally Bell" };
 
 const ui = document.getElementById("ui");
+const TEST = new URLSearchParams(location.search).has("test");
+let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
@@ -178,7 +182,7 @@ function stageSheet(s, region) {
   const foes = new Set(); for (const w of s.waves) foes.add(w.id); for (const [id] of (s.loop ? s.loop.pool : [])) foes.add(id); if (s.boss) foes.add(s.boss);
   const st = starsOf(s.id), first = !cleared(s.id);
   const reward = first ? s.reward : Math.round(s.reward * game.rewards.replayFraction);
-  const sheet = h("div", { class: "sheet", role: "dialog", "aria-label": s.name },
+  const sheet = h("div", { class: "sheet", role: "dialog", "aria-label": s.name }, h("div", { class: "sheet-body" },
     h("div", { class: "row" }, h("div", { class: "muted", style: "font-weight:700" }, s.boss ? "Boss battle" : `Stage ${regionStages.indexOf(s) + 1}`), h("div", { class: "spacer" }),
       h("button", { class: "btn icon", "aria-label": "Close", onclick: tap(() => sheet.remove(), "ui_back") }, h("span", { html: "&#x2715;" }))),
     h("h2", {}, s.name),
@@ -187,7 +191,7 @@ function stageSheet(s, region) {
     h("div", { class: "chips" }, ...[...foes].map((id) => h("span", { class: "chip" }, h("span", { class: "dot", style: "width:10px;height:10px;border-radius:50%;background:#ff7a3a;margin-left:6px" }), enemyById[id].name))),
     h("div", { class: "starrow" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (st[i] ? " on" : "") }), i === 2 ? `Win in under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")}` : d))),
     h("div", { class: "row" }, h("span", { class: "muted" }, first ? "First clear" : "Replay"), h("div", { class: "spacer" }), coin(), h("b", {}, reward + "")),
-    h("div", { class: "spacer" }),
+    ),
     h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)) }, "Fight"));
   current.append(sheet);
 }
@@ -300,9 +304,13 @@ async function startBattle(stage) {
   const loading = h("div", { class: "screen loading" }, h("div", { style: "text-align:center" }, h("div", { class: "title-s", style: "margin-bottom:12px" }, stage.name), h("div", { class: "bar" }, h("i", { style: "transform:scaleX(.1)" }))));
   show(loading);
   const bar = loading.querySelector(".bar > i");
+  // load only what this battle needs: upgrade-look pages only once a unit reaches level 5 / 10
   const groups = ["units", "enemies", "castles", "fx", "ui"]; if (D.unlocked.hero) groups.push("hero"); if (stage.boss) groups.push("boss");
-  let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (groups.length + 1)})`; };
-  await Promise.all([...groups.map((g) => loadAtlas(g, { white: g !== "ui" }).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
+  const tiers = D.unlocked.units.map((u) => tierFor(D.unitLevels[u] || 1));
+  const pages = groups.map((g) => [g, true]);
+  if (tiers.some((t) => t >= 2)) pages.push(["units2", false]); if (tiers.some((t) => t >= 3)) pages.push(["units3", false]);
+  let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
+  await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: g !== "ui" }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
   const st = { ...stage, available: D.unlocked.units.slice(0, 6), hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };
@@ -521,12 +529,13 @@ class BattleView {
     let dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     const B = this.B;
     if (!this.paused) {
-      let scale = this.speed;
+      let scale = this.speed * testSpeed;
       if (R.slowmo > 0) { R.slowmo -= dt; scale *= 0.25; }
       this.acc += dt * scale;
       let steps = 0;
-      while (this.acc >= B.dt && steps < 8) { step(B); this.acc -= B.dt; steps++; }
-      if (steps === 8) this.acc = 0;
+      const maxSteps = 8 * testSpeed;
+      while (this.acc >= B.dt && steps < maxSteps) { if (autoBot && !(this.tutor && this.tutor.shown)) autoBot(B); step(B); this.acc -= B.dt; steps++; }
+      if (steps === maxSteps) this.acc = 0;
       this.tutorialTick();
     }
     this.followFight(now);
@@ -629,8 +638,10 @@ function boot() {
   // idle canvas behind menus: a quiet ember backdrop
   const g = canvas.getContext("2d"); g.fillStyle = "#120c0c"; g.fillRect(0, 0, canvas.width, canvas.height);
   setInterval(() => { D.playTime = D.playTime || 0; }, 60000);
-  if ("serviceWorker" in navigator && import.meta.env.PROD) navigator.serviceWorker.register("sw.js").catch(() => {});
-  window.__siegeline = { get D() { return D; }, get battle() { return battle; }, startBattle: (id) => startBattle(stageById[id]), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R };
+  // register the offline cache after first load settles, so it never competes with the first screen
+  if ("serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
+  window.__siegeline = { get D() { return D; }, get battle() { return battle; }, startBattle: (id) => startBattle(stageById[id]), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
+    ...(TEST ? { setSpeed: (x) => (testSpeed = x), autoplay: (skill) => (autoBot = skill == null ? null : makeBot({ skill })), save: () => save(D), reload: () => { S = load(); D = S.data; } } : {}) };
   titleScreen();
 }
 boot();

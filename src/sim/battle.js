@@ -28,7 +28,7 @@ export function createBattle(content, stage, progress, seed = 1) {
     cards, unitDefs, enemyDefs,
     ents: [], nextId: 1, projs: [], patches: [], marks: [], scheduled: [],
     ballista: { reload: 0, maxReload: Math.max(1.2, g.ballista.reload - g.ballista.reloadPerLevel * (lv("ballista") - 1)),
-                dmg: g.ballista.dmg * (1 + g.ballista.dmgPerLevel * (lv("ballista") - 1)), x: F.playerCastleX + 10, y: F.groundY - 230 },
+                dmg: g.ballista.dmg * (1 + g.ballista.dmgPerLevel * (lv("ballista") - 1)), x: F.playerCastleX + 98, y: F.groundY - 186 },
     abilities: (stage.abilities || []).map((id) => ({ id, cfg: g.abilities[id], level: (progress?.abilities || {})[id] || 1, cd: 6 })),
     hero: stage.hero ? { charge: 0, need: g.hero.charge, called: false, ent: null, level: lv("hero") } : null,
     rally: 0, waveHold: false, waveClock: 0, waves: (stage.waves || []).map((w) => ({ ...w, done: 0, next: w.t })),
@@ -69,7 +69,7 @@ function applyInputs(B) {
     } else if (i.k === "fire") {
       if (B.ballista.reload > 0) continue;
       B.ballista.reload = B.ballista.maxReload; B.stats.shots++;
-      B.projs.push({ kind: "bolt", x: B.ballista.x + 40, y: B.ballista.y, vx: i.vx, vy: i.vy, side: 1, dmg: B.ballista.dmg,
+      B.projs.push({ kind: "bolt", x: B.ballista.x + 30, y: B.ballista.y - 4, vx: i.vx, vy: i.vy, side: 1, dmg: B.ballista.dmg,
         splash: B.g.ballista.splash, alive: true, t: 0, px: 0, py: 0 });
       ev(B, "fire", {});
     } else if (i.k === "ability") {
@@ -392,7 +392,7 @@ function stepProjectiles(B, dt) {
       let hit = p.y >= ground - 4;
       if (!hit) for (const o of B.ents) {
         if (!o.alive || o.side !== -1) continue;
-        const h = o.s.size * (o.kind === "boss" ? 5 : 4);
+        const h = Math.min(260, o.s.size * (o.kind === "boss" ? 5 : 5.4));
         if (Math.abs(o.x - p.x) < o.s.size * 0.7 + 6 && p.y > ground - h) { hit = true; break; }
       }
       if (!hit && p.x > B.gate.front - 10 && p.y > ground - 260) {
@@ -518,7 +518,7 @@ export function step(B) {
 
 /** Launch velocity for the ballista so a bolt fired at `angleDeg` lands at world x (aim preview + test player). */
 export function solveShot(B, targetX, angleDeg = 35) {
-  const G = B.g.ballista.gravity, x0 = B.ballista.x + 40, y0 = B.ballista.y;
+  const G = B.g.ballista.gravity, x0 = B.ballista.x + 30, y0 = B.ballista.y - 4;
   const dx = Math.max(40, targetX - x0), dy = B.F.groundY - 20 - y0, u = Math.tan(angleDeg * Math.PI / 180);
   const v = Math.sqrt(G * dx * dx * (1 + u * u) / (2 * (dy + dx * u)));
   const a = angleDeg * Math.PI / 180;

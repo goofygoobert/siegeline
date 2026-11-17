@@ -34,6 +34,13 @@ export async function loadAtlas(group, { white = true } = {}) {
   } catch { done.delete(group); return null; }
 }
 
+/** A group may be split across numbered atlases (units, units2, units3...). Load all that exist. */
+export async function loadGroup(group, opts) {
+  const names = [group, ...[2, 3, 4, 5, 6, 7, 8].map((n) => group + n)];
+  const res = await Promise.all(names.map((n) => loadAtlas(n, opts)));
+  return res.filter(Boolean).length;
+}
+
 export async function loadBackgrounds(regionId) {
   if (bg[regionId]) return bg[regionId];
   try {

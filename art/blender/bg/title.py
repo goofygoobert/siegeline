@@ -65,8 +65,16 @@ for ob in set(bpy.data.objects) - before:
 # the keep
 KX = 4.4
 keep(KX, 0)
-for ob in bpy.data.objects:
-    pass
+before = set(bpy.data.objects)
+ballista(KX + 2.3, 4.4)
+piv = empty("bpiv", (KX + 2.3, 0, 4.4)); bpy.context.view_layer.update()
+for ob in set(bpy.data.objects) - before:
+    if ob.parent is None and ob is not piv:
+        ob.parent = piv; ob.matrix_parent_inverse = piv.matrix_world.inverted()
+piv.rotation_euler = (0, math.radians(-12), 0)     # aimed slightly up at the ridge
+# warm lantern glow behind the keep top
+ellipse(KX + 0.3, 6.0 - 2.0 * t, 2.6, 2.6, 2.0, (1.0, 0.7, 0.35), n=48, alpha=0.45, radial=2.0)
+flush()
 
 
 def figure(sid, x, y, z=0.0, anim="idle", t=0.0, yaw=25, size=1.0):

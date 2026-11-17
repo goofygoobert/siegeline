@@ -137,26 +137,26 @@
     "menu": {
       "file": "menu.m4a",
       "vol": 0.5,
-      "loopStart": 0.0,
-      "loopEnd": 50.526327
+      "loopStart": 0.789478,
+      "loopEnd": 51.315805
     },
     "map": {
       "file": "map.m4a",
       "vol": 0.45,
-      "loopStart": 0.0,
-      "loopEnd": 45.714286
+      "loopStart": 0.714286,
+      "loopEnd": 46.428571
     },
     "battle": {
       "file": "battle.m4a",
       "vol": 0.45,
-      "loopStart": 0.0,
-      "loopEnd": 58.181814
+      "loopStart": 0.454535,
+      "loopEnd": 58.636349
     },
     "boss": {
       "file": "boss.m4a",
       "vol": 0.45,
-      "loopStart": 0.0,
-      "loopEnd": 57.6
+      "loopStart": 0.4,
+      "loopEnd": 58.0
     },
     "victory": {
       "file": "victory.m4a",

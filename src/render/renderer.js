@@ -3,7 +3,8 @@
 import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
 
 const H = 540;                 // logical height
-const MAXP = 360, MAXN = 48;   // particle / number pools (fixed, reused: no per-frame garbage)
+const MAXP = 360, MAXN = 48;
+const CH = 1.3;              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
 
 export function createRenderer(canvas, hooks) {
   const g = canvas.getContext("2d", { alpha: false });
@@ -12,6 +13,7 @@ export function createRenderer(canvas, hooks) {
     flashA: 0, flashC: "#fff", slowmo: 0, quality: 2, reduced: false, sfx: hooks.sfx || (() => {}),
     parts: Array.from({ length: MAXP }, () => ({ life: 0 })), pi: 0,
     nums: Array.from({ length: MAXN }, () => ({ life: 0 })), ni: 0,
+    fx: Array.from({ length: 24 }, () => ({ t: -1 })), fxi: 0,
     aim: null, target: null, region: "r1", t: 0, frameMs: 16, fpsAvg: 60, lowFrames: 0,
     coinBurst: [],
   };
@@ -46,6 +48,10 @@ export function createRenderer(canvas, hooks) {
     }
   }
   R.burst = burst;
+  function fxAt(id, x, y, scale = 1) {
+    if (!sprites[id]) return; const f = R.fx[R.fxi]; R.fxi = (R.fxi + 1) % R.fx.length;
+    f.id = id; f.x = x; f.y = y; f.t = 0; f.s = scale;
+  }
   function num(x, y, text, color, big = false) {
     const n = R.nums[R.ni]; R.ni = (R.ni + 1) % MAXN;
     n.x = x + (Math.random() - 0.5) * 14; n.y = y; n.t = text; n.c = color; n.life = 0.9; n.big = big;
@@ -67,8 +73,8 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
           const enemy = t.side === -1;
-          num(t.x, gy - (t.s.size * 3.6 + 30), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
-          burst(t.x - t.side * 6, gy - t.s.size * 2.2, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
+          num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
+          burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, EMBER, 120, 2, 1, 200, 0.5);
           if (e.kind === "blade") R.sfx("hit_blade", { pan: panOf(t.x), gain: 0.8 });
           else if (e.kind === "claw") R.sfx("hit_claw", { pan: panOf(t.x), gain: 0.8 });
@@ -86,11 +92,11 @@ export function createRenderer(canvas, hooks) {
           if (t.s.large) addShake(0.25);
           break;
         }
-        case "burst": burst(e.x, gy - 30, 26, EMBER, 260, 4, 1, 300, 0.8); burst(e.x, gy - 20, 10, "#3a2b28", 120, 8, 2, -20, 1.2); addShake(0.3); flash(0.15, "#ff9a40"); R.sfx("bloater_burst", { pan: panOf(e.x) }); break;
+        case "burst": fxAt("blast", e.x, gy - 30, 1.2); burst(e.x, gy - 30, 26, EMBER, 260, 4, 1, 300, 0.8); burst(e.x, gy - 20, 10, "#3a2b28", 120, 8, 2, -20, 1.2); addShake(0.3); flash(0.15, "#ff9a40"); R.sfx("bloater_burst", { pan: panOf(e.x) }); break;
         case "fire": R.sfx("bolt_fire"); addShake(0.06); break;
         case "boltHit":
           burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
-          addShake(e.hits ? 0.32 : 0.15); R.sfx("bolt_hit", { pan: panOf(e.x) });
+          addShake(e.hits ? 0.32 : 0.15); R.sfx("bolt_hit", { pan: panOf(e.x) }); fxAt("blast", e.x, e.y - 20, 1);
           if (e.kills >= 2) num(e.x, e.y - 70, e.kills + " down!", "#ffe28a", true);
           break;
         case "reloaded": R.sfx("ballista_reload", { gain: 0.6 }); break;
@@ -103,19 +109,19 @@ export function createRenderer(canvas, hooks) {
           R.sfx("castle_hit", { gain: 0.7, minGap: 0.12 }); if (e.side === 1) addShake(0.1);
           break;
         }
-        case "stone": burst(e.x, gy - 6, 16, EMBER, 240, 3.5, 1, 400, 0.7); addShake(0.12); R.sfx("bolt_hit", { gain: 0.6, rate: 1.2, minGap: 0.05 }); break;
+        case "stone": fxAt("blast", e.x, gy - 16, 0.7); burst(e.x, gy - 6, 16, EMBER, 240, 3.5, 1, 400, 0.7); addShake(0.12); R.sfx("bolt_hit", { gain: 0.6, rate: 1.2, minGap: 0.05 }); break;
         case "ember_rain": R.sfx("ember_rain"); break;
         case "rally": R.sfx("rally"); flash(0.12, "#ffcf7a"); break;
         case "hero": R.sfx("hero_call"); flash(0.15, "#ffcf7a"); addShake(0.2); break;
         case "heroReady": R.sfx("energy_full", { rate: 0.8 }); break;
-        case "flare": burst(e.e.x, gy - 60, 30, "#ffe09a", 320, 3, 1, 0, 0.6); flash(0.25, "#ffe9b0"); R.sfx("hero_flare"); break;
-        case "heal": if (onScreen(e.e.x)) { num(e.e.x, gy - e.e.s.size * 3.6 - 30, "+" + Math.round(e.amt), "#9cf08a"); part(e.e.x, gy - 60, 0, -50, 0.8, 3, "#c8ff9a", 1, -30); } break;
+        case "flare": fxAt("flare", e.e.x, gy - 50, e.r / 120); burst(e.e.x, gy - 60, 30, "#ffe09a", 320, 3, 1, 0, 0.6); flash(0.25, "#ffe9b0"); R.sfx("hero_flare"); break;
+        case "heal": if (onScreen(e.e.x)) { num(e.e.x, gy - Math.min(170, e.e.s.size * 4.6) - 26, "+" + Math.round(e.amt), "#9cf08a"); part(e.e.x, gy - 60, 0, -50, 0.8, 3, "#c8ff9a", 1, -30); } break;
         case "healBeam": R.sfx("heal", { gain: 0.5, minGap: 0.3 }); break;
         case "slam": burst(e.x, gy - 4, 12, "#6e625c", 160, 6, 2, -10, 0.8); break;
         case "bossSpawn": R.sfx("boss_roar"); hooks.duck && hooks.duck(0.3, 2.5); addShake(0.6); flash(0.2, "#ff6a2a"); hooks.onBoss && hooks.onBoss(e.e); break;
         case "bossWarn": R.sfx(e.kind === "summon" ? "boss_roar" : "boss_warn", { gain: e.kind === "summon" ? 0.6 : 1 }); break;
         case "bossSlam": burst(e.x, gy - 6, 30, "#6e625c", 300, 8, 2, -20, 1.0); burst(e.x, gy - 10, 16, EMBER, 260, 3, 1, 300, 0.7); addShake(0.55); R.sfx("boss_slam"); break;
-        case "bossSpitHit": burst(e.x, gy - 6, 26, EMBER, 300, 4, 1, 400, 0.8); addShake(0.35); R.sfx("bolt_hit", { rate: 0.8 }); break;
+        case "bossSpitHit": fxAt("blast", e.x, gy - 24, 1.4); burst(e.x, gy - 6, 26, EMBER, 300, 4, 1, 400, 0.8); addShake(0.35); R.sfx("bolt_hit", { rate: 0.8 }); break;
         case "bossPhase": flash(0.3, "#ff5020"); addShake(0.5); R.sfx("boss_roar", { rate: 0.85 }); break;
         case "bossDead": R.slowmo = 1.6; flash(0.5, "#fff1c8"); addShake(1); R.sfx("castle_crumble"); break;
         case "enrage": burst(e.e.x, gy - 80, 18, "#ff4a20", 200, 3, 1, 0, 0.7); R.sfx("boss_roar", { rate: 1.3, gain: 0.6 }); break;
@@ -202,18 +208,18 @@ export function createRenderer(canvas, hooks) {
       if (a) { const hf = a.hit != null ? a.hit : 3; t = Math.min(e.stateT, (hf - 1) / (a.fps || 10)); }
     }
     if (e.stun > 0) { anim = "hit"; t = 0.05; }
-    const scale = e.elite ? 1.12 : 1;
+    const scale = (e.elite ? 1.12 : 1) * CH;
     const ok = spriteDraw(e.sprite, anim, t, sx, y, { fps, scale }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale });
     if (ok && e.flash > 0) { g.globalAlpha = Math.min(1, e.flash / 0.12) * 0.85 * fadeOut; spriteDraw(e.sprite, anim, t, sx, y, { fps, scale, white: true }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale, white: true }); }
-    if (!ok) placeholder(e, sx, y, e.s.size * 3.4 * (e.alive ? 1 : 0.4), e.flash > 0);
+    if (!ok) placeholder(e, sx, y, e.s.size * 4.4 * (e.alive ? 1 : 0.4), e.flash > 0);
     g.globalAlpha = 1;
     // health bar when hurt (not for boss: boss has its own bar)
     if (e.alive && e.hp < e.maxHp && e.kind !== "boss") {
-      const w = Math.max(22, e.s.size * 1.6), hy = y - e.s.size * 3.6 - 16;
+      const w = Math.max(22, e.s.size * 1.6), hy = y - Math.min(170, e.s.size * 4.6) - 14;
       g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(sx - w / 2 - 1, hy - 1, w + 2, 5);
       g.fillStyle = e.side === 1 ? "#7fd36b" : "#ff7a3a"; g.fillRect(sx - w / 2, hy, w * Math.max(0, e.hp / e.maxHp), 3);
     }
-    if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - e.s.size * 3.8 - 6 + Math.sin(a) * 3, 4, 4); } }
+    if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - Math.min(170, e.s.size * 4.6) - 4 + Math.sin(a) * 3, 4, 4); } }
   }
 
   function drawCastle(B, c, side) {
@@ -274,7 +280,7 @@ export function createRenderer(canvas, hooks) {
 
   function drawAim(B) {
     const a = R.aim; if (!a) return;
-    const G = B.g.ballista.gravity; let x = B.ballista.x + 40, y = B.ballista.y, vx = a.vx, vy = a.vy;
+    const G = B.g.ballista.gravity; let x = B.ballista.x + 30, y = B.ballista.y - 4, vx = a.vx, vy = a.vy;
     g.fillStyle = "rgba(255,226,160,0.9)";
     for (let i = 0; i < 60; i++) {
       const dt = 0.05; vy += G * dt; x += vx * dt; y += vy * dt;
@@ -288,6 +294,7 @@ export function createRenderer(canvas, hooks) {
 
   function drawBallista(B) {
     const sx = B.ballista.x - R.camX; if (sx < -100) return;
+    if (B.keep.hp / B.keep.max <= 0.25 && sprites.keep_2) return;      // platform collapsed on the ruined keep
     const ang = R.aim ? Math.atan2(R.aim.vy, R.aim.vx) : -0.35;
     if (!spriteDraw("ballista", "idle", 0, sx, B.ballista.y, { rot: ang })) {
       g.save(); g.translate(sx, B.ballista.y); g.rotate(ang); g.fillStyle = "#6a4a2a"; g.fillRect(-10, -5, 60, 10);
@@ -324,6 +331,11 @@ export function createRenderer(canvas, hooks) {
     for (const e of list) drawEntity(B, e, alpha);
     for (const p of B.projs) if (p.alive) drawProj(B, p, alpha);
     drawAim(B);
+    for (const f of R.fx) {          // one-shot flipbooks (explosions, flare ring)
+      if (f.t < 0) continue; f.t += dtReal; const sp = sprites[f.id]; const a = sp && sp.anims.idle;
+      if (!a || f.t * (a.fps || 14) >= a.frames.length) { f.t = -1; continue; }
+      g.globalCompositeOperation = "lighter"; spriteDraw(f.id, "idle", f.t, f.x - R.camX, f.y, { scale: f.s }); g.globalCompositeOperation = "source-over";
+    }
     // particles
     const dt = dtReal;
     for (const p of R.parts) {

@@ -289,7 +289,7 @@ def humanoid(spec):
         for ey in (-0.13, 0.13):
             ex = hx + head_r * 0.86 + 0.02 * sc
             if es == "slit":   # enemy: slanted glowing slit
-                attach(box((0.06 * sc, 0.11 * sc * spec.get("head", 1.0), 0.045 * sc), C["eyes"], (ex, ey * sc * spec.get("head", 1.0), hz + 0.02 * sc),
+                attach(box((0.07 * sc, 0.14 * sc * spec.get("head", 1.0), 0.06 * sc), C["eyes"], (ex, ey * sc * spec.get("head", 1.0), hz + 0.02 * sc),
                            rot=(math.radians(22 if ey > 0 else -22), 0, 0), glow=2.0, name="eye", outline=0.012), hp)
             elif es == "dot":
                 attach(ball(0.05 * sc, C.get("eyes", (0.05, 0.04, 0.04)), (ex, ey * sc * spec.get("head", 1.0), hz + 0.03 * sc),
@@ -370,6 +370,7 @@ def _ember(C):
 
 def weapon(kind, rig, C, side="R", grip=None):
     """Builds the prop upright around the hand, on a grip pivot (keyable as gR/gL) rotated by the grip angle."""
+    bpy.context.view_layer.update()   # hand matrices must be current (else props land at the feet)
     sc = rig["sc"]; hand = rig["hand_" + side]; p = hand.matrix_world.translation.copy()
     x, z = p.x, p.z
     y = p.y - 0.05 * sc if side == "R" else p.y + 0.02 * sc
@@ -435,10 +436,10 @@ def weapon(kind, rig, C, side="R", grip=None):
         A(ball(0.05 * sc, C.get("blood", PAL["blood"]), (x + 0.12 * sc, y - 0.02 * sc, z - 0.04 * sc), name="gore", outline=0.0))
     elif kind == "cleaver":
         A(rod((x, y, z - 0.18 * sc), (x, y, z + 0.32 * sc), 0.045 * sc, C["wood"]))
-        A(box((0.4 * sc, 0.05 * sc, 0.85 * sc), (0.5, 0.5, 0.53), (x + 0.12 * sc, y, z + 0.72 * sc), taper=(1.25, 1), name="cleaver"))
+        A(box((0.32 * sc, 0.05 * sc, 0.72 * sc), (0.5, 0.5, 0.53), (x + 0.1 * sc, y, z + 0.66 * sc), taper=(1.25, 1), name="cleaver"))
         A(box((0.16 * sc, 0.06 * sc, 0.22 * sc), C.get("rust", PAL["rust"]), (x + 0.02 * sc, y - 0.005 * sc, z + 0.45 * sc), name="rustspot", outline=0.0))
-        A(box((0.07 * sc, 0.06 * sc, 0.8 * sc), C.get("blood", PAL["blood"]), (x + 0.33 * sc, y, z + 0.74 * sc), name="edge", outline=0.0))
-        A(cyl(0.06 * sc, 0.04 * sc, PAL["dark"], (x + 0.05 * sc, y - 0.03 * sc, z + 0.95 * sc), rot=(math.radians(90), 0, 0), name="hole", outline=0.0))
+        A(box((0.07 * sc, 0.06 * sc, 0.68 * sc), C.get("blood", PAL["blood"]), (x + 0.27 * sc, y, z + 0.68 * sc), name="edge", outline=0.0))
+        A(cyl(0.06 * sc, 0.04 * sc, PAL["dark"], (x + 0.04 * sc, y - 0.03 * sc, z + 0.86 * sc), rot=(math.radians(90), 0, 0), name="hole", outline=0.0))
     elif kind == "boneclub":
         A(rod((x, y, z - 0.15 * sc), (x, y, z + 1.05 * sc), 0.06 * sc, C["bone"], r2=0.13 * sc))
         A(ball(0.17 * sc, C["bone"], (x, y, z + 1.05 * sc), scale=(1.1, 0.9, 0.8), name="knob"))
@@ -458,6 +459,7 @@ def weapon(kind, rig, C, side="R", grip=None):
 
 
 def tower_shield(rig, C, side="L", tilt=0.0):
+    bpy.context.view_layer.update()
     sc = rig["sc"]; hand = rig["hand_" + side]; p = hand.matrix_world.translation.copy()
     t = rig["tier"]
     h = empty("shield", (p.x, p.y, p.z))
@@ -512,7 +514,12 @@ def helmet(rig, C, kind):
         cc = C.get("hood", C.get("cloth", PAL["red_dk"]))
         attach(ball(r * 1.06, cc, (hx - 0.06 * sc, 0, hz + 0.06 * sc), scale=(1, 1, 0.95), name="coif"), hp)
         attach(cyl(r * 0.98, 0.16 * sc, cc, (0, 0, hz - r * 0.95), seg=14, name="collar"), hp)
-    elif kind == "hair":
+    if t >= 2 and kind in ("hood", "coif", "hair"):   # steel skullcap over the hood
+        attach(ball(r * 1.0, M, (hx - 0.08 * sc, 0, hz + r * 0.42), scale=(1.05, 1.05, 0.6), name="cap"), hp)
+        attach(box((r * 1.1, 0.08 * sc, 0.12 * sc), C.get("crest", PAL["red"]) if t == 2 else C["trim"], (hx - 0.1 * sc, 0, hz + r * 1.0), bevel=0.03, name="capcrest"), hp)
+        if t >= 3:
+            attach(cyl(r * 1.06, 0.06 * sc, C["trim"], (hx - 0.08 * sc, 0, hz + r * 0.42), seg=16, name="capband"), hp)
+    if kind == "hair":
         attach(ball(r * 1.02, C["hair"], (hx - 0.07 * sc, 0, hz + 0.06 * sc), scale=(1, 1, 0.92), name="hair"), hp)
         for i, (dx, dz) in enumerate(((-0.25, 0.25), (-0.3, 0.05), (-0.15, 0.36))):
             attach(spike((hx + dx * sc, 0, hz + dz * sc), (-1, 0, 0.4 - i * 0.2), 0.16 * sc, 0.07 * sc, C["hair"]), hp)
@@ -598,7 +605,7 @@ ATTACKS = {
     "ring": dict(aR=[-15, -35, -55, -65, -5, 5, -10, -15], aL=[-25] * 8, torso=[0, -3, -6, -6, 6, 6, 2, 0],
                  lL=[0] * 8, lR=[0] * 8, k=dict(gR=[0, 0, 0, 0, 0, 0, 0, 0])),
     "slam": dict(aR=[-30, -100, -170, -200, -45, -35, -40, -30], aL=[-30, -100, -170, -200, -45, -35, -40, -30],
-                 k=dict(gR=[0, 10, 20, 20, 95, 90, 50, 0]),
+                 k=dict(gR=[0, 10, 20, 20, 72, 55, 40, 0]),
                  torso=[0, -6, -14, -16, 22, 24, 12, 2], rx=[0, -0.02, -0.04, -0.04, 0.12, 0.12, 0.06, 0],
                  rz=[0, 0, 0.02, 0.03, -0.04, -0.04, -0.02, 0],
                  lL=[0, -5, -10, -12, -24, -24, -12, 0], lR=[0, 5, 8, 10, 18, 18, 8, 0]),
@@ -644,10 +651,10 @@ def a_hit(t, st):
 def a_die(t, st):
     k = min(t / 0.75, 1.0); k = k * k * (3 - 2 * k)
     if st.get("die") == "fwd":   # collapse forward onto the face
-        return dict(rr=82 * k, rx=-0.8 * k, rz=0.2 * k, torso=12 * k, head=15 * k, aR=-120 * k, aL=-140 * k,
+        return dict(rr=82 * k, rx=-0.8 * k, rz=st.get("die_rz", 0.42) * k, torso=12 * k, head=15 * k, aR=-50 * k, aL=-35 * k,
                     lL=-20 * k, lR=10 * k, leanf=1 - k)
-    return dict(rr=-86 * k, rx=0.85 * k, rz=0.2 * k, torso=-15 * k, head=-25 * k, aR=60 * k, aL=80 * k,
-                lL=20 * k, lR=-10 * k, leanf=1 - k)
+    return dict(rr=-84 * k, rx=0.85 * k, rz=0.36 * k, torso=-15 * k, head=-25 * k, aR=-100 * k, aL=-70 * k,
+                lL=20 * k, lR=-10 * k, leanf=1 - k, k=dict(gR=st.get("die_g", 0) * k))
 
 
 def a_attack(t, st):
@@ -735,10 +742,13 @@ def register(spec):
 def build_char(spec):
     rig = spec["builder"](spec) if "builder" in spec else humanoid(spec)
     C = spec["colors"]
+    bpy.context.view_layer.update()
     if spec.get("helmet"):
         helmet(rig, C, spec["helmet"])
     if spec.get("cape"):
         cape(rig, C, spec.get("cape_len", 1.0))
+    elif rig["tier"] >= 2:      # upgraded Wardens earn a short red half-cape (silhouette change)
+        cape(rig, C, 0.58)
     if spec.get("weapon"):
         weapon(spec["weapon"], rig, C, "R", spec.get("grip"))
     if spec.get("offhand"):
@@ -746,6 +756,7 @@ def build_char(spec):
     if spec.get("shield"):
         tower_shield(rig, C, "L", -spec.get("style", {}).get("aL0", 10))
     for fn in spec.get("extras", []):
+        bpy.context.view_layer.update()
         fn(rig, C)
     return rig
 
@@ -789,8 +800,10 @@ def place(sid, J, pos):
     facing = spec.get("facing", 1)
     s = 1.0
     if sid.startswith("p_"):
-        s = 1.4 / rig["sc"]
-        holder.location.z -= rig["head_z"] * s - 0.12
+        s = 1.22 / rig["sc"]
+        holder.location.z -= rig["head_z"] * s + 0.02
+        if spec.get("portrait_noweapon") and rig.get("grip_R"):
+            rig["grip_R"].scale = (0, 0, 0)
         holder.location.x -= 0.06
     holder.scale = (facing * s, s, s)
     holder.rotation_euler = (0, 0, math.radians(-J["yaw"] * facing))

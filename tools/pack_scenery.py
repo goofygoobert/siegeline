@@ -132,11 +132,33 @@ def title():
 def worldmap():
     im = frame("worldmap", 1).convert("RGB")
     assert im.size == (2048, 1024), im.size
+    # soft painted vignette
+    from PIL import ImageDraw, ImageFilter, ImageChops
+    m = Image.new("L", (256, 128), 0); ImageDraw.Draw(m).ellipse((-30, -24, 286, 152), fill=255)
+    m = m.filter(ImageFilter.GaussianBlur(18)).resize(im.size, Image.BICUBIC).point(lambda v: 150 + v * 105 // 255)
+    im = ImageChops.multiply(im, Image.merge("RGB", (m, m, m)))
     im.save(OUT / "worldmap.webp", "WEBP", quality=85, method=6)
     sys.path.insert(0, str(ROOT / "art" / "blender" / "bg"))
     import map_lib
     (OUT / "worldmap.json").write_text(json.dumps({"regions": map_lib.markers()}, indent=1))
     print("worldmap.webp", (OUT / "worldmap.webp").stat().st_size // 1024, "KB")
+
+
+def record_sizes():
+    notes = ROOT / "docs" / "scenery-notes.md"
+    if not notes.exists():
+        return
+    files = [OUT / f for f in ("castles.webp", "castles.json", "fx.webp", "fx.json", "title.webp", "worldmap.webp", "worldmap.json")]
+    files += sorted((OUT / "bg").glob("*.webp")) + [OUT / "bg" / "manifest.json"]
+    rows = ["| file | size |", "|---|---|"]
+    tot = 0
+    for f in files:
+        if f.exists():
+            n = f.stat().st_size; tot += n
+            rows.append(f"| {f.relative_to(OUT)} | {n / 1024:.1f} KB |")
+    rows.append(f"| **total** | **{tot / 1024:.1f} KB** |")
+    t = notes.read_text(); a = t.index("<!-- sizes -->") + len("<!-- sizes -->"); b = t.index("<!-- /sizes -->")
+    notes.write_text(t[:a] + "\n" + "\n".join(rows) + "\n" + t[b:])
 
 
 if __name__ == "__main__":
@@ -146,3 +168,4 @@ if __name__ == "__main__":
         if not (SRC / j.replace("castles", "castles")).exists():
             print("skip", j, "(no renders)"); continue
         globals()[j]()
+    record_sizes()

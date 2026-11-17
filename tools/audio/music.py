@@ -169,7 +169,7 @@ def finish_loop(name, x, bitrate, pre_sec):
 
 
 def finish_sting(name, x, bitrate):
-    xx = np.stack([fade(x[0], 0.002, 0.6), fade(x[1], 0.002, 0.6)])
+    xx = np.stack([fade(x[0], 0.002, 1.0), fade(x[1], 0.002, 1.0)])
     A.write_wav(xx, "mus_" + name)
     A.encode_safe(xx, name, bitrate)
     return {"samples": xx.shape[1]}
@@ -442,7 +442,7 @@ def boss():
 
 # ================================================================== STINGS
 def victory():
-    tr = Track(100, 2, loop=False, tail=3.0, seed=5)
+    tr = Track(100, 2, loop=False, tail=1.2, seed=5)
     fan = parse_mel("D4:.75 A4:.25 G4:.5 F#4:.5  E4:.5 F#4:.25 G4:.25 A4:4")
     tr.melody("lead", fan, 0, brass, gain=0.4, pan=0.05, a=0.02, r=0.4, bright=0.9, vel=1.0)
     tr.melody("lead", [(m + 12, d) for m, d in fan], 0, strings, gain=0.15, pan=-0.25, a=0.03, r=0.4, voices=4,
@@ -464,7 +464,7 @@ def victory():
 
 
 def defeat():
-    tr = Track(60, 1, loop=False, tail=2.4, seed=6)
+    tr = Track(60, 1, loop=False, tail=1.6, seed=6)
     mel = parse_mel("A4:.75 G4:.25 F4:1 E4:1 D4:3")
     tr.melody("lead", mel, 0, brass, gain=0.3, pan=0.05, a=0.12, r=0.8, bright=0.35, vel=0.65)
     for ch, b, d in (("Dm", 0, 1), ("Bb", 1, 1), ("A", 2, 1), ("Dm", 3, 3)):

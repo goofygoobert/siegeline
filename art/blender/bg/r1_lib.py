@@ -10,8 +10,8 @@ DAY = dict(
     far_win=(1.0, 0.66, 0.3), far_smoke=(0.32, 0.14, 0.14),
     hill=((0.12, 0.11, 0.1), (0.25, 0.23, 0.19)), rim=(0.62, 0.36, 0.2), scrub=(0.29, 0.3, 0.23), scrub_d=(0.19, 0.2, 0.17),
     sil=(0.13, 0.09, 0.1), lit=(0.34, 0.19, 0.16), win=(1.0, 0.58, 0.22), front=((0.1, 0.09, 0.09), (0.17, 0.15, 0.14)),
-    ground=((0.12, 0.09, 0.09), (0.27, 0.22, 0.19)), lip=(0.41, 0.35, 0.31), pebble=(0.18, 0.14, 0.13), bone=(0.52, 0.47, 0.4),
-    crackc=(1.0, 0.46, 0.13), grass=(0.33, 0.35, 0.27), grass_d=(0.23, 0.24, 0.2), nsil=(0.11, 0.08, 0.09),
+    ground=((0.12, 0.09, 0.09), (0.27, 0.22, 0.19)), lip=(0.41, 0.35, 0.31), pebble=(0.18, 0.14, 0.13), bone=(0.4, 0.36, 0.32),
+    crackc=(0.82, 0.36, 0.12), grass=(0.33, 0.35, 0.27), grass_d=(0.23, 0.24, 0.2), nsil=(0.11, 0.08, 0.09),
     rock=(0.21, 0.17, 0.17), rock_lit=(0.31, 0.25, 0.23), ash=(0.36, 0.31, 0.29), mist=(0.8, 0.45, 0.28),
 )
 NIGHT = dict(
@@ -21,8 +21,8 @@ NIGHT = dict(
     far_win=(1.0, 0.48, 0.18), far_smoke=(0.1, 0.05, 0.08),
     hill=((0.05, 0.05, 0.06), (0.11, 0.1, 0.11)), rim=(0.46, 0.17, 0.12), scrub=(0.13, 0.14, 0.13), scrub_d=(0.08, 0.09, 0.09),
     sil=(0.05, 0.04, 0.06), lit=(0.17, 0.08, 0.09), win=(1.0, 0.5, 0.18), front=((0.04, 0.04, 0.05), (0.08, 0.07, 0.08)),
-    ground=((0.06, 0.05, 0.06), (0.18, 0.15, 0.16)), lip=(0.28, 0.24, 0.26), pebble=(0.09, 0.08, 0.09), bone=(0.36, 0.33, 0.31),
-    crackc=(1.0, 0.42, 0.12), grass=(0.17, 0.19, 0.17), grass_d=(0.11, 0.12, 0.11), nsil=(0.05, 0.04, 0.05),
+    ground=((0.06, 0.05, 0.06), (0.18, 0.15, 0.16)), lip=(0.28, 0.24, 0.26), pebble=(0.09, 0.08, 0.09), bone=(0.27, 0.25, 0.24),
+    crackc=(0.85, 0.33, 0.1), grass=(0.17, 0.19, 0.17), grass_d=(0.11, 0.12, 0.11), nsil=(0.05, 0.04, 0.05),
     rock=(0.11, 0.09, 0.1), rock_lit=(0.19, 0.15, 0.16), ash=(0.22, 0.19, 0.21), mist=(0.35, 0.12, 0.12),
 )
 
@@ -168,7 +168,7 @@ def build_near(P, night, W=None):
     for i in range(130):
         x = r.uniform(0, W); z = r.uniform(-1.5, 0.12) if i % 4 else r.uniform(BG_BOT + 0.1, -1.5); s = r.uniform(0.04, 0.12)
         ellipse(x, z, s * 1.4, s, Y - 0.7, P["pebble"], n=8, wob=0.3, seed=i)
-    for i in range(16):
+    for i in range(9):
         x = r.uniform(1, W - 1); z = r.uniform(-1.2, -0.15); a = r.uniform(-0.4, 0.4); l = r.uniform(0.25, 0.45)
         x1, z1 = x + math.cos(a) * l, z + math.sin(a) * l
         seg(x, z, x1, z1, 0.05, 0.05, Y - 0.8, P["bone"])
@@ -179,9 +179,9 @@ def build_near(P, night, W=None):
         ellipse(x, z + 0.1, 0.14, 0.13, Y - 0.8, P["bone"], n=12)
         rect(x - 0.07, z - 0.03, x + 0.07, z + 0.03, Y - 0.8, P["bone"])
         ellipse(x + 0.05, z + 0.11, 0.035, 0.04, Y - 0.85, P["pebble"], n=8)
-    for i in range(9):
+    for i in range(6):
         x = r.uniform(1, W - 4); z = r.uniform(-1.0, -0.25)
-        crack(x, z, r.uniform(0.8, 1.8), Y - 0.9, P["crackc"], seed=i, glow=0.4 if not night else 0.8, w=0.035)
+        crack(x, z, r.uniform(0.8, 1.8), Y - 0.9, P["crackc"], seed=i, glow=0.0 if not night else 0.3, w=0.03)
     # rocks and grass along the crust
     for i in range(16):
         x = r.uniform(0, W); rock(x, gz(x) - 0.12, r.uniform(0.12, 0.3), Y - 1, P["rock"], seed=i, lit=P["rock_lit"])

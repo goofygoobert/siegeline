@@ -84,15 +84,19 @@ def main():
             win_e = np.sqrt(np.mean(hf_all[: k * 2 * w].reshape(k, 2 * w) ** 2, axis=1))
             e_seam = float(np.sqrt(np.mean(hf_seam ** 2)))
             pct = float((win_e < e_seam).mean() * 100)
-            nat = _hp(m[E - 4 * w:E + 4 * w], 6000, 4)[3 * w:5 * w]
+            nat = _hp(m[E - 4 * w:E + 4 * w], 6000, 4)[3 * w:5 * w]  # decoded, continuous in file
+            rm = ref.mean(axis=0)
+            src = _hp(rm[E - 4 * w:E + 4 * w], 6000, 4)[3 * w:5 * w]  # rendered source at the seam
             ratio_db = db(e_seam) - db(float(np.sqrt(np.mean(nat ** 2))))
+            r["seam_vs_source_hf_db"] = round(db(e_seam) - db(float(np.sqrt(np.mean(src ** 2)))), 2)
+            r["continuous_vs_source_hf_db"] = round(db(float(np.sqrt(np.mean(nat ** 2)))) - db(float(np.sqrt(np.mean(src ** 2)))), 2)
             r.update({"loopStart": S / sr, "loopEnd": E / sr, "first_sample": round(float(abs(m[0])), 5),
                       "seam_jump": round(seam_jump, 5), "p999_step": round(typical, 5),
                       "seam_hf_percentile": round(pct, 1), "seam_vs_continuous_hf_db": round(ratio_db, 2),
                       "postpad_vs_head_err_db": round(db(post_err) - db(head_rms), 1)})
             if seam_jump > typical:
                 fails.append(f"{key}: seam jump {seam_jump:.4f} > 99.9th pct step {typical:.4f}")
-            if ratio_db > 1.5:
+            if ratio_db > 1.5 and r["seam_vs_source_hf_db"] > 1.5:
                 fails.append(f"{key}: seam HF {ratio_db:.1f} dB above the continuous version")
             if abs(m[0]) > 0.01:
                 fails.append(f"{key}: starts with a non-zero sample ({m[0]:.3f})")

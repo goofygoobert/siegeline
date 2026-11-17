@@ -11,9 +11,9 @@ ANIMSETS = {
              ("hit", 4, 12, False, None), ("die", 8, 10, False, None)],
     "hero": [("idle", 6, 8, True, None), ("walk", 8, 10, True, None), ("attack", 8, 12, False, 4),
              ("hit", 4, 12, False, None), ("die", 8, 10, False, None), ("special", 8, 10, False, 4)],
-    "boss": [("idle", 6, 6, True, None), ("walk", 8, 7, True, None), ("sweep", 12, 10, False, 8),
-             ("summon", 8, 8, False, 5), ("spit", 8, 10, False, 5), ("hit", 4, 12, False, None),
-             ("die", 12, 8, False, None)],
+    "boss": [("idle", 6, 6, True, None), ("walk", 6, 6, True, None), ("sweep", 12, 10, False, 8),
+             ("summon", 8, 8, False, 5), ("spit", 8, 10, False, 5), ("hit", 3, 10, False, None),
+             ("die", 9, 7, False, None)],
     "still": [("idle", 1, 1, True, None)],
 }
 
@@ -27,11 +27,11 @@ ANIMSET_OF = {"marshal": "hero", "cinder_matron": "boss", "cinder_runner": "fast
 
 # ax: anchor x as a fraction of the cell (players; enemies use 1-ax), gy: ground px above the cell bottom
 JOBS = {
-    "units": dict(cell=(480, 480), cols=6, ppu=96, ax=0.52, gy=40, yaw=25, mode="anim",
+    "units": dict(cell=(560, 480), cols=6, ppu=96, ax=0.48, gy=88, yaw=25, mode="anim",
                   ids=UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]),
-    "field": dict(cell=(672, 672), cols=4, ppu=96, ax=0.5, gy=44, yaw=25, mode="anim",
+    "field": dict(cell=(672, 672), cols=4, ppu=96, ax=0.5, gy=100, yaw=25, mode="anim",
                   ids=["marshal"] + ENEMIES),
-    "boss": dict(cell=(1024, 1024), cols=1, ppu=96, ax=0.5, gy=64, yaw=20, mode="anim", ids=["cinder_matron"]),
+    "boss": dict(cell=(1024, 1024), cols=1, ppu=96, ax=0.44, gy=150, yaw=20, mode="anim", ids=["cinder_matron"]),
     # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
     "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
                ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * 14 + [x for p in ICONS for x in (p, "_")]),
@@ -39,7 +39,8 @@ JOBS = {
 
 # atlas groups: name -> (job, ids, ppu, out_scale). out_scale only for ui (render px -> atlas px).
 ATLASES = {
-    "units": dict(job="units", ids=JOBS["units"]["ids"], ppu=72),
+    "units": dict(job="units", ids=JOBS["units"]["ids"], ppu=72,   # pages: units = base, units2 = _t2, units3 = _t3
+                  pages=[UNITS, [u + "_t2" for u in UNITS], [u + "_t3" for u in UNITS]]),
     "hero": dict(job="field", ids=["marshal"], ppu=72),
     "enemies": dict(job="field", ids=ENEMIES, ppu=72),
     "boss": dict(job="boss", ids=["cinder_matron"], ppu=72),
