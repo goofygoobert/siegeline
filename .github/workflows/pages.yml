@@ -23,6 +23,21 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: playthrough-shots, path: playthrough-shots, retention-days: 7 }
+      - name: Design preview (redesign branch), added only if its own tests and play-through pass
+        continue-on-error: true
+        env: { CI: "1" }
+        run: |
+          git fetch origin redesign --depth=1
+          git worktree add ../preview-src FETCH_HEAD
+          cd ../preview-src
+          npm ci && npm test && npm run build
+          npx vite preview --host 127.0.0.1 --port 5195 --strictPort &
+          sleep 3
+          node tools/playthrough.mjs http://127.0.0.1:5195/ "$GITHUB_WORKSPACE/playthrough-shots-preview"
+          mkdir -p "$GITHUB_WORKSPACE/dist/preview" && cp -r dist/* "$GITHUB_WORKSPACE/dist/preview/" && rm -f "$GITHUB_WORKSPACE/dist/preview/sw.js"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: playthrough-shots-preview, path: playthrough-shots-preview, retention-days: 7, if-no-files-found: ignore }
       - name: Add the worlds page
         run: mkdir -p dist/worlds && cp -r docs/worlds/* dist/worlds/
       - uses: actions/upload-pages-artifact@v3
