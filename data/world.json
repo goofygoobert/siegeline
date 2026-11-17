@@ -1,0 +1,84 @@
+{
+ "id": "brine",
+ "name": "Tales of the Brine",
+ "title": "SIEGELINE",
+ "tagline": "Hold the Gullwake. The tide has turned green, and everything the sea swallowed is crawling back up the beach.",
+ "mapTitle": "The Brine Sea",
+ "keep": "Gullwake",
+ "gate": "Drowned Grotto",
+ "weapon": "Long Tom",
+ "weaponHelp": "Long Tom, the fort's cannon: hold and drag back to aim, release to fire",
+ "energy": "powder",
+ "currency": "doubloons",
+ "heroCall": "Call the Captain",
+ "short": {
+  "ashguard": "Hatchguard",
+  "torchbow": "Blackpowder",
+  "cinder_runner": "Rope Rat",
+  "maulwright": "Anchorman",
+  "bellringer": "Shantyman",
+  "lamplighter": "Sawbones"
+ },
+ "abilities": {
+  "ember_rain": "Broadside",
+  "rally": "Sea Shanty"
+ },
+ "abilityDesc": {
+  "ember_rain": "{n} cannonballs, {d} dmg each \u00b7 {cd}s",
+  "rally": "Crew sings: +35% speed, faster attacks, heals 15% \u00b7 {t}s \u00b7 {cd}s"
+ },
+ "armTarget": "Tap the beach where the Broadside should land",
+ "callouts": {
+  "start": "Defend the Gullwake",
+  "bossStart": "Hold the line",
+  "rush": "They're swarming the beach!",
+  "angry": "The tide turns against us",
+  "bossRises": "Mother Fathom rises",
+  "hero": "The Captain's ashore!",
+  "sweep": "Tentacle raised! Fall back!",
+  "summon": "She calls the Scuttlers!",
+  "spit": "Ink bomb! Clear the ring!",
+  "winded": "She's reeling! Strike now!"
+ },
+ "results": {
+  "win": "Victory",
+  "bossWin": "Mother Fathom sinks",
+  "lose": "The Gullwake has fallen",
+  "closeGate": "The Grotto had only {hp} left. So close.",
+  "closeBoss": "Mother Fathom was down to {pct}%. So close."
+ },
+ "tips": {
+  "weapon": "Tip: Long Tom reloads on its own. Fire it often, one cannonball can scatter a whole pack.",
+  "big": "Tip: Trolls and the Kelpie hit hard. Hold them with Hatchguards while Blackpowders and Long Tom wear them down.",
+  "bloater": "Tip: Pufferghasts burst when they die. Pop them from range with Blackpowders or Long Tom, not among your crew.",
+  "spitter": "Tip: Inkspitters hide behind the horde. Rope Rats reach them fast.",
+  "send": "Tip: send crew steadily. Powder you don't spend is wasted when the store is full.",
+  "general": "Tip: upgrades from the Quartermaster carry over to every stage. Replays earn doubloons too."
+ },
+ "armoury": {
+  "title": "Quartermaster",
+  "keepWalls": "Hull planks",
+  "keepHp": "Fort health {hp}",
+  "weapon": "Long Tom",
+  "weaponDesc": "Cannonball damage {d} \u00b7 reload {r}s",
+  "store": "Powder store",
+  "storeDesc": "Hold up to {n} powder",
+  "flow": "Powder flow",
+  "flowDesc": "{n} powder per second",
+  "heroDesc": "HP {hp} \u00b7 DMG {d} \u00b7 Flare pistol stuns nearby monsters"
+ },
+ "regionCleared": {
+  "title": "Saltwick Cove is safe",
+  "text": "Mother Fathom sinks back into the deep. The course to the Fogbanks opens in the next update. Replay stages for stars and upgrades until then."
+ },
+ "comingSoon": "Coming in a later update.",
+ "fx": {
+  "enemyBlood": "#1f3b36",
+  "enemyGlow": "#8dffad",
+  "crewBlood": "#7a1714",
+  "ambient": "#cfe9f2",
+  "ambientGlow": false,
+  "elite": "#5dff8a",
+  "fire": "#ff8a2a"
+ }
+}

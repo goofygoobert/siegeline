@@ -2,7 +2,7 @@
  "enemies": [
   {
    "id": "husk",
-   "name": "Husk",
+   "name": "Drowner",
    "faction": "hollow",
    "hp": 165,
    "dmg": 16,
@@ -11,12 +11,12 @@
    "speed": 34,
    "size": 15,
    "traits": {},
-   "desc": "The risen dead of the Vale. Slow, numerous, relentless.",
+   "desc": "A drowned sailor come back up the beach. Slow, many, relentless.",
    "art": true
   },
   {
    "id": "gnawer",
-   "name": "Gnawer",
+   "name": "Scuttler",
    "faction": "hollow",
    "hp": 80,
    "dmg": 10,
@@ -25,12 +25,12 @@
    "speed": 80,
    "size": 11,
    "traits": {},
-   "desc": "Scuttles on all fours past slow defenders.",
+   "desc": "A crab-thing with too many legs. Scuttles past slow defenders.",
    "art": true
   },
   {
    "id": "spitter",
-   "name": "Ash Spitter",
+   "name": "Inkspitter",
    "faction": "hollow",
    "hp": 135,
    "dmg": 24,
@@ -42,12 +42,12 @@
     "projectile": "spit",
     "lob": true
    },
-   "desc": "Lobs burning ash from behind the horde.",
+   "desc": "Squid-headed and patient. Lobs glowing ink from behind the horde.",
    "art": true
   },
   {
    "id": "bloater",
-   "name": "Pyre Bloater",
+   "name": "Pufferghast",
    "faction": "hollow",
    "hp": 350,
    "dmg": 12,
@@ -61,12 +61,12 @@
      "radius": 75
     }
    },
-   "desc": "Swollen with embers. Bursts when killed, burning everyone nearby.",
+   "desc": "A swollen spined puffer on stubby legs. Bursts when killed, hurting everyone nearby.",
    "art": true
   },
   {
    "id": "brute",
-   "name": "Bonecage Brute",
+   "name": "Barnacle Troll",
    "faction": "hollow",
    "hp": 870,
    "dmg": 68,
@@ -79,12 +79,12 @@
     "splash": 40,
     "knockback": 30
    },
-   "desc": "A giant split open to the ribs. Every swing sends soldiers flying.",
+   "desc": "A sea troll crusted in coral. Every swing sends sailors flying.",
    "art": true
   },
   {
    "id": "husk_warden",
-   "name": "Husk Warden",
+   "name": "The Kelpie",
    "faction": "hollow",
    "hp": 2340,
    "dmg": 81,
@@ -103,12 +103,12 @@
      "rate": 0.75
     }
    },
-   "desc": "Once a captain of the Vale. Enrages when wounded.",
+   "desc": "A ghastly water-horse with a kelp mane. Rears up and rages when wounded.",
    "art": true
   },
   {
    "id": "cinder_matron",
-   "name": "The Cinder Matron",
+   "name": "Mother Fathom",
    "faction": "hollow",
    "hp": 5600,
    "dmg": 123,
@@ -145,12 +145,12 @@
      "firePatch": true
     }
    },
-   "desc": "Mother of the Hollow Host. Raises her censer before she swings \u2014 get clear.",
+   "desc": "The sea hag of the deep. Raises her tentacle before she sweeps: get clear.",
    "art": true
   },
   {
    "id": "wailer",
-   "name": "Wailer",
+   "name": "Will-o'-Wisp",
    "faction": "hollow",
    "region": 2,
    "hp": 150,
@@ -162,11 +162,11 @@
    "traits": {
     "flying": true
    },
-   "desc": "Flying shade."
+   "desc": "A drifting ghost light that leads sailors astray."
   },
   {
    "id": "tithe_spear",
-   "name": "Tithe Spearman",
+   "name": "Drowned Boarder",
    "faction": "tithe",
    "region": 3,
    "hp": 400,
@@ -178,11 +178,11 @@
    "traits": {
     "armor": 0.2
    },
-   "desc": "Mercenary knight-spear."
+   "desc": "A ghost pirate of the Drowned Fleet, armoured in barnacles."
   },
   {
    "id": "tithe_crossbow",
-   "name": "Tithe Crossbow",
+   "name": "Ghost Gunner",
    "faction": "tithe",
    "region": 3,
    "hp": 235,
@@ -194,11 +194,11 @@
    "traits": {
     "projectile": "bolt"
    },
-   "desc": "Long-range mercenary."
+   "desc": "Long-range spectral musketeer."
   },
   {
    "id": "tithe_paladin",
-   "name": "Gilded Paladin",
+   "name": "Ghost Captain",
    "faction": "tithe",
    "region": 3,
    "hp": 1505,
@@ -212,11 +212,11 @@
     "armor": 0.35,
     "heal": 30
    },
-   "desc": "Heals nearby Tithe."
+   "desc": "Heals the Drowned Fleet around him."
   },
   {
    "id": "maw_hound",
-   "name": "Maw Hound",
+   "name": "Selkie Raider",
    "faction": "mawborn",
    "region": 4,
    "hp": 265,
@@ -226,11 +226,11 @@
    "speed": 85,
    "size": 16,
    "traits": {},
-   "desc": "Furnace beast."
+   "desc": "Seal-skinned raider, fast on sand."
   },
   {
    "id": "slag_golem",
-   "name": "Slag Golem",
+   "name": "Coral Golem",
    "faction": "mawborn",
    "region": 4,
    "hp": 2670,
@@ -244,11 +244,11 @@
     "armor": 0.3,
     "splash": 50
    },
-   "desc": "Molten tank."
+   "desc": "A walking reef. Armoured, crushing."
   },
   {
    "id": "cinder_drake",
-   "name": "Cinder Drake",
+   "name": "Sea Serpent",
    "faction": "mawborn",
    "region": 5,
    "hp": 1170,
@@ -262,7 +262,7 @@
     "flying": true,
     "cone": true
    },
-   "desc": "Fire-breathing flyer."
+   "desc": "Leaps from the waves and spits brine."
   }
  ],
  "elite": {

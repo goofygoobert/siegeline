@@ -23,14 +23,30 @@ def as2d(x):
 def write_wav(x, name, sr=SR):
     x = as2d(x)
     path = os.path.join(WAVDIR, name + ".wav")
-    wavfile.write(path, sr, (np.clip(x.T, -1, 1) * 32767).astype(np.int16))
+    tmp = path + ".tmp"
+    wavfile.write(tmp, sr, (np.clip(x.T, -1, 1) * 32767).astype(np.int16))
+    os.replace(tmp, path)
     return path
 
 
-def encode_m4a(x, name, bitrate, sr=SR):
+def write_json_atomic(obj, path):
+    import json
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(obj, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
+def tmp_path(name):
+    """Temp file next to the shipped one; renamed into place only when finished (atomic)."""
+    return os.path.join(OUT, "." + name + ".tmp.m4a")
+
+
+def encode_m4a(x, name, bitrate, sr=SR, path=None):
     x = as2d(x)
     ch = x.shape[0]
-    path = os.path.join(OUT, name + ".m4a")
+    path = path or os.path.join(OUT, name + ".m4a")
     layout = "mono" if ch == 1 else "stereo"
     cont = av.open(path, "w", format="ipod")
     st = cont.add_stream("aac", rate=sr, layout=layout)
@@ -106,12 +122,14 @@ def encode_safe(x, name, bitrate, sr=SR, ceiling_db=-1.3, tries=5):
     """Encode, decode, and re-encode scaled down until the DECODED peak is under ceiling_db
     (AAC reconstruction can overshoot the source peak by a few dB on sharp transients)."""
     x = as2d(x).astype(np.float64)
-    path = None
+    tmp = tmp_path(name)
+    final = os.path.join(OUT, name + ".m4a")
     for _ in range(tries):
-        path = encode_m4a(x, name, bitrate, sr)
-        y, _ = decode(path)
+        encode_m4a(x, name, bitrate, sr, path=tmp)
+        y, _ = decode(tmp)
         p = db(peak(y))
         if p <= ceiling_db:
-            return path, p
+            break
         x = x * 10 ** ((ceiling_db - 0.15 - p) / 20)
-    return path, p
+    os.replace(tmp, final)  # atomic: the running game never sees a half-written file
+    return final, p

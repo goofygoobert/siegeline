@@ -4,6 +4,7 @@ import enemies from "../data/enemies.json";
 import game from "../data/game.json";
 import regions from "../data/regions.json";
 import r1 from "../data/stages/r1.json";
+import W from "../data/world.json";
 import { createBattle, step, input, canSend, stars as starCount } from "./sim/battle.js";
 import { makeBot } from "./sim/bot.js";
 import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
@@ -17,8 +18,9 @@ const content = { units, enemies, game, regions, stages: r1.stages, tutorials: r
 const stageById = Object.fromEntries(content.stages.map((s) => [s.id, s]));
 const unitById = Object.fromEntries(units.units.map((u) => [u.id, u]));
 const enemyById = Object.fromEntries(enemies.enemies.map((e) => [e.id, e]));
-const abilityNames = { ember_rain: "Ember Rain", rally: "Rally Bell" };
-const SHORT = { ashguard: "Ashguard", torchbow: "Torchbow", cinder_runner: "Runner", maulwright: "Maulwright", bellringer: "Bellringer", lamplighter: "Lamplighter" };
+const abilityNames = W.abilities;
+const SHORT = W.short;
+const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k]);
 
 const ui = document.getElementById("ui");
 const TEST = new URLSearchParams(location.search).has("test");
@@ -26,7 +28,7 @@ let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
-const R = createRenderer(canvas, { sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout("They're rushing!"), onAngry: () => battle && battle.callout("The Maw grows angry"), onBossWarn: (k) => battle && battle.bossWarn(k) });
+const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
 
@@ -47,7 +49,7 @@ const I = {
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
   hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4l6 6-3 3-6-6zM11 7L3.5 14.5a2 2 0 000 2.8l3.2 3.2a2 2 0 002.8 0L17 13"/></svg>',
-  ballista: '<svg viewBox="0 0 48 48" fill="none" stroke="#f3d9a8" stroke-width="3.2" stroke-linecap="round"><path d="M8 36L38 12"/><path d="M14 18c8-2 16 6 14 14" stroke="#d49a3a"/><path d="M33 10l7-2-2 7" fill="#f3d9a8"/></svg>',
+  ballista: '<svg viewBox="0 0 48 48"><rect x="10" y="17" width="28" height="11" rx="5" transform="rotate(-25 24 22)" fill="#3a332e" stroke="#f3d9a8" stroke-width="2"/><circle cx="17" cy="33" r="6" fill="none" stroke="#d49a3a" stroke-width="3"/><circle cx="41" cy="10" r="3" fill="#ffb347"/></svg>',
   rain: '<svg viewBox="0 0 48 48"><g fill="#ff9a40"><circle cx="14" cy="30" r="5"/><circle cx="28" cy="20" r="6"/><circle cx="36" cy="34" r="4.5"/></g><g stroke="#ffcf7a" stroke-width="2.4" stroke-linecap="round"><path d="M10 22l4 6M24 10l4 8M33 25l3 7"/></g></svg>',
   bell: '<svg viewBox="0 0 48 48"><path d="M24 8c-7 0-11 6-11 13v8l-4 6h30l-4-6v-8c0-7-4-13-11-13z" fill="#e0a84a" stroke="#6a4214" stroke-width="2"/><circle cx="24" cy="38" r="3.5" fill="#6a4214"/></svg>',
   speed: (s) => `<span style="font-size:14px">${s}×</span>`,
@@ -90,7 +92,7 @@ function persist(now = false) { if (now) save(D); else saveSoon(D); }
 
 // ---------------------------------------------------------------- screen manager
 let current = null;
-function clearCanvas() { const g = canvas.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#120c0c"; g.fillRect(0, 0, canvas.width, canvas.height); }
+function clearCanvas() { const g = canvas.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#0b1118"; g.fillRect(0, 0, canvas.width, canvas.height); }
 function show(el) {
   if (!el.classList.contains("hud") && !el.classList.contains("loading")) clearCanvas();
   const old = current; current = el; ui.append(el);
@@ -102,7 +104,7 @@ function topbar(title, backFn, extra = []) {
   return h("div", { class: "topbar" },
     backFn ? h("button", { class: "btn icon", "aria-label": "Back", onclick: tap(backFn, "ui_back") }, icon(I.back)) : null,
     h("div", { class: "title-s" }, title), h("div", { class: "spacer" }), ...extra,
-    h("div", { class: "marks", "aria-label": "Marks" }, coin(), h("span", { id: "markval" }, D.marks + "")),
+    h("div", { class: "marks", "aria-label": W.currency }, coin(), h("span", { id: "markval" }, D.marks + "")),
     h("button", { class: "btn icon", "aria-label": "Settings", onclick: tap(() => openSettings()) }, icon(I.gear)));
 }
 
@@ -118,10 +120,10 @@ async function titleScreen() {
   playMusic("menu");
   const img = await loadImageAsset("title.webp");
   const el = h("div", { class: "screen" },
-    h("div", { class: "bgimg", style: img ? `background-image:url(${img.src})` : "background:radial-gradient(ellipse at 70% 60%, #5a2414, #120c0c)" }),
+    h("div", { class: "bgimg", style: img ? `background-image:url(${img.src})` : "background:radial-gradient(ellipse at 70% 60%, #5a2414, #0b1118)" }),
     h("div", { class: "title-wrap" },
-      h("h1", { class: "logo" }, "SIEGELINE"),
-      h("p", { class: "tagline" }, "Hold the Lantern Keep. Break the Maw. The ash is coming over the ridge."),
+      h("h1", { class: "logo" }, W.title),
+      h("p", { class: "tagline" }, W.tagline),
       h("div", { class: "row" },
         h("button", { class: "btn primary big", onclick: tap(() => worldMap()) }, cleared("r1s1") ? "Continue" : "Play"),
         h("button", { class: "btn icon big", "aria-label": "Settings", onclick: tap(() => openSettings()) }, icon(I.gear)))),
@@ -147,12 +149,12 @@ async function worldMap() {
       h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
       open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
-  const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, "Cinderfold Vale is free"),
-    "The Matron is ash. The road east to the Bell Marshes opens in the next update. Replay stages for stars and upgrades until then.",
+  const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, W.regionCleared.title),
+    W.regionCleared.text,
     h("div", { style: "margin-top:10px" }, h("button", { class: "btn", onclick: tap(() => ann.remove()) }, "Got it"))) : null;
   if (ann) { D.seen.regionCleared = "shown"; persist(); }
   show(h("div", { class: "screen" }, ann,
-    topbar("The Ashen Marches", titleScreen, [h("button", { class: "btn", onclick: tap(() => armoury(worldMap)) }, icon(I.hammer), "Armoury")]),
+    topbar(W.mapTitle, titleScreen, [h("button", { class: "btn", onclick: tap(() => armoury(worldMap)) }, icon(I.hammer), W.armoury.title)]),
     map));
 }
 
@@ -180,7 +182,7 @@ async function regionScreen(region) {
   const back = bgs && (bgs.mid || bgs.far);
   show(h("div", { class: "screen" },
     h("div", { class: "bgimg", style: back ? `background-image:url(${(bgs.sky || back).img.src})` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
-    topbar(region.name, worldMap, [h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), "Armoury")]),
+    topbar(region.name, worldMap, [h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
     path));
   if (nextIdx >= 0 && !D.seen.firstSheet) { D.seen.firstSheet = true; stageSheet(regionStages[nextIdx], region); }
 }
@@ -199,7 +201,7 @@ function stageSheet(s, region) {
     h("div", { class: "chips" }, ...[...foes].map((id) => h("span", { class: "chip" }, h("span", { class: "dot", style: "width:10px;height:10px;border-radius:50%;background:#ff7a3a;margin-left:6px" }), enemyById[id].name))),
     h("div", { class: "starrow" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (st[i] ? " on" : "") }), i === 2 ? `Win in under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")}` : d))),
     ),
-    h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)), "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} marks` }, "Fight",
+    h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)), "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} ${W.currency}` }, "Fight",
       h("span", { style: "display:inline-flex;align-items:center;gap:4px;font-size:14px;opacity:.85;margin-left:10px" }, "+", coin(), reward + "")));
   current.append(sheet);
 }
@@ -215,7 +217,7 @@ async function armoury(backFn) {
   function upRow(pic, title, lvl, max, det, next, cost, onBuy, locked) {
     const can = !locked && lvl < max && D.marks >= cost;
     const btn = h("button", { class: "btn upbtn" + (can ? " primary" : ""), disabled: locked || lvl >= max || null,
-      onclick: () => { if (D.marks < cost) { sfx("ui_locked"); toast("Not enough marks. Replay stages for more."); return; } D.marks -= cost; onBuy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${title}"]`); if (c) c.classList.add("pop"); } },
+      onclick: () => { if (D.marks < cost) { sfx("ui_locked"); toast(`Not enough ${W.currency}. Replay stages for more.`); return; } D.marks -= cost; onBuy(); sfx("ui_upgrade"); persist(); render(); const c = list.querySelector(`[data-k="${title}"]`); if (c) c.classList.add("pop"); } },
       lvl >= max ? "Max" : "Upgrade", lvl >= max ? null : h("small", {}, coin(), cost + ""));
     return h("div", { class: "card" + (locked ? " locked" : ""), "data-k": title },
       h("div", { class: "pic" }, pic),
@@ -223,7 +225,7 @@ async function armoury(backFn) {
       locked ? icon(I.lock) : btn);
   }
   function render() {
-    tabs.replaceChildren(mkTab("units", "Units"), mkTab("keep", "Keep & Ballista"), mkTab("hero", "Hero & Powers"));
+    tabs.replaceChildren(mkTab("units", "Units"), mkTab("keep", `${W.keep} & ${W.weapon}`), mkTab("hero", "Hero & Powers"));
     list.replaceChildren();
     document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
     if (armouryTab === "units") {
@@ -232,33 +234,34 @@ async function armoury(backFn) {
         const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels);
         const nextTier = L < 5 ? `Lv 5: ${u.tiers["5"]}` : L < 10 ? `Lv 10: ${u.tiers["10"]}` : u.tiers["10"];
         const from = content.stages.find((st) => st.unlocks.includes(u.id));
-        if (locked) { list.append(upRow(portrait(u.id), u.name, L, 10, `${u.role} · ${u.cost} embers · ${u.counter.toLowerCase().startsWith("any") ? "" : "weak to: " + u.counter.toLowerCase()}`, from ? `Unlocks when you clear ${from.name} (stage ${regionStages.indexOf(from) + 1})` : "Unlocks later", 0, () => {}, true)); continue; }
+        void from;
+        if (locked) { list.append(upRow(portrait(u.id), u.name, L, 10, `${u.role} · ${u.cost} ${W.energy} · ${u.counter.toLowerCase().startsWith("any") ? "" : "weak to: " + u.counter.toLowerCase()}`, from ? unlockHint(u.id) : "Unlocks later", 0, () => {}, true)); continue; }
         list.append(upRow(portrait(u.id), u.name, L, 10,
-          `${u.role} · ${u.cost} embers · HP ${Math.round(a.hp)} · ${u.id === "lamplighter" ? "heal " + Math.round(a.traits.heal) : "DMG " + Math.round(a.dmg)}`,
+          `${u.role} · ${u.cost} ${W.energy} · HP ${Math.round(a.hp)} · ${u.id === "lamplighter" ? "heal " + Math.round(a.traits.heal) : "DMG " + Math.round(a.dmg)}`,
           L < 10 ? `Next: HP ${Math.round(b.hp)}, ${u.id === "lamplighter" ? "heal " + Math.round(b.traits.heal) : "DMG " + Math.round(b.dmg)} · ${nextTier}` : nextTier,
           upgradeCost("unit", L, game), () => (D.unitLevels[u.id] = L + 1), locked));
       }
     } else if (armouryTab === "keep") {
       const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen;
-      list.append(upRow(h("span", { html: I.lock.replace("currentColor", "#d49a3a") }), "Keep walls", k, 10, `Keep health ${game.keep.hp + game.keep.hpPerLevel * (k - 1)}`, `Next: ${game.keep.hp + game.keep.hpPerLevel * k}`, upgradeCost("keep", k, game), () => D.keep++));
-      list.append(upRow(icon(I.ballista), "Ballista", bl, 10, `Bolt damage ${Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * (bl - 1)))} · reload ${Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * (bl - 1)).toFixed(2)}s`, `Next: ${Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * bl))} dmg, ${Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * bl).toFixed(2)}s`, upgradeCost("ballista", bl, game), () => D.ballista++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ff8a3a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), "Ember store", em, game.energy.maxLevel, `Hold up to ${game.energy.max + game.energy.maxPerLevel * (em - 1)} embers`, `Next: ${game.energy.max + game.energy.maxPerLevel * em}`, upgradeCost("energyMax", em, game), () => D.energyMax++));
-      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ffcf6a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), "Ember flow", er, game.energy.maxLevel, `${(game.energy.regen + game.energy.regenPerLevel * (er - 1)).toFixed(1)} embers per second`, `Next: ${(game.energy.regen + game.energy.regenPerLevel * er).toFixed(1)}/s`, upgradeCost("energyRegen", er, game), () => D.energyRegen++));
+      list.append(upRow(h("span", { html: I.lock.replace("currentColor", "#d49a3a") }), W.armoury.keepWalls, k, 10, fill(W.armoury.keepHp, { hp: game.keep.hp + game.keep.hpPerLevel * (k - 1) }), `Next: ${game.keep.hp + game.keep.hpPerLevel * k}`, upgradeCost("keep", k, game), () => D.keep++));
+      list.append(upRow(icon(I.ballista), W.armoury.weapon, bl, 10, fill(W.armoury.weaponDesc, { d: Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * (bl - 1))), r: Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * (bl - 1)).toFixed(2) }), `Next: ${Math.round(game.ballista.dmg * (1 + game.ballista.dmgPerLevel * bl))} dmg, ${Math.max(1.2, game.ballista.reload - game.ballista.reloadPerLevel * bl).toFixed(2)}s`, upgradeCost("ballista", bl, game), () => D.ballista++));
+      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ff8a3a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.store, em, game.energy.maxLevel, fill(W.armoury.storeDesc, { n: game.energy.max + game.energy.maxPerLevel * (em - 1) }), `Next: ${game.energy.max + game.energy.maxPerLevel * em}`, upgradeCost("energyMax", em, game), () => D.energyMax++));
+      list.append(upRow(h("span", { class: "fl", style: "width:22px;height:28px;background:#ffcf6a;clip-path:polygon(50% 0,90% 55%,75% 100%,25% 100%,10% 55%)" }), W.armoury.flow, er, game.energy.maxLevel, fill(W.armoury.flowDesc, { n: (game.energy.regen + game.energy.regenPerLevel * (er - 1)).toFixed(1) }), `Next: ${(game.energy.regen + game.energy.regenPerLevel * er).toFixed(1)}/s`, upgradeCost("energyRegen", er, game), () => D.energyRegen++));
     } else {
       const hl = D.hero, hg = game.hero;
-      list.append(upRow(portrait("marshal"), hg.name, hl, hg.maxLevel, `HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1)))} · DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1)))} · Flare stuns nearby Hollows`, `Next: HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * hl))}, DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))}`, upgradeCost("hero", hl, game), () => D.hero++, !D.unlocked.hero));
-      if (!D.unlocked.hero) list.lastChild.querySelector(".next").textContent = "Unlocks when you clear The Chapel Road (stage 2)";
+      list.append(upRow(portrait("marshal"), hg.name, hl, hg.maxLevel, fill(W.armoury.heroDesc, { hp: Math.round(hg.hp * (1 + hg.hpPerLevel * (hl - 1))), d: Math.round(hg.dmg * (1 + hg.dmgPerLevel * (hl - 1))) }), `Next: HP ${Math.round(hg.hp * (1 + hg.hpPerLevel * hl))}, DMG ${Math.round(hg.dmg * (1 + hg.dmgPerLevel * hl))}`, upgradeCost("hero", hl, game), () => D.hero++, !D.unlocked.hero));
+      if (!D.unlocked.hero) list.lastChild.querySelector(".next").textContent = unlockHint("hero");
       for (const id of ["ember_rain", "rally"]) {
         const a = game.abilities[id], L = D.abilities[id] || 1;
-        const det = id === "ember_rain" ? `${a.stones} burning stones, ${Math.round(a.dmg * (1 + a.dmgPerLevel * (L - 1)))} dmg each · ${a.cooldown}s` : `+35% speed, faster attacks, heals 15% · ${(a.time + a.timePerLevel * (L - 1)).toFixed(1)}s · ${a.cooldown}s`;
+        const det = fill(W.abilityDesc[id], { n: a.stones, d: Math.round((a.dmg || 0) * (1 + (a.dmgPerLevel || 0) * (L - 1))), cd: a.cooldown, t: ((a.time || 0) + (a.timePerLevel || 0) * (L - 1)).toFixed(1) });
         const nx = id === "ember_rain" ? `Next: ${Math.round(a.dmg * (1 + a.dmgPerLevel * L))} dmg each` : `Next: lasts ${(a.time + a.timePerLevel * L).toFixed(1)}s`;
         list.append(upRow(iconImg("i_" + id, id === "rally" ? I.bell : I.rain), abilityNames[id], L, a.maxLevel, det, nx, upgradeCost("ability", L, game), () => (D.abilities[id] = L + 1), !D.unlocked.abilities.includes(id)));
-        if (!D.unlocked.abilities.includes(id)) list.lastChild.querySelector(".next").textContent = id === "rally" ? "Unlocks when you clear Pyre Fields (stage 3)" : "Unlocks when you clear Smoke on the Vines (stage 1)";
+        if (!D.unlocked.abilities.includes(id)) list.lastChild.querySelector(".next").textContent = unlockHint(id);
       }
     }
   }
   render();
-  show(h("div", { class: "screen" }, topbar("Armoury", backFn), tabs, list));
+  show(h("div", { class: "screen" }, topbar(W.armoury.title, backFn), tabs, list));
 }
 
 // ---------------------------------------------------------------- settings
@@ -304,7 +307,7 @@ function importUI(box) {
   box.replaceChildren(ta, file, h("div", { class: "row" }, h("button", { class: "btn primary", onclick: tap(doImport) }, "Import"), h("button", { class: "btn", onclick: tap(() => file.click()) }, "Choose file")));
 }
 function resetUI(box) {
-  box.replaceChildren(h("p", { class: "note", style: "margin:0" }, "This deletes all stars, marks and upgrades on this device. Export first if you might want them back."),
+  box.replaceChildren(h("p", { class: "note", style: "margin:0" }, `This deletes all stars, ${W.currency} and upgrades on this device. Export first if you might want them back.`),
     h("div", { class: "row" }, h("button", { class: "btn", style: "background:#7a1a14", onclick: tap(() => { wipe(); D = freshData(); S.data = D; save(D); applySettings(); for (const m of ui.querySelectorAll(".modal")) m.remove(); toast("Progress reset."); titleScreen(); }) }, "Delete my progress"),
       h("button", { class: "btn", onclick: tap(() => box.replaceChildren()) }, "Keep it")));
 }
@@ -340,26 +343,26 @@ class BattleView {
     this.bindCanvas();
     const tut = stage.tutorial && !D.tutorials.includes(stage.tutorial) ? content.tutorials[stage.tutorial] : null;
     if (tut) this.tutor = { steps: tut, i: 0, shown: null, t0: 0, flags: {} };
-    if (!this.tutor) this.callout(stage.boss ? "Hold the line" : "Defend the Keep");
+    if (!this.tutor) this.callout(stage.boss ? W.callouts.bossStart : W.callouts.start);
     this.raf = requestAnimationFrame((t) => this.frame(t));
     this.vis = () => { if (document.hidden && !this.over) this.pause(true); };
     document.addEventListener("visibilitychange", this.vis);
   }
   buildHud() {
     const B = this.B;
-    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, "Keep"), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
-    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? "Maw Gate · sealed" : "Maw Gate"), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
+    this.hpKeep = h("div", { class: "hp" }, h("div", { class: "lbl" }, h("span", {}, W.keep), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
+    this.hpGate = h("div", { class: "hp enemy" }, h("div", { class: "lbl" }, h("span", {}, B.gate.sealed ? W.gate + " · sealed" : W.gate), h("span", { class: "v" })), h("div", { class: "bar" }, h("i")));
     this.speedBtn = h("button", { class: "pill", "aria-label": "Game speed", onclick: tap(() => { this.speed = this.speed === 1 ? 2 : 1; D.settings.speed = this.speed; persist(); this.speedBtn.innerHTML = I.speed(this.speed); }) });
     this.speedBtn.innerHTML = I.speed(this.speed);
     this.timer = h("div", { class: "pill", style: "pointer-events:none", "aria-label": "Battle time" }, "0:00");
     const top = h("div", { class: "hud-top" }, this.hpKeep, h("div", { class: "spacer" }), h("div", { class: "hud-mid" }, this.timer, this.speedBtn,
       h("button", { class: "pill", "aria-label": "Pause", onclick: tap(() => this.pause(true)) }, icon(I.pause))), h("div", { class: "spacer" }), this.hpGate);
     // ballista (hold + drag back to aim)
-    this.weapon = h("button", { class: "weapon", "aria-label": "Ballista: hold and drag back to aim, release to fire" }, icon(I.ballista), h("span", { class: "ring" }));
+    this.weapon = h("button", { class: "weapon", "aria-label": W.weaponHelp }, icon(I.ballista), h("span", { class: "ring" }));
     this.bindWeapon();
     this.energy = h("div", { class: "energy" }, h("div", { class: "val" }, h("span", { class: "fl" }), h("span", { class: "n" }, "0"), h("span", { class: "muted", style: "font-size:13px" }, h("span", { class: "mx" }, "/100"))), h("div", { class: "bar" }, h("i")));
     this.cardEls = B.cards.map((c) => {
-      const el = h("button", { class: "ucard", "aria-label": `Send ${unitById[c.id].name}, ${c.stats.cost} embers`, "data-id": c.id,
+      const el = h("button", { class: "ucard", "aria-label": `Send ${unitById[c.id].name}, ${c.stats.cost} ${W.energy}`, "data-id": c.id,
         onpointerdown: (e) => { e.preventDefault(); this.send(c.id, el); } },
         portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
       return el;
@@ -370,14 +373,14 @@ class BattleView {
         iconImg("i_" + a.id, a.id === "rally" ? I.bell : I.rain), h("span", { class: "cdtxt" }));
       return el;
     });
-    this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": "Call the Marshal", onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
+    this.heroEl = B.hero ? h("button", { class: "abil herobtn", "aria-label": W.heroCall, onpointerdown: (e) => { e.preventDefault(); this.callHero(); } }, portrait("marshal", 60), h("span", { class: "cdtxt" })) : null;
     const side = h("div", { class: "side row-side" }, this.heroEl, ...this.abilEls);
     const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
   }
   bossWarn(kind) {
-    const t = { sweep: "Censer raised! Fall back!", summon: "She calls the Choir!", spit: "Ember Spit! Clear the red ring!", winded: "She's winded! Strike now!" }[kind];
+    const t = W.callouts[kind];
     if (t) this.callout(t, true);
   }
   /** One callout at a time: urgent ones (boss warnings) replace the current one, others wait their turn. */
@@ -390,7 +393,7 @@ class BattleView {
   }
   onBoss(e) {
     this.bossBar = h("div", { class: "bossbar" }, h("div", { class: "name" }, enemyById[e.id].name), h("div", { class: "bar" }, h("i")));
-    this.el.append(this.bossBar); this.callout("The Matron rises"); R.camTarget = Math.max(0, e.x - R.W * 0.6);
+    this.el.append(this.bossBar); this.callout(W.callouts.bossRises); R.camTarget = Math.max(0, e.x - R.W * 0.6);
   }
   send(id, el) {
     if (this.paused || this.over) return;
@@ -404,14 +407,14 @@ class BattleView {
     // targeted: arm, then tap the field
     if (this.armed === a) { this.disarm(); return; }
     this.armed = a; el.classList.add("armed"); sfx("ui_tap");
-    this.armBanner = h("div", { class: "banner" }, "Tap the field to drop Ember Rain", h("button", { class: "btn icon", style: "min-height:36px;width:36px", "aria-label": "Cancel", onclick: tap(() => this.disarm(), "ui_back") }, h("span", { html: "&#x2715;" })));
+    this.armBanner = h("div", { class: "banner" }, W.armTarget, h("button", { class: "btn icon", style: "min-height:36px;width:36px", "aria-label": "Cancel", onclick: tap(() => this.disarm(), "ui_back") }, h("span", { html: "&#x2715;" })));
     this.el.append(this.armBanner);
   }
   disarm() { if (this.armed) { this.abilEls.forEach((e) => e.classList.remove("armed")); this.armed = null; this.armBanner && this.armBanner.remove(); } }
   callHero() {
     const hr = this.B.hero; if (this.paused || this.over || !hr || hr.called) return;
     if (hr.charge < hr.need) { sfx("ui_locked", { gain: 0.5 }); return; }
-    input.hero(this.B); this.flag("hero"); this.callout("The Marshal rides!");
+    input.hero(this.B); this.flag("hero"); this.callout(W.callouts.hero);
   }
   bindWeapon() {
     const w = this.weapon; let start = null, id = null;
@@ -613,13 +616,13 @@ class BattleView {
     const tip = win ? null : loseTip(this.B);
     const marks = h("div", { class: "marks", style: "position:absolute;top:calc(var(--sat) + 60px);right:calc(var(--sar) + 16px)" }, coin(), h("span", {}, String(D.marks - earned)));
     const panel = h("div", { class: "panel result " + (win ? "win" : "lose"), role: "dialog", "aria-label": win ? "Victory" : "Defeat" },
-      h("h2", {}, win ? (s.boss ? "The Matron falls" : "Victory") : "The Keep has fallen"),
+      h("h2", {}, win ? (s.boss ? W.results.bossWin : W.results.win) : W.results.lose),
       win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" },
-        this.B.gate.max && this.B.gate.hp / this.B.gate.max < 0.25 && !this.B.gate.sealed ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, `The Maw Gate had only ${Math.ceil(this.B.gate.hp)} health left. So close.`) : null,
-        this.B.boss && this.B.boss.alive && this.B.boss.hp / this.B.boss.maxHp < 0.3 ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, `The Matron was down to ${Math.round(this.B.boss.hp / this.B.boss.maxHp * 100)}%. So close.`) : null,
+        this.B.gate.max && this.B.gate.hp / this.B.gate.max < 0.25 && !this.B.gate.sealed ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, fill(W.results.closeGate, { hp: Math.ceil(this.B.gate.hp) })) : null,
+        this.B.boss && this.B.boss.alive && this.B.boss.hp / this.B.boss.maxHp < 0.3 ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, fill(W.results.closeBoss, { pct: Math.round(this.B.boss.hp / this.B.boss.maxHp * 100) })) : null,
         tip),
       win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
-      h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " marks")),
+      h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " " + W.currency)),
       unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
@@ -648,16 +651,21 @@ class BattleView {
   }
 }
 
+/** "Unlocks when you clear <stage> (stage N)", read from stage data so it follows any world. */
+function unlockHint(id) {
+  const st = content.stages.find((x) => x.unlocks.includes(id));
+  return st ? `Unlocks when you clear ${st.name} (stage ${regionStages.indexOf(st) + 1})` : "Unlocks later";
+}
 function fmt(t) { t = Math.floor(t); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; }
 function loseTip(B) {
   const alive = B.ents.filter((e) => e.alive && e.side === -1);
   const has = (id) => alive.some((e) => e.id === id);
-  if (B.stats.shots < 3) return "Tip: the ballista reloads on its own. Fire it often, every bolt can hit a whole pack.";
-  if (has("brute") || has("husk_warden")) return "Tip: big Hollows hit hard. Hold them with Ashguards while Torchbows and the ballista wear them down.";
-  if (has("bloater")) return "Tip: Pyre Bloaters burst when they die. Pop them from range with Torchbows or the ballista, not in the middle of your soldiers.";
-  if (has("spitter")) return "Tip: Spitters hide behind the horde. Cinder Runners reach them fast.";
-  if (B.stats.sent < 8) return "Tip: send soldiers steadily. Embers you don't spend are wasted when the store is full.";
-  return "Tip: upgrades in the Armoury carry over to every stage. Replays earn marks too.";
+  if (B.stats.shots < 3) return W.tips.weapon;
+  if (has("brute") || has("husk_warden")) return W.tips.big;
+  if (has("bloater")) return W.tips.bloater;
+  if (has("spitter")) return W.tips.spitter;
+  if (B.stats.sent < 8) return W.tips.send;
+  return W.tips.general;
 }
 
 // ---------------------------------------------------------------- boot
@@ -669,7 +677,7 @@ function boot() {
   window.addEventListener("orientationchange", () => setTimeout(() => { R.resize(); R._vg = null; }, 200));
   document.body.append(h("div", { class: "rotate" }, h("div", {}, h("div", { html: I.phone }), h("div", { class: "title-s" }, "Turn your phone sideways"), h("div", { class: "muted" }, "Siegeline plays in landscape."))));
   // idle canvas behind menus: a quiet ember backdrop
-  const g = canvas.getContext("2d"); g.fillStyle = "#120c0c"; g.fillRect(0, 0, canvas.width, canvas.height);
+  const g = canvas.getContext("2d"); g.fillStyle = "#0b1118"; g.fillRect(0, 0, canvas.width, canvas.height);
   setInterval(() => { D.playTime = D.playTime || 0; }, 60000);
   // register the offline cache after first load settles, so it never competes with the first screen
   if ("serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));

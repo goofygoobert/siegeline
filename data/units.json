@@ -1,37 +1,490 @@
 {
-  "units": [
-    {"id":"ashguard","name":"Ashguard","role":"front line","region":1,"cost":50,"cooldown":3,"hp":260,"dmg":16,"rate":1.1,"range":28,"speed":44,"size":18,
-     "traits":{"meleeGuard":0.25},"counter":"Spitters and Bloater blasts wear it down","strongVs":"husk, gnawer",
-     "tiers":{"5":"Iron-banded shield: guard 35%","10":"Gilded shield and ember blade: guard 45%, +15% damage"},"art":true},
-    {"id":"torchbow","name":"Torchbow","role":"ranged","region":1,"cost":80,"cooldown":5,"hp":95,"dmg":20,"rate":1.5,"range":240,"speed":40,"size":14,
-     "traits":{"projectile":"arrow","burn":{"dps":6,"time":2}},"counter":"Gnawers rush past the front line","strongVs":"bloater, spitter",
-     "tiers":{"5":"Leather cowl: +1 s burn","10":"Gilded bow: shots pierce one enemy"},"art":true},
-    {"id":"cinder_runner","name":"Cinder Runner","role":"fast","region":1,"cost":40,"cooldown":2,"hp":75,"dmg":11,"rate":0.55,"range":24,"speed":95,"size":12,
-     "traits":{"firstStrike":2.0},"counter":"Brutes crush it in one blow","strongVs":"spitter",
-     "tiers":{"5":"Studded vest: +20% hp","10":"Ember knives: first strike x3"},"art":true},
-    {"id":"bellringer","name":"Bellringer","role":"support","region":1,"cost":100,"cooldown":14,"hp":140,"dmg":6,"rate":1.0,"range":30,"speed":40,"size":15,
-     "traits":{"slowAura":{"radius":170,"slow":0.3}},"counter":"Spitters outrange the bell","strongVs":"brute, gnawer swarms",
-     "tiers":{"5":"Bronze bell: slow 35%","10":"Gilded bell: slow 40%, aura 210"},"art":true},
-    {"id":"maulwright","name":"Maulwright","role":"heavy","region":1,"cost":160,"cooldown":15,"hp":600,"dmg":64,"rate":2.3,"range":36,"speed":30,"size":24,
-     "traits":{"splash":55,"knockback":40},"counter":"Slow: gnawer swarms and ranged fire whittle it","strongVs":"brute, husk packs",
-     "tiers":{"5":"Plated pauldrons: +20% hp","10":"Ember maul: splash 75, leaves embers"},"art":true},
-    {"id":"lamplighter","name":"Lamplighter","role":"healer","region":1,"cost":120,"cooldown":16,"hp":110,"dmg":0,"rate":2.2,"range":200,"speed":38,"size":14,
-     "traits":{"heal":22},"counter":"Anything that reaches the back line","strongVs":"long fights, bosses",
-     "tiers":{"5":"Twin wick: heals 2 allies","10":"Sun lamp: heal +50%"},"art":true},
-    {"id":"pikewall","name":"Pikewall","role":"anti-large","region":2,"cost":70,"cooldown":5,"hp":180,"dmg":14,"rate":1.2,"range":44,"speed":40,"size":16,"traits":{"bonusVsLarge":2.0},"counter":"Swarms","strongVs":"brutes, knights","tiers":{"5":"+reach","10":"x2.5 vs large"}},
-    {"id":"sapper","name":"Sapper","role":"siege","region":2,"cost":120,"cooldown":12,"hp":120,"dmg":300,"rate":3,"range":20,"speed":50,"size":14,"traits":{"structureOnly":true,"suicide":true},"counter":"Any defender","strongVs":"castles","tiers":{"5":"+blast","10":"double charge"}},
-    {"id":"kestrel_rider","name":"Kestrel Rider","role":"flying","region":2,"cost":140,"cooldown":10,"hp":160,"dmg":24,"rate":1.0,"range":30,"speed":70,"size":16,"traits":{"flying":true},"counter":"Archers","strongVs":"spitters","tiers":{"5":"dive","10":"talon rend"}},
-    {"id":"flame_monk","name":"Flame Monk","role":"area","region":3,"cost":130,"cooldown":10,"hp":150,"dmg":18,"rate":1.2,"range":90,"speed":36,"size":15,"traits":{"cone":true},"counter":"Heavies","strongVs":"swarms","tiers":{"5":"wider","10":"lingering fire"}},
-    {"id":"chain_warden","name":"Chain Warden","role":"control","region":3,"cost":110,"cooldown":10,"hp":200,"dmg":15,"rate":2.0,"range":160,"speed":38,"size":16,"traits":{"pull":true},"counter":"Fast units","strongVs":"ranged","tiers":{"5":"longer chain","10":"double pull"}},
-    {"id":"crossbow_cart","name":"Crossbow Cart","role":"siege","region":3,"cost":180,"cooldown":18,"hp":260,"dmg":70,"rate":2.8,"range":360,"speed":22,"size":26,"traits":{"pierce":true},"counter":"Rushers","strongVs":"castles, lines","tiers":{"5":"armour","10":"twin bolts"}},
-    {"id":"grave_priest","name":"Grave Priest","role":"revive","region":4,"cost":150,"cooldown":20,"hp":130,"dmg":8,"rate":1.5,"range":180,"speed":36,"size":14,"traits":{"revive":1},"counter":"Ranged focus","strongVs":"attrition","tiers":{"5":"2 revives","10":"revive at full"}},
-    {"id":"banner_knight","name":"Banner Knight","role":"buffer","region":4,"cost":140,"cooldown":14,"hp":320,"dmg":22,"rate":1.2,"range":30,"speed":40,"size":18,"traits":{"dmgAura":0.2},"counter":"Splash","strongVs":"mixed armies","tiers":{"5":"+aura","10":"+armour aura"}},
-    {"id":"ironclad","name":"Ironclad","role":"tank","region":4,"cost":220,"cooldown":20,"hp":1400,"dmg":30,"rate":1.8,"range":30,"speed":24,"size":28,"traits":{"armor":0.3},"counter":"Curses","strongVs":"everything slow","tiers":{"5":"+armour","10":"taunt"}},
-    {"id":"mortar_crew","name":"Mortar Crew","role":"artillery","region":5,"cost":200,"cooldown":18,"hp":150,"dmg":80,"rate":3.5,"range":420,"speed":24,"size":22,"traits":{"splash":70,"lob":true},"counter":"Flyers","strongVs":"clumps","tiers":{"5":"faster","10":"incendiary"}},
-    {"id":"hound_pack","name":"Hound Pack","role":"swarm","region":5,"cost":90,"cooldown":8,"hp":70,"dmg":10,"rate":0.7,"range":22,"speed":90,"size":12,"traits":{"count":3},"counter":"Splash","strongVs":"ranged","tiers":{"5":"4 hounds","10":"bleeding bites"}},
-    {"id":"ash_witch","name":"Ash Witch","role":"curse","region":5,"cost":150,"cooldown":16,"hp":120,"dmg":12,"rate":1.6,"range":200,"speed":34,"size":14,"traits":{"curse":0.25},"counter":"Rushers","strongVs":"bosses","tiers":{"5":"wider curse","10":"curse spreads"}},
-    {"id":"skyward_lancer","name":"Skyward Lancer","role":"anti-air","region":6,"cost":100,"cooldown":8,"hp":170,"dmg":26,"rate":1.2,"range":150,"speed":40,"size":15,"traits":{"bonusVsFlying":2.5},"counter":"Ground heavies","strongVs":"flyers","tiers":{"5":"faster","10":"chain throw"}},
-    {"id":"lantern_colossus","name":"Lantern Colossus","role":"ultimate","region":6,"cost":400,"cooldown":45,"hp":3200,"dmg":120,"rate":2.6,"range":50,"speed":20,"size":40,"traits":{"splash":90,"knockback":60},"counter":"Its own cost","strongVs":"everything","tiers":{"5":"burning aura","10":"beacon beam"}}
-  ],
-  "levels": {"max": 10, "hpPerLevel": 0.08, "dmgPerLevel": 0.07, "tierLevels": [5, 10]}
+ "units": [
+  {
+   "id": "ashguard",
+   "name": "Hatchguard",
+   "role": "front line",
+   "region": 1,
+   "cost": 50,
+   "cooldown": 3,
+   "hp": 260,
+   "dmg": 16,
+   "rate": 1.1,
+   "range": 28,
+   "speed": 44,
+   "size": 18,
+   "traits": {
+    "meleeGuard": 0.25
+   },
+   "counter": "Inkspitters and Pufferghast bursts wear it down",
+   "strongVs": "husk, gnawer",
+   "tiers": {
+    "5": "Iron-banded hatch: guard 35%",
+    "10": "Gilded hatch and cursed-gold cutlass: guard 45%, +15% damage"
+   },
+   "art": true
+  },
+  {
+   "id": "torchbow",
+   "name": "Blackpowder",
+   "role": "ranged",
+   "region": 1,
+   "cost": 80,
+   "cooldown": 5,
+   "hp": 95,
+   "dmg": 20,
+   "rate": 1.5,
+   "range": 240,
+   "speed": 40,
+   "size": 14,
+   "traits": {
+    "projectile": "arrow",
+    "burn": {
+     "dps": 6,
+     "time": 2
+    }
+   },
+   "counter": "Scuttlers rush past the front line",
+   "strongVs": "bloater, spitter",
+   "tiers": {
+    "5": "Leather jerkin: +1 s burn",
+    "10": "Gilded flintlock: shots pierce one monster"
+   },
+   "art": true
+  },
+  {
+   "id": "cinder_runner",
+   "name": "Rope Rat",
+   "role": "fast",
+   "region": 1,
+   "cost": 40,
+   "cooldown": 2,
+   "hp": 75,
+   "dmg": 11,
+   "rate": 0.55,
+   "range": 24,
+   "speed": 95,
+   "size": 12,
+   "traits": {
+    "firstStrike": 2.0
+   },
+   "counter": "Barnacle Trolls crush it in one blow",
+   "strongVs": "spitter",
+   "tiers": {
+    "5": "Studded vest: +20% hp",
+    "10": "Cursed-gold knives: first strike x3"
+   },
+   "art": true
+  },
+  {
+   "id": "bellringer",
+   "name": "Shantyman",
+   "role": "support",
+   "region": 1,
+   "cost": 100,
+   "cooldown": 14,
+   "hp": 140,
+   "dmg": 6,
+   "rate": 1.0,
+   "range": 30,
+   "speed": 40,
+   "size": 15,
+   "traits": {
+    "slowAura": {
+     "radius": 170,
+     "slow": 0.3
+    }
+   },
+   "counter": "Inkspitters out-range the song",
+   "strongVs": "brute, gnawer swarms",
+   "tiers": {
+    "5": "Brass-buttoned squeezebox: slow 35%",
+    "10": "Gilded squeezebox: slow 40%, reach 210"
+   },
+   "art": true
+  },
+  {
+   "id": "maulwright",
+   "name": "Anchorman",
+   "role": "heavy",
+   "region": 1,
+   "cost": 160,
+   "cooldown": 15,
+   "hp": 600,
+   "dmg": 64,
+   "rate": 2.3,
+   "range": 36,
+   "speed": 30,
+   "size": 24,
+   "traits": {
+    "splash": 55,
+    "knockback": 40
+   },
+   "counter": "Slow: Scuttler swarms and ink chip it down",
+   "strongVs": "brute, husk packs",
+   "tiers": {
+    "5": "Chain-mail sleeves: +20% hp",
+    "10": "Cursed-gold anchor: splash 75, leaves embers"
+   },
+   "art": true
+  },
+  {
+   "id": "lamplighter",
+   "name": "Sawbones",
+   "role": "healer",
+   "region": 1,
+   "cost": 120,
+   "cooldown": 16,
+   "hp": 110,
+   "dmg": 0,
+   "rate": 2.2,
+   "range": 200,
+   "speed": 38,
+   "size": 14,
+   "traits": {
+    "heal": 22
+   },
+   "counter": "Anything that reaches the back line",
+   "strongVs": "long fights, bosses",
+   "tiers": {
+    "5": "Second lantern: heals 2 crew",
+    "10": "Golden lamp: heal +50%"
+   },
+   "art": true
+  },
+  {
+   "id": "pikewall",
+   "name": "Boarding Pike",
+   "role": "anti-large",
+   "region": 2,
+   "cost": 70,
+   "cooldown": 5,
+   "hp": 180,
+   "dmg": 14,
+   "rate": 1.2,
+   "range": 44,
+   "speed": 40,
+   "size": 16,
+   "traits": {
+    "bonusVsLarge": 2.0
+   },
+   "counter": "Swarms",
+   "strongVs": "brutes, knights",
+   "tiers": {
+    "5": "+reach",
+    "10": "x2.5 vs large"
+   }
+  },
+  {
+   "id": "sapper",
+   "name": "Powder Monkey",
+   "role": "siege",
+   "region": 2,
+   "cost": 120,
+   "cooldown": 12,
+   "hp": 120,
+   "dmg": 300,
+   "rate": 3,
+   "range": 20,
+   "speed": 50,
+   "size": 14,
+   "traits": {
+    "structureOnly": true,
+    "suicide": true
+   },
+   "counter": "Any defender",
+   "strongVs": "castles",
+   "tiers": {
+    "5": "+blast",
+    "10": "double charge"
+   }
+  },
+  {
+   "id": "kestrel_rider",
+   "name": "Gull Rider",
+   "role": "flying",
+   "region": 2,
+   "cost": 140,
+   "cooldown": 10,
+   "hp": 160,
+   "dmg": 24,
+   "rate": 1.0,
+   "range": 30,
+   "speed": 70,
+   "size": 16,
+   "traits": {
+    "flying": true
+   },
+   "counter": "Archers",
+   "strongVs": "spitters",
+   "tiers": {
+    "5": "dive",
+    "10": "talon rend"
+   }
+  },
+  {
+   "id": "flame_monk",
+   "name": "Fire-Eater",
+   "role": "area",
+   "region": 3,
+   "cost": 130,
+   "cooldown": 10,
+   "hp": 150,
+   "dmg": 18,
+   "rate": 1.2,
+   "range": 90,
+   "speed": 36,
+   "size": 15,
+   "traits": {
+    "cone": true
+   },
+   "counter": "Heavies",
+   "strongVs": "swarms",
+   "tiers": {
+    "5": "wider",
+    "10": "lingering fire"
+   }
+  },
+  {
+   "id": "chain_warden",
+   "name": "Grappler",
+   "role": "control",
+   "region": 3,
+   "cost": 110,
+   "cooldown": 10,
+   "hp": 200,
+   "dmg": 15,
+   "rate": 2.0,
+   "range": 160,
+   "speed": 38,
+   "size": 16,
+   "traits": {
+    "pull": true
+   },
+   "counter": "Fast units",
+   "strongVs": "ranged",
+   "tiers": {
+    "5": "longer chain",
+    "10": "double pull"
+   }
+  },
+  {
+   "id": "crossbow_cart",
+   "name": "Swivel Gun",
+   "role": "siege",
+   "region": 3,
+   "cost": 180,
+   "cooldown": 18,
+   "hp": 260,
+   "dmg": 70,
+   "rate": 2.8,
+   "range": 360,
+   "speed": 22,
+   "size": 26,
+   "traits": {
+    "pierce": true
+   },
+   "counter": "Rushers",
+   "strongVs": "castles, lines",
+   "tiers": {
+    "5": "armour",
+    "10": "twin bolts"
+   }
+  },
+  {
+   "id": "grave_priest",
+   "name": "Sea Priest",
+   "role": "revive",
+   "region": 4,
+   "cost": 150,
+   "cooldown": 20,
+   "hp": 130,
+   "dmg": 8,
+   "rate": 1.5,
+   "range": 180,
+   "speed": 36,
+   "size": 14,
+   "traits": {
+    "revive": 1
+   },
+   "counter": "Ranged focus",
+   "strongVs": "attrition",
+   "tiers": {
+    "5": "2 revives",
+    "10": "revive at full"
+   }
+  },
+  {
+   "id": "banner_knight",
+   "name": "First Mate",
+   "role": "buffer",
+   "region": 4,
+   "cost": 140,
+   "cooldown": 14,
+   "hp": 320,
+   "dmg": 22,
+   "rate": 1.2,
+   "range": 30,
+   "speed": 40,
+   "size": 18,
+   "traits": {
+    "dmgAura": 0.2
+   },
+   "counter": "Splash",
+   "strongVs": "mixed armies",
+   "tiers": {
+    "5": "+aura",
+    "10": "+armour aura"
+   }
+  },
+  {
+   "id": "ironclad",
+   "name": "Ironhull",
+   "role": "tank",
+   "region": 4,
+   "cost": 220,
+   "cooldown": 20,
+   "hp": 1400,
+   "dmg": 30,
+   "rate": 1.8,
+   "range": 30,
+   "speed": 24,
+   "size": 28,
+   "traits": {
+    "armor": 0.3
+   },
+   "counter": "Curses",
+   "strongVs": "everything slow",
+   "tiers": {
+    "5": "+armour",
+    "10": "taunt"
+   }
+  },
+  {
+   "id": "mortar_crew",
+   "name": "Mortar Crew",
+   "role": "artillery",
+   "region": 5,
+   "cost": 200,
+   "cooldown": 18,
+   "hp": 150,
+   "dmg": 80,
+   "rate": 3.5,
+   "range": 420,
+   "speed": 24,
+   "size": 22,
+   "traits": {
+    "splash": 70,
+    "lob": true
+   },
+   "counter": "Flyers",
+   "strongVs": "clumps",
+   "tiers": {
+    "5": "faster",
+    "10": "incendiary"
+   }
+  },
+  {
+   "id": "hound_pack",
+   "name": "Ship's Dogs",
+   "role": "swarm",
+   "region": 5,
+   "cost": 90,
+   "cooldown": 8,
+   "hp": 70,
+   "dmg": 10,
+   "rate": 0.7,
+   "range": 22,
+   "speed": 90,
+   "size": 12,
+   "traits": {
+    "count": 3
+   },
+   "counter": "Splash",
+   "strongVs": "ranged",
+   "tiers": {
+    "5": "4 hounds",
+    "10": "bleeding bites"
+   }
+  },
+  {
+   "id": "ash_witch",
+   "name": "Hedge Witch",
+   "role": "curse",
+   "region": 5,
+   "cost": 150,
+   "cooldown": 16,
+   "hp": 120,
+   "dmg": 12,
+   "rate": 1.6,
+   "range": 200,
+   "speed": 34,
+   "size": 14,
+   "traits": {
+    "curse": 0.25
+   },
+   "counter": "Rushers",
+   "strongVs": "bosses",
+   "tiers": {
+    "5": "wider curse",
+    "10": "curse spreads"
+   }
+  },
+  {
+   "id": "skyward_lancer",
+   "name": "Harpooner",
+   "role": "anti-air",
+   "region": 6,
+   "cost": 100,
+   "cooldown": 8,
+   "hp": 170,
+   "dmg": 26,
+   "rate": 1.2,
+   "range": 150,
+   "speed": 40,
+   "size": 15,
+   "traits": {
+    "bonusVsFlying": 2.5
+   },
+   "counter": "Ground heavies",
+   "strongVs": "flyers",
+   "tiers": {
+    "5": "faster",
+    "10": "chain throw"
+   }
+  },
+  {
+   "id": "lantern_colossus",
+   "name": "The Iron Figurehead",
+   "role": "ultimate",
+   "region": 6,
+   "cost": 400,
+   "cooldown": 45,
+   "hp": 3200,
+   "dmg": 120,
+   "rate": 2.6,
+   "range": 50,
+   "speed": 20,
+   "size": 40,
+   "traits": {
+    "splash": 90,
+    "knockback": 60
+   },
+   "counter": "Its own cost",
+   "strongVs": "everything",
+   "tiers": {
+    "5": "burning aura",
+    "10": "beacon beam"
+   }
+  }
+ ],
+ "levels": {
+  "max": 10,
+  "hpPerLevel": 0.08,
+  "dmgPerLevel": 0.07,
+  "tierLevels": [
+   5,
+   10
+  ]
+ }
 }

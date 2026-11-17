@@ -67,7 +67,8 @@ export function createRenderer(canvas, hooks) {
   R.addShake = addShake;
   function flash(a, c = "#fff") { if (!R.reduced) { R.flashA = Math.max(R.flashA, a); R.flashC = c; } }
 
-  const BLOOD_W = "#7a1714", ICHOR = "#2b2523", EMBER = "#ff8a2a";
+  const TH = hooks.theme || {};
+  const BLOOD_W = TH.crewBlood || "#7a1714", ICHOR = TH.enemyBlood || "#2b2523", EMBER = TH.fire || "#ff8a2a", GLOWE = TH.enemyGlow || EMBER;
   const panOf = (x) => Math.max(-1, Math.min(1, ((x - R.camX) / R.W) * 2 - 1)) * 0.6;
   const onScreen = (x) => x > R.camX - 80 && x < R.camX + R.W + 80;
 
@@ -82,7 +83,7 @@ export function createRenderer(canvas, hooks) {
           const enemy = t.side === -1;
           if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60, t.uid, e.amt);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
-          if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, EMBER, 120, 2, 1, 200, 0.5);
+          if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, GLOWE, 120, 2, 1, 200, 0.5);
           if (e.kind === "blade") R.sfx("hit_blade", { pan: panOf(t.x), gain: 0.8 });
           else if (e.kind === "claw") R.sfx("hit_claw", { pan: panOf(t.x), gain: 0.8 });
           else if (e.kind === "blunt") { R.sfx("hit_blunt", { pan: panOf(t.x) }); addShake(0.12); }
@@ -94,7 +95,7 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           const enemy = t.side === -1;
           burst(t.x, gy - t.s.size * 2, enemy ? 14 : 10, enemy ? ICHOR : BLOOD_W, 200, 3.5, 0);
-          if (enemy) { burst(t.x, gy - t.s.size * 2, 8, EMBER, 160, 2.4, 1, -40, 0.9); burst(t.x, gy - 6, 6, "#6b6260", 70, 6, 2, -10, 1.1); }
+          if (enemy) { burst(t.x, gy - t.s.size * 2, 8, GLOWE, 160, 2.4, 1, -40, 0.9); burst(t.x, gy - 6, 6, "#6b6260", 70, 6, 2, -10, 1.1); }
           R.sfx(enemy ? "hollow_die" : "warden_die", { pan: panOf(t.x), gain: 0.8, minGap: 0.06 });
           if (t.s.large) addShake(0.25);
           break;
@@ -208,7 +209,8 @@ export function createRenderer(canvas, hooks) {
   const blob = (r, g2, b2, a) => { const c = document.createElement("canvas"); c.width = 64; c.height = 64; const cg = c.getContext("2d");
     const gr = cg.createRadialGradient(32, 32, 4, 32, 32, 32); gr.addColorStop(0, `rgba(${r},${g2},${b2},${a})`); gr.addColorStop(1, `rgba(${r},${g2},${b2},0)`);
     cg.fillStyle = gr; cg.fillRect(0, 0, 64, 64); return c; };
-  const SHADOW = blob(0, 0, 0, 0.55), GLOW = blob(255, 106, 26, 0.6);
+  const hx = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  const SHADOW = blob(0, 0, 0, 0.55), GLOW = blob(...hx(TH.elite || "#ff6a1a"), 0.6);
   function drawEntity(B, e, alpha) {
     const x = e.px + (e.x - e.px) * alpha;
     if (x < R.camX - 160 || x > R.camX + R.W + 160) return;          // off-screen skip
@@ -376,13 +378,14 @@ export function createRenderer(canvas, hooks) {
         const a = Math.max(0, p.life / p.max);
         if (p.k === 1) { g.globalAlpha = a; g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
         else if (p.k === 2) { g.globalAlpha = a * 0.5; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * (1.6 - a * 0.6), 0, 7); g.fill(); }
+        else if (p.k === 3) { g.globalAlpha = Math.min(0.5, a) * 0.6; g.fillStyle = p.c; g.fillRect(sx - 1, p.y - 1, 2, 2); }
         else { g.globalAlpha = Math.min(1, a * 1.5); g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
       }
     }
     g.globalCompositeOperation = "source-over";
     g.globalAlpha = 1;
     // ambient embers drifting up (the Ashen Marches feel)
-    if (R.quality > 1 && Math.random() < 0.25) part(R.camX + Math.random() * R.W, H + 4, (Math.random() - 0.5) * 20, -30 - Math.random() * 30, 6, 2, "#ff9a40", 1, -2);
+    if (R.quality > 1 && Math.random() < 0.25) part(R.camX + Math.random() * R.W, TH.ambientGlow === false ? Math.random() * H * 0.7 : H + 4, TH.ambientGlow === false ? 20 + Math.random() * 25 : (Math.random() - 0.5) * 20, TH.ambientGlow === false ? 4 - Math.random() * 8 : -30 - Math.random() * 30, 6, 2, TH.ambient || "#ff9a40", TH.ambientGlow === false ? 3 : 1, -2);
     // damage numbers
     g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(20,10,10,.85)";
     for (const n of R.nums) {

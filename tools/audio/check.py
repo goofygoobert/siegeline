@@ -35,9 +35,7 @@ def main():
             e["loopStart"] = meta[mid]["loopStart"]
             e["loopEnd"] = meta[mid]["loopEnd"]
         manifest["music"][mid] = e
-    with open(os.path.join(A.OUT, "manifest.json"), "w") as f:
-        json.dump(manifest, f, indent=2)
-        f.write("\n")
+    A.write_json_atomic(manifest, os.path.join(A.OUT, "manifest.json"))
 
     rows, fails, total = [], [], 0
     items = [("sfx", k, "sfx_" + k) for k in SFX] + [("music", k, "mus_" + k) for k in MUSIC]

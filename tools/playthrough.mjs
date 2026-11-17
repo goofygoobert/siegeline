@@ -44,15 +44,15 @@ async function playStage(id) {
     const tut = await page.$(".tut"); const text = tut ? await tut.evaluate((e) => e.textContent) : "";
     const hasTutor = await G(() => !!(__siegeline.battle && __siegeline.battle.tutor));
     if (!hasTutor) break;
-    if (/Ashguard card/.test(text)) { await shot(`${id}-tutorial-send`); await tapEl(await page.$('.ucard[data-id="ashguard"]')); }
-    else if (/ballista/.test(text)) {
+    if (/Hatchguard card|Ashguard card/.test(text)) { await shot(`${id}-tutorial-send`); await tapEl(await page.$('.ucard[data-id="ashguard"]')); }
+    else if (/cannon|ballista/.test(text)) {
       await shot(`${id}-tutorial-aim`);
       const b = await (await page.$(".weapon")).boundingBox(); const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
       await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.move(cx - 70, cy + 45, { steps: 8 }); await sl(250); await page.mouse.up();
-    } else if (/Ember Rain/.test(text)) {
+    } else if (/Broadside|Ember Rain/.test(text)) {
       if (!this_shot_rain) { await shot(`${id}-tutorial-ability`); this_shot_rain = true; }
       await tapEl(await page.$('.abil[data-id="ember_rain"]')); await page.touchscreen.tap(560, 230);
-    } else if (/Marshal/.test(text)) { await shot(`${id}-tutorial-hero`); await tapEl(await page.$(".herobtn")); }
+    } else if (/Captain|Marshal/.test(text)) { await shot(`${id}-tutorial-hero`); await tapEl(await page.$(".herobtn")); }
     await sl(400);
   }
   // then the test player takes over at high speed

@@ -2,7 +2,7 @@
  "stages": [
   {
    "id": "r1s1",
-   "name": "Smoke on the Vines",
+   "name": "Tide Turns Green",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
@@ -79,7 +79,7 @@
   },
   {
    "id": "r1s2",
-   "name": "The Chapel Road",
+   "name": "The Smugglers' Steps",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
@@ -181,7 +181,7 @@
   },
   {
    "id": "r1s3",
-   "name": "Pyre Fields",
+   "name": "Pufferghast Shoals",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
@@ -294,7 +294,7 @@
   },
   {
    "id": "r1s4",
-   "name": "The Broken Watch",
+   "name": "The Broken Lighthouse",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
@@ -417,7 +417,7 @@
   },
   {
    "id": "r1s5",
-   "name": "Ashfall Ridge",
+   "name": "Wreckers' Reef",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
@@ -547,7 +547,7 @@
   },
   {
    "id": "r1boss",
-   "name": "The Cinder Matron",
+   "name": "Mother Fathom",
    "region": "r1",
    "bg": "r1n",
    "music": "boss",
@@ -618,27 +618,27 @@
   "basics": [
    {
     "id": "send",
-    "text": "Tap the Ashguard card to send a soldier.",
+    "text": "Tap the Hatchguard card to send a deckhand.",
     "target": "unit:ashguard",
     "until": "sent",
     "holdWaves": true
    },
    {
     "id": "energy",
-    "text": "Sending costs embers. They refill on their own.",
+    "text": "Sending costs powder. It refills on its own.",
     "target": "energy",
     "until": "time:3.5"
    },
    {
     "id": "aim",
-    "text": "Hold the ballista button, drag back to aim, let go to fire.",
+    "text": "Hold the cannon button, drag back to aim, let go to fire.",
     "target": "weapon",
     "until": "fired",
     "holdWaves": true
    },
    {
     "id": "goal",
-    "text": "Break the Maw Gate. Keep your Keep standing.",
+    "text": "Sink the Drowned Grotto. Keep the Gullwake standing.",
     "target": "enemyCastle",
     "until": "time:4"
    }
@@ -646,7 +646,7 @@
   "ability": [
    {
     "id": "rain",
-    "text": "Ember Rain is ready. Tap it, then tap where to drop it.",
+    "text": "Broadside is ready. Tap it, then tap where it should land.",
     "target": "ability:ember_rain",
     "until": "ability",
     "when": "enemies:4"
@@ -655,7 +655,7 @@
   "hero": [
    {
     "id": "hero",
-    "text": "The Marshal is ready. Tap his banner to call him in.",
+    "text": "The Captain is ready. Tap the portrait to call them ashore.",
     "target": "hero",
     "until": "hero",
     "when": "heroReady"
