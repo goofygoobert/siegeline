@@ -110,7 +110,7 @@
    "id": "cinder_matron",
    "name": "The Cinder Matron",
    "faction": "hollow",
-   "hp": 10020,
+   "hp": 7000,
    "dmg": 103,
    "rate": 2.0,
    "range": 60,

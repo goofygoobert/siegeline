@@ -5,7 +5,7 @@ import { createBattle, step } from "../src/sim/battle.js";
 import { makeBot } from "../src/sim/bot.js";
 import { readFileSync, writeFileSync } from "node:fs";
 const C = loadContent();
-const TARGET = { r1s1: 0.97, r1s2: 0.88, r1s3: 0.75, r1s4: 0.62, r1s5: 0.5, r1boss: 0.35 };
+const TARGET = { r1s1: 0.97, r1s2: 0.88, r1s3: 0.75, r1s4: 0.62, r1s5: 0.5, r1boss: 0.3 };
 const N = 60;
 const lv = {}; for (const u of C.units.units) lv[u.id] = 1;
 const prog = { unitLevels: lv, keep: 1, ballista: 1, energyMax: 1, energyRegen: 1, hero: 1, abilities: {} };
@@ -17,8 +17,9 @@ function rate(st) {
 }
 const file = JSON.parse(readFileSync("data/stages/r1.json", "utf8"));
 for (const st of file.stages) {
+  if (process.argv[2] && st.id !== process.argv[2]) continue;
   const key = st.boss ? "bossPower" : "power";
-  if (st.boss) st.power = file.stages.find((s) => s.id === "r1s5").power || 1;
+  if (st.boss && !st.power) st.power = file.stages.find((s) => s.id === "r1s5").power || 1;
   let lo = 0.5, hi = 16;
   for (let it = 0; it < 10; it++) {
     const mid = Math.sqrt(lo * hi); st[key] = +mid.toFixed(2);

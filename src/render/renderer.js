@@ -52,9 +52,10 @@ export function createRenderer(canvas, hooks) {
     if (!sprites[id]) return; const f = R.fx[R.fxi]; R.fxi = (R.fxi + 1) % R.fx.length;
     f.id = id; f.x = x; f.y = y; f.t = 0; f.s = scale;
   }
-  function num(x, y, text, color, big = false) {
+  function num(x, y, text, color, big = false, key = 0, amt = 0) {
+    if (key) for (const m of R.nums) if (m.life > 0.65 && m.key === key) { m.amt += amt; m.t = String(Math.round(m.amt)); m.big = m.big || m.amt >= 60; m.life = 0.9; return; }
     const n = R.nums[R.ni]; R.ni = (R.ni + 1) % MAXN;
-    n.x = x + (Math.random() - 0.5) * 14; n.y = y; n.t = text; n.c = color; n.life = 0.9; n.big = big;
+    n.x = x + (Math.random() - 0.5) * 24; n.y = y - Math.random() * 10; n.t = text; n.c = color; n.life = 0.9; n.big = big; n.key = key; n.amt = amt;
   }
   function addShake(a) { if (!R.reduced) R.shake = Math.min(1, R.shake + a); }
   R.addShake = addShake;
@@ -73,7 +74,7 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
           const enemy = t.side === -1;
-          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60);
+          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#ffd27a" : "#ff6a5a", e.amt >= 60, t.uid, e.amt);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, EMBER, 120, 2, 1, 200, 0.5);
           if (e.kind === "blade") R.sfx("hit_blade", { pan: panOf(t.x), gain: 0.8 });
@@ -119,9 +120,10 @@ export function createRenderer(canvas, hooks) {
         case "healBeam": R.sfx("heal", { gain: 0.5, minGap: 0.3 }); break;
         case "slam": burst(e.x, gy - 4, 12, "#6e625c", 160, 6, 2, -10, 0.8); break;
         case "bossSpawn": R.sfx("boss_roar"); hooks.duck && hooks.duck(0.3, 2.5); addShake(0.6); flash(0.2, "#ff6a2a"); hooks.onBoss && hooks.onBoss(e.e); break;
-        case "bossWarn": R.sfx(e.kind === "summon" ? "boss_roar" : "boss_warn", { gain: e.kind === "summon" ? 0.6 : 1 }); break;
+        case "bossWarn": hooks.onBossWarn && hooks.onBossWarn(e.kind); R.sfx(e.kind === "summon" ? "boss_roar" : "boss_warn", { gain: e.kind === "summon" ? 0.6 : 1 }); break;
         case "bossSlam": burst(e.x, gy - 6, 30, "#6e625c", 300, 8, 2, -20, 1.0); burst(e.x, gy - 10, 16, EMBER, 260, 3, 1, 300, 0.7); addShake(0.55); R.sfx("boss_slam"); break;
         case "bossSpitHit": fxAt("blast", e.x, gy - 24, 1.4); burst(e.x, gy - 6, 26, EMBER, 300, 4, 1, 400, 0.8); addShake(0.35); R.sfx("bolt_hit", { rate: 0.8 }); break;
+        case "bossWinded": hooks.onBossWarn && hooks.onBossWarn("winded"); break;
         case "bossPhase": flash(0.3, "#ff5020"); addShake(0.5); R.sfx("boss_roar", { rate: 0.85 }); break;
         case "bossDead": R.slowmo = 1.6; flash(0.5, "#fff1c8"); addShake(1); R.sfx("castle_crumble"); break;
         case "enrage": burst(e.e.x, gy - 80, 18, "#ff4a20", 200, 3, 1, 0, 0.7); R.sfx("boss_roar", { rate: 1.3, gain: 0.6 }); break;
@@ -227,9 +229,9 @@ export function createRenderer(canvas, hooks) {
       if (a) { const hf = a.hit != null ? a.hit : 3; t = Math.min(e.stateT, (hf - 1) / (a.fps || 10)); }
     }
     if (e.stun > 0) { anim = "hit"; t = 0.05; }
-    const scale = (e.elite ? 1.12 : 1) * CH;
+    const scale = (e.elite ? 1.12 : 1) * (e.kind === "boss" ? 1 : CH);
     const ok = spriteDraw(e.sprite, anim, t, sx, y, { fps, scale }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale });
-    if (ok && e.flash > 0) { g.globalAlpha = Math.min(1, e.flash / 0.12) * 0.85 * fadeOut; spriteDraw(e.sprite, anim, t, sx, y, { fps, scale, white: true }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale, white: true }); }
+    if (ok && e.flash > 0) { g.globalAlpha = Math.min(1, e.flash / 0.12) * 0.5 * fadeOut; spriteDraw(e.sprite, anim, t, sx, y, { fps, scale, white: true }) || spriteDraw(e.s.baseSprite || e.id, anim, t, sx, y, { fps, scale, white: true }); }
     if (!ok) placeholder(e, sx, y, e.s.size * 4.4 * (e.alive ? 1 : 0.4), e.flash > 0);
     g.globalAlpha = 1;
     // health bar when hurt (not for boss: boss has its own bar)
@@ -238,6 +240,7 @@ export function createRenderer(canvas, hooks) {
       g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(sx - w / 2 - 1, hy - 1, w + 2, 5);
       g.fillStyle = e.side === 1 ? "#7fd36b" : "#ff7a3a"; g.fillRect(sx - w / 2, hy, w * Math.max(0, e.hp / e.maxHp), 3);
     }
+    if (e.vuln > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 4; i++) { const a = R.t * 4 + i * 1.57; g.fillRect(sx + Math.cos(a) * 26 - 3, y - 250 + Math.sin(a) * 5, 6, 6); } }
     if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - Math.min(170, e.s.size * 4.6) - 4 + Math.sin(a) * 3, 4, 4); } }
   }
 

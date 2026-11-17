@@ -122,7 +122,9 @@ try {
     }
     if (!won) throw new Error(`could not beat ${id} in 4 tries (with upgrades between)`);
   }
-  await tapText(".result button", "Region cleared"); await waitFor(".map"); await shot("region-cleared-map");
+  await tapText(".result button", "Continue"); await waitFor(".map"); await sl(600); await shot("region-cleared-map");
+  if (!(await page.$(".announce"))) problems.push("no region-cleared announcement on the map");
+  const ga = await page.$(".announce button"); if (ga) await tapEl(ga);
   const D = await G(() => __siegeline.D);
   log(`marks ${D.marks}, stars ${Object.values(D.stages).map((s) => s.stars.filter(Boolean).length).join(",")}, units ${D.unlocked.units.length}`);
   if (D.unlocked.units.length !== 6) problems.push(`expected 6 units unlocked, got ${D.unlocked.units.length}`);

@@ -114,7 +114,7 @@ function spawn(B, s, side, x) {
   e.alive = true; e.gone = false; e.state = "walk"; e.stateT = 0; e.atkCd = 0.2 + B.rand() * 0.3; e.hitAt = -1;
   e.target = null; e.slow = 0; e.slowT = 0; e.stun = 0; e.burn = 0; e.burnT = 0; e.kb = 0; e.dieT = 0;
   e.flash = 0; e.firstDone = false; e.healCd = 0; e.elite = !!s.elite; e.flareT = 0;
-  e.bossT = null; e.windup = null; e.enraged = false;
+  e.bossT = null; e.windup = null; e.enraged = false; e.vuln = 0; e.phase2 = false;
   if (s.boss) e.bossT = { sweep: 4, summon: 10, spit: 6 };
   ev(B, "spawn", { e });
   return e;
@@ -130,6 +130,7 @@ function damage(B, e, amt, src, opts) {
   let d = amt;
   if (e.s.traits && e.s.traits.meleeGuard && opts && opts.melee) d *= 1 - e.s.traits.meleeGuard;
   if (e.s.traits && e.s.traits.armor) d *= 1 - e.s.traits.armor;
+  if (e.vuln > 0) d *= 1.5;
   e.hp -= d; if (!opts || opts.kind !== "burn") e.flash = 0.12;   // damage-over-time never flashes
   if (src && src.side === 1) B.stats.dmgDealt += d;
   ev(B, "dmg", { e, amt: d, crit: opts && opts.crit, kind: opts && opts.kind });
@@ -262,6 +263,7 @@ function bossThink(B, e, dt) {
         explode(B, cx, b.sweep.radius * 0.6, b.sweep.dmg, e, "players", { kb: b.sweep.knockback, kind: "blunt" });
         if (Math.abs(B.keep.front - e.x) < b.sweep.radius) hitCastle(B, -1, b.sweep.dmg);
         ev(B, "bossSlam", { x: cx, r: b.sweep.radius });
+        e.vuln = 2.5; ev(B, "bossWinded", { e });          // the swing leaves her open: a window to punish
         if (e.phase2) B.patches.push({ x: cx, r: 60, dps: 14, t: 4, side: -1 });
       } else if (w.kind === "summon") {
         for (let k = 0; k < b.summon.n; k++) spawn(B, powered(B, enemyStats(B.enemyDefs[b.summon.id], false, B.content.enemies.elite), B.emul), -1, e.x - 30 - k * 12);
@@ -312,6 +314,7 @@ function stepEntity(B, e, dt) {
     return;
   }
   if (e.slowT > 0) e.slowT -= dt;
+  if (e.vuln > 0) e.vuln -= dt;
   if (e.burnT > 0) { e.burnT -= dt; damage(B, e, e.burn * dt, null, { kind: "burn" }); if (!e.alive) return; }
   if (e.kb !== 0) {         // knockback slide
     const step = Math.sign(e.kb) * Math.min(Math.abs(e.kb), 260 * dt);

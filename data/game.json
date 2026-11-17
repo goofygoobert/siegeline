@@ -2,7 +2,7 @@
   "field": {"width": 2600, "groundY": 400, "playerCastleX": 150, "enemyCastleX": 2450, "laneJitter": 22},
   "simHz": 30,
   "speedScale": 1.5,
-  "energy": {"start": 40, "max": 100, "regen": 7, "maxPerLevel": 15, "regenPerLevel": 0.6, "maxLevel": 5},
+  "energy": {"start": 55, "max": 100, "regen": 7, "maxPerLevel": 15, "regenPerLevel": 0.6, "maxLevel": 5},
   "keep": {"hp": 2000, "hpPerLevel": 250, "maxLevel": 10},
   "ballista": {"dmg": 90, "dmgPerLevel": 0.12, "splash": 55, "reload": 3.5, "reloadPerLevel": 0.15, "maxLevel": 10,
                "gravity": 900, "minSpeed": 380, "maxSpeed": 1250, "firePatch": {"dps": 12, "time": 3, "radius": 45}},

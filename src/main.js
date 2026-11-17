@@ -18,6 +18,7 @@ const stageById = Object.fromEntries(content.stages.map((s) => [s.id, s]));
 const unitById = Object.fromEntries(units.units.map((u) => [u.id, u]));
 const enemyById = Object.fromEntries(enemies.enemies.map((e) => [e.id, e]));
 const abilityNames = { ember_rain: "Ember Rain", rally: "Rally Bell" };
+const SHORT = { ashguard: "Ashguard", torchbow: "Torchbow", cinder_runner: "Runner", maulwright: "Maulwright", bellringer: "Bellringer", lamplighter: "Lamplighter" };
 
 const ui = document.getElementById("ui");
 const TEST = new URLSearchParams(location.search).has("test");
@@ -25,7 +26,7 @@ let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
-const R = createRenderer(canvas, { sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout("They're rushing!"), onAngry: () => battle && battle.callout("The Maw grows angry") });
+const R = createRenderer(canvas, { sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onRush: () => battle && battle.callout("They're rushing!"), onAngry: () => battle && battle.callout("The Maw grows angry"), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
 
@@ -89,7 +90,9 @@ function persist(now = false) { if (now) save(D); else saveSoon(D); }
 
 // ---------------------------------------------------------------- screen manager
 let current = null;
+function clearCanvas() { const g = canvas.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#120c0c"; g.fillRect(0, 0, canvas.width, canvas.height); }
 function show(el) {
+  if (!el.classList.contains("hud") && !el.classList.contains("loading")) clearCanvas();
   const old = current; current = el; ui.append(el);
   if (old) { old.classList.add("out"); setTimeout(() => old.remove(), 220); }
   for (const m of ui.querySelectorAll(".modal")) m.remove();
@@ -141,9 +144,14 @@ async function worldMap() {
     const open = !!r.playable;
     map.append(h("button", { class: "pin" + (open ? "" : " locked"), style: `left:${p.x * 100}%;top:${p.y * 100}%`, "aria-label": r.name + (open ? "" : " (locked)"),
       onclick: open ? tap(() => regionScreen(r)) : tap(() => toast(`${r.name}: ${r.blurb.split(".")[0]}. Coming in a later update.`, 3200), "ui_locked") },
-      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : r.name)));
+      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : r.name),
+      open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
-  show(h("div", { class: "screen" },
+  const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, "Cinderfold Vale is free"),
+    "The Matron is ash. The road east to the Bell Marshes opens in the next update. Replay stages for stars and upgrades until then.",
+    h("div", { style: "margin-top:10px" }, h("button", { class: "btn", onclick: tap(() => ann.remove()) }, "Got it"))) : null;
+  if (ann) { D.seen.regionCleared = "shown"; persist(); }
+  show(h("div", { class: "screen" }, ann,
     topbar("The Ashen Marches", titleScreen, [h("button", { class: "btn", onclick: tap(() => armoury(worldMap)) }, icon(I.hammer), "Armoury")]),
     map));
 }
@@ -190,9 +198,9 @@ function stageSheet(s, region) {
     h("div", { class: "muted", style: "font-size:13px;font-weight:700" }, "You'll face"),
     h("div", { class: "chips" }, ...[...foes].map((id) => h("span", { class: "chip" }, h("span", { class: "dot", style: "width:10px;height:10px;border-radius:50%;background:#ff7a3a;margin-left:6px" }), enemyById[id].name))),
     h("div", { class: "starrow" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (st[i] ? " on" : "") }), i === 2 ? `Win in under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")}` : d))),
-    h("div", { class: "row" }, h("span", { class: "muted" }, first ? "First clear" : "Replay"), h("div", { class: "spacer" }), coin(), h("b", {}, reward + "")),
     ),
-    h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)) }, "Fight"));
+    h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)), "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} marks` }, "Fight",
+      h("span", { style: "display:inline-flex;align-items:center;gap:4px;font-size:15px;opacity:.85;margin-left:8px" }, coin(), reward + "")));
   current.append(sheet);
 }
 
@@ -261,7 +269,7 @@ function openSettings(onClose) {
       oninput: (e) => { D.settings[key] = +e.target.value; applySettings(); }, onchange: () => { persist(); sfx("ui_tap"); } }));
   const io = h("div", { style: "display:flex;flex-direction:column;gap:8px" });
   const m = h("div", { class: "modal", onclick: (e) => { if (e.target === m) close(); } },
-    h("div", { class: "panel", role: "dialog", "aria-label": "Settings" },
+    h("div", { class: "panel settings-panel", role: "dialog", "aria-label": "Settings" },
       h("div", { class: "row" }, h("h2", {}, "Settings"), h("div", { class: "spacer" }), h("button", { class: "btn icon", "aria-label": "Close", onclick: tap(() => close(), "ui_back") }, h("span", { html: "&#x2715;" }))),
       slider("music", "Music"), slider("sfx", "Sound effects"), tgl("reducedMotion", "Reduced motion (no shake or flashes)"), tgl("largeText", "Larger text"),
       h("div", { class: "row", style: "flex-wrap:wrap" },
@@ -349,7 +357,7 @@ class BattleView {
     this.cardEls = B.cards.map((c) => {
       const el = h("button", { class: "ucard", "aria-label": `Send ${unitById[c.id].name}, ${c.stats.cost} embers`, "data-id": c.id,
         onpointerdown: (e) => { e.preventDefault(); this.send(c.id, el); } },
-        portrait(c.id), h("span", { class: "cd" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
+        portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
       return el;
     });
     const cards = h("div", { class: "cards" }, ...this.cardEls);
@@ -363,6 +371,10 @@ class BattleView {
     const bottom = h("div", { class: "hud-bottom" }, h("div", { class: "left" }, this.energy, this.weapon), cards, side);
     this.bossBar = null;
     return h("div", { class: "screen hud" }, top, bottom);
+  }
+  bossWarn(kind) {
+    const t = { sweep: "Censer raised! Fall back!", summon: "She calls the Choir!", spit: "Ember Spit! Clear the red ring!", winded: "She's winded! Strike now!" }[kind];
+    if (!t) return; const c = h("div", { class: "bosswarn" }, t); this.el.append(c); setTimeout(() => c.remove(), 1500);
   }
   callout(text) { const c = h("div", { class: "callout" }, text); this.el.append(c); setTimeout(() => c.remove(), 1900); }
   onBoss(e) {
@@ -500,11 +512,11 @@ class BattleView {
     this.hpGate.querySelector(".bar > i").style.transform = `scaleX(${gf})`; this.hpGate.querySelector(".v").textContent = B.gate.sealed ? "" : Math.ceil(B.gate.hp);
     if (B.keep.hitT > 0.12) { this.hpKeep.classList.remove("hit"); void this.hpKeep.offsetWidth; this.hpKeep.classList.add("hit"); }
     const en = Math.floor(B.energy);
-    if (en !== this._en) { this._en = en; this.energy.querySelector(".n").textContent = en; this.energy.querySelector(".mx").textContent = "/" + B.energyMax; this.energy.classList.toggle("full", B.energy >= B.energyMax); }
+    if (en !== this._en) { this._en = en; this.energy.querySelector(".n").textContent = en; this.energy.querySelector(".mx").textContent = "/" + B.energyMax; const full = B.energy >= B.energyMax; if (full && !this._full) sfx("energy_full", { gain: 0.5 }); this._full = full; this.energy.classList.toggle("full", full); }
     this.energy.querySelector(".bar > i").style.transform = `scaleX(${B.energy / B.energyMax})`;
     B.cards.forEach((c, i) => {
       const el = this.cardEls[i], cdf = Math.max(0, c.cd / c.stats.cooldown), poor = B.energy < c.stats.cost;
-      el.children[1].style.transform = `scaleY(${cdf})`;
+      (el._cd || (el._cd = el.querySelector(".cd"))).style.transform = `scaleY(${cdf})`;
       el.classList.toggle("poor", poor); el.classList.toggle("ready", !poor && cdf <= 0);
     });
     B.abilities.forEach((a, i) => {
@@ -596,7 +608,7 @@ class BattleView {
       unlocks.length ? h("div", { style: "text-align:center;font-weight:800;color:var(--accent-2)" }, "Unlocked: " + unlocks.join(", ")) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
-        win && !next ? h("button", { class: "btn primary big", onclick: tap(() => worldMap()) }, "Region cleared") : null,
+        win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { D.seen.regionCleared = D.seen.regionCleared || "new"; worldMap(); }) }, "Continue") : null,
         !win ? h("button", { class: "btn primary big", onclick: tap(() => armoury(() => regionScreen(regions.regions[0]))) }, "Upgrade") : null,
         h("button", { class: "btn big", onclick: tap(() => startBattle(s)) }, "Retry"),
         h("button", { class: "btn big", onclick: tap(() => regionScreen(regions.regions[0]), "ui_back") }, "Map")));
@@ -626,6 +638,7 @@ function loseTip(B) {
   const has = (id) => alive.some((e) => e.id === id);
   if (B.stats.shots < 3) return "Tip: the ballista reloads on its own. Fire it often, every bolt can hit a whole pack.";
   if (has("brute") || has("husk_warden")) return "Tip: big Hollows hit hard. Hold them with Ashguards while Torchbows and the ballista wear them down.";
+  if (has("bloater")) return "Tip: Pyre Bloaters burst when they die. Pop them from range with Torchbows or the ballista, not in the middle of your soldiers.";
   if (has("spitter")) return "Tip: Spitters hide behind the horde. Cinder Runners reach them fast.";
   if (B.stats.sent < 8) return "Tip: send soldiers steadily. Embers you don't spend are wasted when the store is full.";
   return "Tip: upgrades in the Armoury carry over to every stage. Replays earn marks too.";
