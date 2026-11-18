@@ -1,0 +1,727 @@
+{
+ "note": "Design data for docs/design/strategy.md. tools/gen_counters.mjs builds the counter table and runs the design checks from this file. In part 3 these fields move into data/units.json and data/enemies.json and the generator reads those instead.",
+ "slots": {
+  "region1": [
+   4,
+   4,
+   4,
+   5,
+   5,
+   5,
+   5,
+   5
+  ],
+  "fullGame": 6
+ },
+ "traits": {
+  "plain": {
+   "name": "Plain",
+   "icon": "none",
+   "read": "upright drowned sailor, nothing special",
+   "rule": "No special rule."
+  },
+  "swarm": {
+   "name": "Swarm",
+   "icon": "three dots",
+   "read": "small, low and many, arriving in packs of 5-8",
+   "rule": "Fast and weak; arrive in packs that surround single-target crew."
+  },
+  "flying": {
+   "name": "Flying",
+   "icon": "wing",
+   "read": "off the ground with a shadow below it",
+   "rule": "Melee cannot hit it. It flies over the front line to the back line and the fort."
+  },
+  "siege": {
+   "name": "Siege",
+   "icon": "arc over a wall",
+   "read": "tall, stays at the back, lobs glowing globs",
+   "rule": "Out-ranges every crew shooter. Targets the back line, then the fort."
+  },
+  "exploder": {
+   "name": "Exploder",
+   "icon": "burst",
+   "read": "round, swollen, glowing cracks",
+   "rule": "Bursts when it dies and hurts everyone close, crew and monsters."
+  },
+  "armoured": {
+   "name": "Armoured",
+   "icon": "plate",
+   "read": "huge, crusted in barnacle plates",
+   "rule": "Takes 12 less damage from every hit, so many small hits do almost nothing."
+  },
+  "shelled": {
+   "name": "Shelled",
+   "icon": "shell",
+   "read": "carries a ship's bell or shell in front of it",
+   "rule": "The shell soaks the first 300 damage from the front. Blunt and blast hits break it at once."
+  },
+  "healer": {
+   "name": "Healer",
+   "icon": "drop in a ring",
+   "read": "soft glowing bell-shape floating low, a beam to whoever it mends",
+   "rule": "Mends the most hurt monster nearby. A fight in front of it never ends."
+  },
+  "venomous": {
+   "name": "Venomous",
+   "icon": "green drop",
+   "read": "covered in long thin spines",
+   "rule": "Each hit adds a stack of poison."
+  },
+  "submerged": {
+   "name": "Submerged",
+   "icon": "fin",
+   "read": "a moving ripple and fin in the sand",
+   "rule": "Cannot be targeted while under the sand. Surfaces at the first crew member it passes, behind the front line."
+  },
+  "ghostly": {
+   "name": "Ghostly",
+   "icon": "wisp",
+   "read": "see-through, no feet, pale blue",
+   "rule": "Blades, shot and cannonballs pass through. Only fire and light hurt it; in lantern light it turns solid."
+  }
+ },
+ "crew": [
+  {
+   "id": "ashguard",
+   "name": "Hatchguard",
+   "region": 1,
+   "job": "Wall. His door blocks blasts and poison from the front.",
+   "weakness": "Hits lightly, cannot reach the air, out-ranged.",
+   "strong": [
+    "plain",
+    "exploder",
+    "venomous"
+   ],
+   "weak": [
+    "flying",
+    "siege",
+    "armoured",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "torchbow",
+   "name": "Blackpowder",
+   "region": 1,
+   "job": "Shooter. Burning shot reaches the air, burn ignores armour, fire hurts ghosts.",
+   "weakness": "Slow reload: packs swamp him. Shells soak his shots.",
+   "strong": [
+    "flying",
+    "exploder",
+    "ghostly"
+   ],
+   "weak": [
+    "swarm",
+    "shelled",
+    "submerged",
+    "siege"
+   ]
+  },
+  {
+   "id": "cinder_runner",
+   "name": "Rope Rat",
+   "region": 1,
+   "job": "Diver. Vaults the front line to knife whatever hides at the back, and gets behind shells.",
+   "weakness": "Fragile: dies to blasts, poison and big hits.",
+   "strong": [
+    "siege",
+    "healer",
+    "shelled"
+   ],
+   "weak": [
+    "exploder",
+    "venomous",
+    "armoured",
+    "flying"
+   ]
+  },
+  {
+   "id": "bellringer",
+   "name": "Shantyman",
+   "region": 1,
+   "job": "Crowd control. His song slows everything in earshot.",
+   "weakness": "Does no damage himself; siege out-ranges the song.",
+   "strong": [
+    "swarm",
+    "submerged"
+   ],
+   "weak": [
+    "siege",
+    "ghostly",
+    "healer"
+   ]
+  },
+  {
+   "id": "maulwright",
+   "name": "Anchorman",
+   "region": 1,
+   "job": "Breaker. One huge blunt hit: cracks armour, smashes shells, and the slam drives the buried up.",
+   "weakness": "Slow swing: packs and fliers ignore him.",
+   "strong": [
+    "armoured",
+    "shelled",
+    "submerged"
+   ],
+   "weak": [
+    "swarm",
+    "flying",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "lamplighter",
+   "name": "Sawbones",
+   "region": 1,
+   "job": "Mender. Heals crew, cleans off poison, and his lantern makes ghosts solid.",
+   "weakness": "Cannot fight; dies to anything that reaches him.",
+   "strong": [
+    "venomous",
+    "ghostly"
+   ],
+   "weak": [
+    "submerged",
+    "flying",
+    "siege"
+   ]
+  },
+  {
+   "id": "harpooner",
+   "name": "Harpooner",
+   "region": 1,
+   "job": "Sniper. One long, slow, piercing shot that ignores armour and out-ranges siege.",
+   "weakness": "One target at a time; useless against packs.",
+   "strong": [
+    "armoured",
+    "siege",
+    "healer"
+   ],
+   "weak": [
+    "swarm",
+    "shelled",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "netcaster",
+   "name": "Netcaster",
+   "region": 1,
+   "job": "Catcher. Nets drag fliers to the ground and pin whatever they land on.",
+   "weakness": "No damage; ghosts drift through the net.",
+   "strong": [
+    "flying",
+    "swarm"
+   ],
+   "weak": [
+    "ghostly",
+    "armoured",
+    "siege"
+   ]
+  },
+  {
+   "id": "fire_eater",
+   "name": "Fire-eater",
+   "region": 2,
+   "job": "Burner. A short cone of flame.",
+   "weakness": "Must stand close; shells and armour shrug it off until they burn.",
+   "strong": [
+    "swarm",
+    "ghostly",
+    "healer"
+   ],
+   "weak": [
+    "siege",
+    "shelled",
+    "flying"
+   ]
+  },
+  {
+   "id": "lookout",
+   "name": "Lookout",
+   "region": 2,
+   "job": "Spotter. Marks the buried and the unseen so everyone can hit them; marked monsters take more damage.",
+   "weakness": "Barely fights.",
+   "strong": [
+    "submerged",
+    "ghostly"
+   ],
+   "weak": [
+    "swarm",
+    "exploder",
+    "armoured"
+   ]
+  },
+  {
+   "id": "boathook",
+   "name": "Boathook",
+   "region": 2,
+   "job": "Giant-killer. Long reach, double damage to anything big.",
+   "weakness": "Clumsy against small fast things.",
+   "strong": [
+    "armoured",
+    "plain"
+   ],
+   "weak": [
+    "swarm",
+    "flying",
+    "venomous"
+   ]
+  },
+  {
+   "id": "powder_monkey",
+   "name": "Powder Monkey",
+   "region": 3,
+   "job": "Bomber. Lobs a keg: blast damage in a circle, breaks shells.",
+   "weakness": "Long fuse; fast things are gone before it lands.",
+   "strong": [
+    "shelled",
+    "swarm",
+    "exploder"
+   ],
+   "weak": [
+    "flying",
+    "ghostly",
+    "submerged"
+   ]
+  },
+  {
+   "id": "gull_rider",
+   "name": "Gull-rider",
+   "region": 3,
+   "job": "Flier. Crosses the field in the air to hit siege and menders, and duels other fliers.",
+   "weakness": "Thin; one shooter brings her down.",
+   "strong": [
+    "siege",
+    "flying",
+    "healer"
+   ],
+   "weak": [
+    "armoured",
+    "shelled",
+    "venomous"
+   ]
+  },
+  {
+   "id": "chaplain",
+   "name": "Chaplain",
+   "region": 3,
+   "job": "Blesser. A ring of light: ghosts inside are solid and burn.",
+   "weakness": "Slow, short reach.",
+   "strong": [
+    "ghostly",
+    "venomous"
+   ],
+   "weak": [
+    "siege",
+    "flying",
+    "swarm"
+   ]
+  },
+  {
+   "id": "diver",
+   "name": "Diver",
+   "region": 4,
+   "job": "Brass-suit tank. Immune to poison, fights the buried under the sand.",
+   "weakness": "Very slow, very dear.",
+   "strong": [
+    "venomous",
+    "submerged",
+    "exploder"
+   ],
+   "weak": [
+    "flying",
+    "siege",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "grapnel",
+   "name": "Grapnel",
+   "region": 4,
+   "job": "Puller. Hooks one monster out of its line and drags it to the crew.",
+   "weakness": "One at a time; cannot pull the big ones.",
+   "strong": [
+    "siege",
+    "healer",
+    "shelled"
+   ],
+   "weak": [
+    "swarm",
+    "armoured",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "swivel_gun",
+   "name": "Swivel Gun",
+   "region": 4,
+   "job": "Line gun. A shot that passes through a whole row.",
+   "weakness": "Cannot aim up; needs a wall in front.",
+   "strong": [
+    "plain",
+    "swarm",
+    "armoured"
+   ],
+   "weak": [
+    "flying",
+    "submerged",
+    "ghostly"
+   ]
+  },
+  {
+   "id": "cooper",
+   "name": "Cooper",
+   "region": 5,
+   "job": "Builder. Rolls out a barrel wall that blocks the beach for a while.",
+   "weakness": "The wall does nothing to what goes over or under it.",
+   "strong": [
+    "plain",
+    "exploder",
+    "swarm"
+   ],
+   "weak": [
+    "flying",
+    "submerged",
+    "siege"
+   ]
+  },
+  {
+   "id": "colour_sergeant",
+   "name": "Colour Sergeant",
+   "region": 5,
+   "job": "Flag. Crew near the colours hit harder and cannot be stunned.",
+   "weakness": "Useless alone.",
+   "strong": [
+    "plain",
+    "armoured"
+   ],
+   "weak": [
+    "siege",
+    "exploder",
+    "submerged"
+   ]
+  },
+  {
+   "id": "storm_caller",
+   "name": "Storm-caller",
+   "region": 6,
+   "job": "Weather. Calls lightning that chains through wet monsters and strikes the air first.",
+   "weakness": "Long wait between strikes.",
+   "strong": [
+    "flying",
+    "swarm",
+    "healer"
+   ],
+   "weak": [
+    "armoured",
+    "submerged",
+    "shelled"
+   ]
+  }
+ ],
+ "enemies": [
+  {
+   "id": "husk",
+   "name": "Drowner",
+   "region": 1,
+   "traits": [
+    "plain"
+   ]
+  },
+  {
+   "id": "gnawer",
+   "name": "Scuttler",
+   "region": 1,
+   "traits": [
+    "swarm"
+   ]
+  },
+  {
+   "id": "gallows_gull",
+   "name": "Gallows Gull",
+   "region": 1,
+   "traits": [
+    "flying"
+   ],
+   "new": true,
+   "look": "a skeletal sea-bird trailing a frayed noose of kelp; flaps above head height"
+  },
+  {
+   "id": "spitter",
+   "name": "Inkspitter",
+   "region": 1,
+   "traits": [
+    "siege"
+   ]
+  },
+  {
+   "id": "bloater",
+   "name": "Pufferghast",
+   "region": 1,
+   "traits": [
+    "exploder"
+   ]
+  },
+  {
+   "id": "brute",
+   "name": "Barnacle Troll",
+   "region": 1,
+   "traits": [
+    "armoured"
+   ]
+  },
+  {
+   "id": "bellback",
+   "name": "Bellback",
+   "region": 1,
+   "traits": [
+    "shelled"
+   ],
+   "new": true,
+   "look": "a hermit crab the size of a man living in a drowned ship's bell it holds in front like a ram"
+  },
+  {
+   "id": "tide_nurse",
+   "name": "Tide Nurse",
+   "region": 1,
+   "traits": [
+    "healer"
+   ],
+   "new": true,
+   "look": "a pale jellyfish bell drifting at waist height with long ribbons; a green thread runs to whoever it mends"
+  },
+  {
+   "id": "husk_warden",
+   "name": "The Kelpie",
+   "region": 1,
+   "traits": [
+    "armoured"
+   ],
+   "miniboss": true
+  },
+  {
+   "id": "spinefoot",
+   "name": "Spinefoot",
+   "region": 2,
+   "traits": [
+    "venomous"
+   ],
+   "new": true,
+   "look": "an urchin on long stilt legs, all spines"
+  },
+  {
+   "id": "sandjaw",
+   "name": "Sandjaw",
+   "region": 2,
+   "traits": [
+    "submerged"
+   ],
+   "new": true,
+   "look": "an eel-thing that swims under the beach: a fin and a ripple until it lunges up"
+  },
+  {
+   "id": "wailer",
+   "name": "Will-o'-wisp",
+   "region": 2,
+   "traits": [
+    "ghostly",
+    "flying"
+   ]
+  },
+  {
+   "id": "tithe_spear",
+   "name": "Drowned Pikeman",
+   "region": 3,
+   "traits": [
+    "ghostly",
+    "armoured"
+   ]
+  },
+  {
+   "id": "tithe_crossbow",
+   "name": "Drowned Gunner",
+   "region": 3,
+   "traits": [
+    "ghostly",
+    "siege"
+   ]
+  },
+  {
+   "id": "tithe_paladin",
+   "name": "Ghost Bosun",
+   "region": 3,
+   "traits": [
+    "ghostly",
+    "healer"
+   ]
+  },
+  {
+   "id": "maw_hound",
+   "name": "Reef Hound",
+   "region": 4,
+   "traits": [
+    "swarm",
+    "venomous"
+   ]
+  },
+  {
+   "id": "slag_golem",
+   "name": "Coral Golem",
+   "region": 4,
+   "traits": [
+    "armoured",
+    "shelled"
+   ]
+  },
+  {
+   "id": "selkie_rider",
+   "name": "Selkie Rider",
+   "region": 4,
+   "traits": [
+    "submerged",
+    "exploder"
+   ],
+   "new": true,
+   "look": "a seal-shape riding inside a wave that breaks on the beach"
+  }
+ ],
+ "stages": [
+  {
+   "n": 1,
+   "name": "Tide Turns Green",
+   "slots": 4,
+   "teaches": "Hold a line: a wall in front, a shooter behind.",
+   "foes": [
+    "husk"
+   ],
+   "right": [
+    "ashguard",
+    "torchbow"
+   ],
+   "wrong": "Only shooters: nothing holds the Drowners off them."
+  },
+  {
+   "n": 2,
+   "name": "The Smugglers' Steps",
+   "slots": 4,
+   "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack.",
+   "foes": [
+    "husk",
+    "gnawer"
+   ],
+   "right": [
+    "ashguard",
+    "bellringer",
+    "netcaster"
+   ],
+   "wrong": "Wall and shooters: Scuttlers run round the wall and eat the shooters."
+  },
+  {
+   "n": 3,
+   "name": "Gallows Roost",
+   "slots": 4,
+   "teaches": "Flying: melee cannot reach. Bring shooters or nets.",
+   "foes": [
+    "husk",
+    "gallows_gull"
+   ],
+   "right": [
+    "ashguard",
+    "torchbow",
+    "netcaster"
+   ],
+   "wrong": "All melee: the Gulls pass overhead and peck the fort down."
+  },
+  {
+   "n": 4,
+   "name": "The Broken Lighthouse",
+   "slots": 5,
+   "teaches": "Siege: something at the back out-ranges you. Send a diver or a sniper.",
+   "foes": [
+    "husk",
+    "gnawer",
+    "spitter"
+   ],
+   "right": [
+    "ashguard",
+    "cinder_runner",
+    "harpooner"
+   ],
+   "wrong": "Wall and Blackpowders: ink falls on them from out of range all fight."
+  },
+  {
+   "n": 5,
+   "name": "Pufferghast Shoals",
+   "slots": 5,
+   "teaches": "Exploder: kill it at range or behind a door, never in a crowd.",
+   "foes": [
+    "husk",
+    "bloater",
+    "gallows_gull"
+   ],
+   "right": [
+    "ashguard",
+    "torchbow",
+    "harpooner"
+   ],
+   "wrong": "Rope Rats and Anchormen: each burst wipes the melee pile."
+  },
+  {
+   "n": 6,
+   "name": "Wreckers' Reef",
+   "slots": 5,
+   "teaches": "Armoured: small hits bounce. Bring one big hit or burn.",
+   "foes": [
+    "husk",
+    "gnawer",
+    "brute"
+   ],
+   "right": [
+    "ashguard",
+    "maulwright",
+    "harpooner",
+    "bellringer"
+   ],
+   "wrong": "Rope Rats and Netcasters: nothing they have gets through the plates."
+  },
+  {
+   "n": 7,
+   "name": "The Bell Ground",
+   "slots": 5,
+   "teaches": "Shelled and Healer together: break the shell, reach the mender.",
+   "foes": [
+    "bellback",
+    "tide_nurse",
+    "husk",
+    "gnawer"
+   ],
+   "right": [
+    "maulwright",
+    "cinder_runner",
+    "bellringer",
+    "netcaster"
+   ],
+   "wrong": "Blackpowders and Harpooners: shells soak the shot and the Nurse undoes the rest."
+  },
+  {
+   "n": 8,
+   "name": "Mother Fathom",
+   "slots": 5,
+   "teaches": "The exam: she calls packs, spits ink and sends Gulls. No single answer.",
+   "foes": [
+    "cinder_matron",
+    "gnawer",
+    "gallows_gull",
+    "spitter"
+   ],
+   "right": [
+    "ashguard",
+    "netcaster",
+    "torchbow",
+    "harpooner",
+    "lamplighter"
+   ],
+   "wrong": "Any four of one kind."
+  }
+ ]
+}
