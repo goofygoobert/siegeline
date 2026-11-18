@@ -861,3 +861,27 @@ input[type=range]::-webkit-slider-thumb { background: radial-gradient(circle at 
 .recruit b { display: block; font: 900 19px/1.15 system-ui, sans-serif; margin: 2px 0; }
 .recruit > span:last-child { font: 600 13px/1.3 system-ui, sans-serif; }
 @media (prefers-reduced-motion: reduce) { .slotc, .recruit, .btn.has-new::after { animation: none; } }
+/* results with news (a recruit, a Tavern face, a power): keep the buttons in view on a phone; the star checklist steps
+   aside since the big stars already say it */
+.result.has-news .starrow { display: none; }
+.result.has-news { gap: 6px; }
+.result.has-news .recruit { grid-template-columns: 56px 1fr; padding: 8px 10px; gap: 10px; }
+.result.has-news .recruit .pic { width: 56px; height: 56px; } .result.has-news .recruit .pic img { width: 56px; height: 56px; }
+.result.has-news .recruit b { font-size: 17px; }
+/* ---- part 4: consistent at iPhone SE (667x375) and notched (844x390 minus the safe areas) */
+@media (max-width: 720px) { .topbar .btn .lbl { display: none; } .topbar .btn { padding: 0 12px; } }
+/* stage path: only the stage you are heading for carries its name; the loadout screen names every stage */
+.node:not(.next) .nm { display: none; }
+/* ledger and Tavern: one wide column until there is room for two real cards */
+.qm .list, .tavern .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); }
+.tavern .list { max-width: 900px; margin-left: auto; margin-right: auto; width: 100%; }
+/* scouting and roster: compact so the whole cast fits on a landscape phone without hidden rows */
+.scout { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.foe { padding: 4px 3px 6px; font-size: 11px; }
+.foe .pic { width: 64px; height: 50px; }
+.foe .tag { font-size: 9.5px; padding: 1px 5px 1px 3px; } .foe .tag .ticon { width: 12px; height: 12px; }
+.roster { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; padding: 3px; }
+.rcard { padding: 4px 3px; font-size: 10.5px; }
+.rcard .pic, .rcard .pic img { width: 46px; height: 46px; }
+.scout-hint { font-size: 12.5px; line-height: 1.3; min-height: 0; }
+@media (max-width: 760px) { .scout { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); } .foe .pic { width: 56px; height: 44px; } .roster { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); } .rcard .pic, .rcard .pic img { width: 40px; height: 40px; } }

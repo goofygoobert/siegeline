@@ -244,8 +244,8 @@ async function regionScreen(region) {
   show(h("div", { class: "screen" },
     h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
     topbar(region.name, worldMap, [
-      D.tavern.length || regionStages.some((st) => st.tavern) ? h("button", { class: "btn" + (D.tavern.some((u) => !owned(u)) ? " has-new" : ""), onclick: tap(() => tavern(() => regionScreen(region))) }, icon(I.mug), W.tavern.title) : null,
-      h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
+      D.tavern.length || regionStages.some((st) => st.tavern) ? h("button", { class: "btn" + (D.tavern.some((u) => !owned(u)) ? " has-new" : ""), "aria-label": W.tavern.title, onclick: tap(() => tavern(() => regionScreen(region))) }, icon(I.mug), h("span", { class: "lbl" }, W.tavern.title)) : null,
+      h("button", { class: "btn", "aria-label": W.armoury.title, onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), h("span", { class: "lbl" }, W.armoury.title))]),
     path));
 }
 
@@ -777,7 +777,7 @@ class BattleView {
     const earnN = h("b", {}, "0");
     const tip = win ? null : loseTip(this.B);
     const marks = h("div", { class: "marks", style: "position:absolute;top:calc(var(--sat) + 60px);right:calc(var(--sar) + 16px)" }, coin(), h("span", {}, String(D.marks - earned)));
-    const panel = h("div", { class: "panel result " + (win ? "win" : "lose"), role: "dialog", "aria-label": win ? "Victory" : "Defeat" },
+    const panel = h("div", { class: "panel result " + (win ? "win" : "lose") + (unlocks.length ? " has-news" : ""), role: "dialog", "aria-label": win ? "Victory" : "Defeat" },
       h("h2", {}, win ? (s.boss ? W.results.bossWin : W.results.win) : W.results.lose),
       win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" },
         this.B.gate.max && this.B.gate.hp / this.B.gate.max < 0.25 && !this.B.gate.sealed ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, fill(W.results.closeGate, { hp: Math.ceil(this.B.gate.hp) })) : null,

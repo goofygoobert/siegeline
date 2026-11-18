@@ -24,7 +24,7 @@
    "name": "Swarm",
    "icon": "three dots",
    "read": "small, low and many, arriving in packs of 5-8",
-   "rule": "Fast and weak; arrive in packs that surround single-target crew."
+   "rule": "Fast packs that run round anyone already fighting and bite under shields. A wall holds them; the song or a net stops them slipping past."
   },
   "flying": {
    "name": "Flying",

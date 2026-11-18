@@ -22,7 +22,7 @@ turn a wrong answer into a right one.
 <!-- GEN:TRAITS -->
 | Trait | Icon | Read it from the silhouette | Rule | Answers (from the data) |
 |---|---|---|---|---|
-| **Swarm** | three dots | small, low and many, arriving in packs of 5-8 | Fast and weak; arrive in packs that surround single-target crew. | Shantyman, Netcaster, Fire-eater, Powder Monkey, Swivel Gun, Cooper, Storm-caller |
+| **Swarm** | three dots | small, low and many, arriving in packs of 5-8 | Fast packs that run round anyone already fighting and bite under shields. A wall holds them; the song or a net stops them slipping past. | Shantyman, Netcaster, Fire-eater, Powder Monkey, Swivel Gun, Cooper, Storm-caller |
 | **Flying** | wing | off the ground with a shadow below it | Melee cannot hit it. It flies over the front line to the back line and the fort. | Blackpowder, Netcaster, Gull-rider, Storm-caller |
 | **Siege** | arc over a wall | tall, stays at the back, lobs glowing globs | Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leaping Rope Rat, a Harpooner or Long Tom can reach it. | Rope Rat, Harpooner, Gull-rider, Grapnel |
 | **Exploder** | burst | round, swollen, glowing cracks | Bursts when it dies and hurts everyone close, crew and monsters. | Hatchguard, Blackpowder, Powder Monkey, Diver, Cooper |
