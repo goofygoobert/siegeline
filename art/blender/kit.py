@@ -831,7 +831,7 @@ def place(sid, J, pos):
         holder.rotation_euler = (0, 0, math.radians(-J["yaw"] * facing))
         _parent_keep_local(fig.root, holder)
         if sid.startswith("p_"):
-            pose(fig, 1, spec["anims"]["idle"](0.0, 0, 1))
+            pose(fig, 1, (spec.get("portrait") or spec["anims"]["idle"])(0.0, 0, 1))     # a character may give its portrait its own pose
             return 1
         return run_anims(fig, spec["anims"], anims_of(sid))
     rig = build_char(spec)

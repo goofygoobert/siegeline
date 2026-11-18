@@ -172,6 +172,11 @@ def nc_idle(t, i, n):
     return nc_hand(d)
 
 
+def nc_portrait(t, i, n):
+    """Card portrait: the net lowered out of frame so her face, not the mesh, fills the circle."""
+    return nc_hand(dict(_nc_base(), uaR=(20, 0, 0), laR=50, head=(-2, 0, 6), brow=-4, vis=dict(net=0, cast=0), nspin=(0, 0, 0), tail=(0, 0.0)))
+
+
 def nc_walk(t, i, n):
     p = 2 * math.pi * t; s = math.sin(p); c = math.cos(p)
     d = _nc_base()
@@ -221,7 +226,7 @@ def nc_die(t, i, n):
 
 def _nc(t):
     register(dict(id="netcaster" + ("" if t == 1 else "_t%d" % t), tier=t, v2=netcaster_fig,
-                  anims=dict(idle=nc_idle, walk=nc_walk, attack=nc_attack, hit=nc_hit, die=nc_die)))
+                  anims=dict(idle=nc_idle, walk=nc_walk, attack=nc_attack, hit=nc_hit, die=nc_die), portrait=nc_portrait))
 
 
 for _t in (1, 2, 3):

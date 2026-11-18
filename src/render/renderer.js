@@ -272,7 +272,9 @@ export function createRenderer(canvas, hooks) {
   function drawEntity(B, e, alpha) {
     const x = e.px + (e.x - e.px) * alpha;
     if (x < R.camX - 160 || x > R.camX + R.W + 160) return;          // off-screen skip
-    let sx = x - R.camX; const gy0 = B.F.groundY + e.lane * 0.35;
+    // depth: figures further back stand a little higher and smaller, so a melee pile spreads into rows you can read
+    const depth = e.kind === "boss" ? 0 : e.lane / (B.F.laneJitter || 22);           // -1 (back) .. 1 (front)
+    let sx = x - R.camX + (e.kind === "boss" ? 0 : (((e.uid * 37) % 17) - 8) * 0.9); const gy0 = B.F.groundY + depth * 18;
     const flier = e.s.traits && e.s.traits.flying;
     // a netted flier is dragged down to the sand; a vaulting Rope Rat arcs over the line
     const drop = flier && e.alive ? (e.netT > 0 ? Math.min(1, (3 - e.netT) * 4) : 0) : 0;
@@ -304,7 +306,7 @@ export function createRenderer(canvas, hooks) {
       if (a) { const hf = a.hit != null ? a.hit : 3; t = Math.min(e.stateT, (hf - 1) / (a.fps || 10)); }
     }
     if (e.stun > 0) { anim = "hit"; t = 0.05; }
-    let scale = (e.elite ? 1.12 : 1) * (e.kind === "boss" ? 1 : CH), sy = 1, lx = 0;
+    let scale = (e.elite ? 1.12 : 1) * (e.kind === "boss" ? 1 : CH) * (1 + depth * 0.07), sy = 1, lx = 0;
     const born = R.births.get(e);
     if (born != null) { const k = (R.t - born) / 0.28; if (k < 1) { const o = 1 - Math.pow(1 - k, 3); sy = 0.55 + 0.45 * o + 0.18 * Math.sin(k * Math.PI); scale *= 0.8 + 0.2 * o; } else R.births.delete(e); }
     if (e.flash > 0 && e.alive && !R.reduced) lx = -e.side * 5 * (e.flash / 0.12);
@@ -580,7 +582,7 @@ export function createRenderer(canvas, hooks) {
     for (const n of R.nums) {
       if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
       const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
-      g.globalAlpha = a; g.font = `900 ${Math.round((n.head ? 26 : n.big ? 22 : 17) * pop)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+      g.globalAlpha = a; g.font = `900 ${Math.round((n.head ? 28 : n.big ? 24 : 18) * pop)}px "Alegreya Sans", system-ui, sans-serif`;
       g.strokeText(n.t, sx, n.y); g.fillStyle = n.c; g.fillText(n.t, sx, n.y);
     }
     g.globalAlpha = 1;

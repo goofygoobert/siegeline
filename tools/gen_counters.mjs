@@ -42,7 +42,8 @@ const used = new Set(R.stages.flatMap((s) => s.right));
 // intended loadout. "Nobody is a must-pick" is measured on play, not on this list: tools/strategy_proof.mjs checks every
 // crew member is in 10-90% of winning loadouts.
 for (const c of r1c) if (!used.has(c.id) && (c.recruit || {}).how !== "buy") problems.push(`${c.name} is in no intended loadout in region 1`);
-const nm = (id) => (R.crew.find((c) => c.id === id) || R.enemies.find((e) => e.id === id) || { name: id }).name;
+const DATA_E = JSON.parse(readFileSync(new URL("../data/enemies.json", import.meta.url))).enemies;
+const nm = (id) => (R.crew.find((c) => c.id === id) || R.enemies.find((e) => e.id === id) || DATA_E.find((e) => e.id === id) || { name: id }).name;
 const stageTable = ["| # | Stage | Slots | New idea, taught by playing | You'll face | A right loadout | A sensible wrong one |", "|---|---|:-:|---|---|---|---|",
   ...R.stages.map((s) => `| ${s.n} | ${s.name} | ${s.slots} | ${s.teaches} | ${s.foes.map(nm).join(", ")} | ${s.right.map(nm).join(", ")} | ${s.wrong} |`)].join("\n");
 const traitTable = ["| Trait | Icon | Read it from the silhouette | Rule | Answers (from the data) |", "|---|---|---|---|---|",

@@ -52,6 +52,12 @@ function h(tag, attrs = {}, ...kids) {
 // rendered interface art (art/blender/bg/ui_art.py) and material textures (tools/ui_textures.py), exposed to the CSS
 for (const [k, f] of Object.entries({ coin: "icons/coin.webp", cannon: "icons/cannon.webp", keg: "icons/keg.webp", wood: "ui/wood.webp", paper: "ui/parchment.webp" }))
   document.documentElement.style.setProperty("--img-" + k, `url("${new URL("assets/" + f, document.baseURI).href}")`);   // absolute: a url() inside a custom property resolves against the stylesheet that uses it
+// Fonts ship with the game (offline-safe), loaded by absolute URL so they work under any base path:
+// Pirata One (titles, callouts), Alegreya Sans (everything you read and press), IM Fell English (the logbook, the charts).
+for (const [fam, file, w, st] of [["Pirata One", "pirata-one", "400", "normal"], ["Alegreya Sans", "alegreya-sans-500", "500", "normal"], ["Alegreya Sans", "alegreya-sans-700", "700", "normal"],
+  ["Alegreya Sans", "alegreya-sans-800", "800", "normal"], ["Alegreya Sans", "alegreya-sans-900", "900", "normal"], ["IM Fell English", "im-fell-english", "400", "normal"], ["IM Fell English", "im-fell-english-italic", "400", "italic"]]) {
+  try { const f = new FontFace(fam, `url("${new URL("assets/fonts/" + file + ".woff2", document.baseURI).href}") format("woff2")`, { weight: w, style: st, display: "swap" }); document.fonts.add(f); f.load().catch(() => {}); } catch {}
+}
 const artIcon = (k, cls = "art") => h("span", { class: cls + " art-" + k, "aria-hidden": "true" });
 const I = {
   book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></svg>',
@@ -60,7 +66,7 @@ const I = {
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10.3 2.5h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.3"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
-  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></svg>',
+  lock: '<svg viewBox="0 0 24 24"><path d="M7.5 11V8.2a4.5 4.5 0 019 0V11" fill="none" stroke="#3a2614" stroke-width="3.6"/><path d="M7.5 11V8.2a4.5 4.5 0 019 0V11" fill="none" stroke="#d9a548" stroke-width="2"/><path d="M4.5 11.5h15l-.8 8.6a2 2 0 01-2 1.9H7.3a2 2 0 01-2-1.9z" fill="#c98b2e" stroke="#3a2614" stroke-width="1.6"/><path d="M6 13h12" stroke="#f3cf7c" stroke-width="1.2"/><circle cx="12" cy="16" r="1.7" fill="#2a1a10"/><path d="M11.2 16.5h1.6l.4 3h-2.4z" fill="#2a1a10"/></svg>',
   hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4l6 6-3 3-6-6zM11 7L3.5 14.5a2 2 0 000 2.8l3.2 3.2a2 2 0 002.8 0L17 13"/></svg>',
   ballista: '<svg viewBox="0 0 48 48"><g transform="rotate(-22 22 26)"><path d="M6 20h6l2-2h20c4 0 7 1 9 3v6c-2 2-5 3-9 3H14l-2-2H6z" fill="#3b4048" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><rect x="15" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="27" y="17.5" width="3.5" height="13" rx="1" fill="currentColor"/><rect x="39" y="19.5" width="3.5" height="9" rx="1" fill="currentColor"/><circle cx="5" cy="24" r="3.4" fill="currentColor" stroke="#14161a" stroke-width="1.5"/></g><path d="M10 33h20l3 6H7z" fill="#6a4426" stroke="#14161a" stroke-width="2" stroke-linejoin="round"/><circle cx="13" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/><circle cx="28" cy="40" r="5" fill="#8a5a2e" stroke="#14161a" stroke-width="2"/></svg>',
   rain: '<svg viewBox="0 0 48 48"><g fill="#ff9a40"><circle cx="14" cy="30" r="5"/><circle cx="28" cy="20" r="6"/><circle cx="36" cy="34" r="4.5"/></g><g stroke="#ffcf7a" stroke-width="2.4" stroke-linecap="round"><path d="M10 22l4 6M24 10l4 8M33 25l3 7"/></g></svg>',
@@ -223,7 +229,7 @@ async function worldMap() {
     const open = !!r.playable;
     map.append(h("button", { class: "pin" + (open ? "" : " locked"), style: `left:${p.x * 100}%;top:${p.y * 100}%`, "aria-label": r.name + (open ? "" : " (locked)"),
       onclick: open ? tap(() => regionScreen(r)) : tap(() => toast(`${r.name}: ${r.blurb.split(".")[0]}. Coming in a later update.`, 3200), "ui_locked") },
-      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/${regionStages.length * 3}` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
+      h("span", { class: "dot" }), h("span", { class: "lbl" }, h("small", { class: "chap" }, `Chapter ${i + 1}`), open ? `${r.name} · ${totalStars()}/${regionStages.length * 3}` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
       open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, W.regionCleared.title),
@@ -266,7 +272,7 @@ async function regionScreen(region) {
     icon(I.crown), h("span", {}, W.tide.toggle), tideOpen() ? h("b", {}, `${crowns}/${regionStages.length}`) : icon(I.lock));
   show(h("div", { class: "screen" + (tideMode && tideOpen() ? " tide" : "") },
     h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
-    topbar(region.name, worldMap, [
+    topbar(`Chapter ${regions.regions.indexOf(region) + 1} · ${region.name}`, worldMap, [
       h("button", { class: "btn", "aria-label": "Logbook", onclick: tap(() => logbook(() => regionScreen(region))) }, icon(I.book), h("span", { class: "lbl" }, "Log")),
       D.tavern.length || regionStages.some((st) => st.tavern) ? h("button", { class: "btn" + (D.tavern.some((u) => !owned(u)) ? " has-new" : ""), "aria-label": W.tavern.title, onclick: tap(() => tavern(() => regionScreen(region))) }, icon(I.mug), h("span", { class: "lbl" }, W.tavern.title)) : null,
       h("button", { class: "btn", "aria-label": W.armoury.title, onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), h("span", { class: "lbl" }, W.armoury.title))]),
@@ -768,11 +774,12 @@ class BattleView {
     B.abilities.forEach((a, i) => {
       const el = this.abilEls[i], t = el.querySelector(".cdtxt");
       t.textContent = a.cd > 0 ? Math.ceil(a.cd) : ""; t.style.display = a.cd > 0 ? "grid" : "none"; el.classList.toggle("ready", a.cd <= 0);
+      el.style.setProperty("--cd", a.cd > 0 ? (a.cd / a.cfg.cooldown).toFixed(3) : 0);
     });
     if (this.heroEl) {
       const hr = B.hero, t = this.heroEl.querySelector(".cdtxt");
       if (hr.called) { this.heroEl.classList.add("used"); t.style.display = "none"; }
-      else { const ready = hr.charge >= hr.need; t.style.display = ready ? "none" : "grid"; t.textContent = Math.ceil(hr.need - hr.charge); this.heroEl.classList.toggle("ready", ready); }
+      else { const ready = hr.charge >= hr.need; t.style.display = ready ? "none" : "grid"; t.textContent = Math.ceil(hr.need - hr.charge); this.heroEl.classList.toggle("ready", ready); this.heroEl.style.setProperty("--cd", ready ? 0 : ((hr.need - hr.charge) / hr.need).toFixed(3)); }
     }
     this.weapon.classList.toggle("reloading", B.ballista.reload > 0);
     const r = this.weapon.querySelector(".ring"); const rf = B.ballista.reload > 0 ? 1 - B.ballista.reload / B.ballista.maxReload : 1;

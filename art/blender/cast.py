@@ -60,8 +60,9 @@ JOBS = {
     "look_n2": dict(_FIELD, cols=3, ids=["gallows_gull", "bellback", "tide_nurse"]),
     "look": dict(cell=(840, 624), cols=2, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=["ashguard", "husk"]),
     # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
-    "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
-               ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * 14 + [x for p in ICONS for x in (p, "_")]),
+    # one row of portraits (each followed by a blank), an empty row, then the icons: nothing spills into a neighbour
+    "ui": dict(cell=(192, 192), cols=2 * len(PORTRAITS), ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
+               ids=[x for p in PORTRAITS for x in (p, "_")] + ["_"] * (2 * len(PORTRAITS)) + [x for p in ICONS for x in (p, "_")]),
 }
 
 # atlas groups: name -> (job, ids, ppu). Pages overflow to <group>2, <group>3... Upgrade looks live in their own groups

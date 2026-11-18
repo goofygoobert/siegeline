@@ -182,7 +182,7 @@ Region 1 grows from six battles to eight so each stage can teach one thing by ma
 | 5 | Pufferghast Shoals | 5 | Exploder: kill it at range or behind a door, never in a crowd. | Drowner, Pufferghast, Gallows Gull | Hatchguard, Blackpowder, Netcaster, Shantyman | Rope Rats, song and nets, no door: each burst wipes the melee pile. |
 | 6 | Wreckers' Reef | 5 | Armoured: small hits bounce. Bring one big hit or burn. | Drowner, Scuttler, Barnacle Troll | Hatchguard, Anchorman, Blackpowder, Shantyman, Netcaster | Rope Rats and Netcasters with a wall: nothing they have gets through the plates. |
 | 7 | The Bell Ground | 5 | Shelled and Healer together: crack the bell with a heavy blow, or get a blade round behind it to the mender. | Bellback, Tide Nurse, Drowner, Scuttler | Anchorman, Rope Rat, Shantyman, Netcaster, Hatchguard | Wall, shooter, song and nets: the bells stop every blow from the front and the Nurse mends whatever is behind them. |
-| 8 | Mother Fathom | 5 | The exam: she calls packs, spits ink and sends Gulls. No single answer. | cinder_matron, Scuttler, Gallows Gull, Inkspitter | Hatchguard, Netcaster, Blackpowder, Anchorman, Shantyman | All hand-to-hand: the Gulls and the ink go where they cannot reach. |
+| 8 | Mother Fathom | 5 | The exam: she calls packs, spits ink and sends Gulls. No single answer. | Mother Fathom, Scuttler, Gallows Gull, Inkspitter | Hatchguard, Netcaster, Blackpowder, Anchorman, Shantyman | All hand-to-hand: the Gulls and the ink go where they cannot reach. |
 <!-- /GEN:STAGES -->
 
 The first time a new trait appears the battle pauses once, for one line and one arrow at the monster. After that the

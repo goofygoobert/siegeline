@@ -120,4 +120,4 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 | boss4.webp | 1220x1684 | 64 | 213 KB | cinder_matron |
 | boss5.webp | 2004x2044 | 64 | 325 KB | cinder_matron |
 | boss6.webp | 1876x2012 | 64 | 258 KB | cinder_matron |
-| ui.webp | 1940x1360 | 72 | 86 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_harpooner, p_netcaster, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
+| ui.webp | 1940x1360 | 72 | 81 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_harpooner, p_netcaster, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
