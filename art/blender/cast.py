@@ -35,10 +35,12 @@ ICONS = ["i_ember_rain", "i_rally", "i_mark", "i_star", "i_star_empty", "i_energ
 PORTRAITS = ["p_" + u for u in UNITS] + ["p_marshal"]
 
 TIERED = UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]
-V2_IDS = TIERED + ENEMIES + ["marshal", "cinder_matron"]
+NEW_UNITS = ["harpooner", "netcaster"]; NEW_ENEMIES = ["gallows_gull", "bellback", "tide_nurse"]   # part 3 cast
+V2_IDS = TIERED + ENEMIES + ["marshal", "cinder_matron"] + NEW_UNITS + [u + t for u in NEW_UNITS for t in ("_t2", "_t3")] + NEW_ENEMIES
 ANIMSET_OF = {i: "v2" for i in V2_IDS}
 ANIMSET_OF.update({"marshal": "v2hero", "cinder_matron": "v2boss", "cinder_runner": "v2fast", "cinder_runner_t2": "v2fast",
-                   "cinder_runner_t3": "v2fast", "gnawer": "v2fast", "bloater": "v2slow", "brute": "v2slow"})
+                   "cinder_runner_t3": "v2fast", "gnawer": "v2fast", "bloater": "v2slow", "brute": "v2slow",
+                   "gallows_gull": "v2fast", "bellback": "v2slow"})
 
 # ax: anchor x as a fraction of the cell (players; enemies use 1-ax), gy: ground px above the cell bottom
 _FIELD = dict(cell=(1152, 912), cols=4, ppu=144, ax=0.5, gy=120, yaw=25, mode="anim")
@@ -54,6 +56,8 @@ JOBS = {
     "look_h3": dict(_FIELD, cols=3, ids=["gnawer", "spitter", "bloater"]),
     "look_h4": dict(_FIELD, cols=2, ids=["brute", "husk_warden"]),
     "look_boss": dict(_BOSS, ids=["cinder_matron"]),
+    "look_n1": dict(cell=(840, 624), cols=3, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=["harpooner", "netcaster", "harpooner_t2", "netcaster_t2", "harpooner_t3", "netcaster_t3"]),
+    "look_n2": dict(_FIELD, cols=3, ids=["gallows_gull", "bellback", "tide_nurse"]),
     "look": dict(cell=(840, 624), cols=2, ppu=144, ax=0.5, gy=96, yaw=25, mode="anim", ids=["ashguard", "husk"]),
     # ui: blanks ("_") between cells and an empty row so portrait bodies/props never spill into a neighbour
     "ui": dict(cell=(192, 192), cols=14, ppu=128, ax=0.5, gy=96, yaw=48, mode="still",
@@ -79,7 +83,7 @@ def anims_of(sid):
 
 def is_enemy(sid):
     base = sid.split("_t")[0] if sid.endswith(("_t2", "_t3")) else sid
-    return base in ENEMIES or base == "cinder_matron"
+    return base in ENEMIES or base in NEW_ENEMIES or base == "cinder_matron"
 
 
 def cell_anchor(job, sid):

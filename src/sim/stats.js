@@ -1,5 +1,19 @@
 // Pure stat resolution: data + player progress -> numbers used by the battle. No DOM.
 
+/** The skills a crew member has at a level: the level-5 skill, plus the chosen level-10 one. */
+export function skillsAt(def, level, choice) {
+  const S = def.skills; if (!S) return [];
+  const out = []; if (level >= 5 && S["5"]) out.push(S["5"]);
+  if (level >= 10 && S["10"] && (choice === 0 || choice === 1)) out.push(S["10"][choice]);
+  return out;
+}
+/** A skill sets or multiplies values: "set" keys are trait paths ("net.radius"), "mul" keys are stats or "traits.x". */
+export function applySkill(s, sk) {
+  const at = (root, path) => { const k = path.split("."); let o = root; for (let i = 0; i < k.length - 1; i++) o = o[k[i]] = o[k[i]] || {}; return [o, k[k.length - 1]]; };
+  for (const [path, v] of Object.entries(sk.set || {})) { const [o, k] = at(s.traits, path); o[k] = v; }
+  for (const [path, v] of Object.entries(sk.mul || {})) { const [o, k] = path.startsWith("traits.") ? at(s.traits, path.slice(7)) : [s, path]; o[k] = (o[k] || 0) * v; }
+}
+
 export function rng(seed) {
   let a = seed >>> 0 || 1;
   return function () {
@@ -15,7 +29,7 @@ export function tierFor(level, tierLevels = [5, 10]) {
 }
 
 /** Player unit stats at a level, including tier perks. */
-export function unitStats(def, level, levels) {
+export function unitStats(def, level, levels, choice) {
   const L = Math.max(1, level | 0);
   const tier = tierFor(L, levels.tierLevels);
   const s = {
@@ -25,16 +39,9 @@ export function unitStats(def, level, levels) {
     sprite: tier > 1 ? `${def.id}_t${tier}` : def.id, baseSprite: def.id,
   };
   const t = s.traits;
-  // Tier perks (visible change at level 5 and 10). Kept here so data stays simple to read.
-  switch (def.id) {
-    case "ashguard": t.meleeGuard = tier === 3 ? 0.45 : tier === 2 ? 0.35 : 0.25; if (tier === 3) s.dmg *= 1.15; break;
-    case "torchbow": if (tier >= 2) t.burn.time += 1; if (tier === 3) t.pierce = 1; break;
-    case "cinder_runner": if (tier >= 2) s.hp *= 1.2; if (tier === 3) t.firstStrike = 3; break;
-    case "bellringer": t.slowAura.slow = tier === 3 ? 0.4 : tier === 2 ? 0.35 : 0.3; if (tier === 3) t.slowAura.radius = 210; break;
-    case "maulwright": if (tier >= 2) s.hp *= 1.2; if (tier === 3) { t.splash = 75; t.embers = true; } break;
-    case "lamplighter": t.healTargets = tier >= 2 ? 2 : 1; if (tier === 3) t.heal *= 1.5; break;
-  }
   if (t.heal && def.id === "lamplighter") t.heal *= 1 + 0.08 * (L - 1);
+  // Skills: one learned at level 5, one of two chosen at level 10 (choice: 0 or 1; unchosen = none yet)
+  for (const sk of skillsAt(def, L, choice)) applySkill(s, sk);
   return s;
 }
 

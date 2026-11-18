@@ -17,6 +17,8 @@ Look: weathered sailors, striped shirts, sashes, bandanas, tricorns, brass butto
 | bellringer | **Shantyman** | support, slows monsters | big singer with a squeezebox (accordion) whose sea-shanty slows monsters |
 | maulwright | **Anchorman** | heavy | huge sailor swinging a ship's anchor on a chain |
 | lamplighter | **Sawbones** | healer | ship's surgeon with a lantern and a bottle of grog, apron, spectacles |
+| harpooner | **Harpooner** | sniper, out-ranges siege | lean, tall old whaler in an oilskin coat and sou'wester hat, a long barbed harpoon gun braced on the shoulder, coiled line at the hip |
+| netcaster | **Netcaster** | catcher, nets fliers | stocky fisherwoman with rolled sleeves, headscarf and wader boots, a weighted cast-net swung in a circle over her head |
 | hero: marshal | **Captain Rook Halloran** | hero | long coat, big feathered tricorn, cutlass + flintlock pistol; special: fires a **flare pistol** (the "Flare" stun) |
 | level 5 / 10 looks | | | t2: extra gear (leather jerkin, bracers, hat with a feather); t3: gold trim, coins and a glowing green-gold "cursed treasure" weapon |
 
@@ -30,6 +32,9 @@ Look: wet, slimy, barnacled, kelp-draped. Hunched and lopsided, with tentacles, 
 | spitter | **Inkspitter** | lobs ink from the back | squid-headed creature with a bulging throat sac; lobs glowing ink |
 | bloater | **Pufferghast** | bursts when killed | swollen spiny puffer-fish monster on stubby legs, glowing green cracks |
 | brute | **Barnacle Troll** | big brute | hulking sea troll crusted in barnacles and coral, driftwood club |
+| gallows_gull | **Gallows Gull** | flying | a skeletal sea-bird with a frayed noose of kelp trailing from its neck; flaps above head height, dives to peck |
+| bellback | **Bellback** | shelled | a man-sized hermit crab living in a drowned, green-crusted ship's bell that it holds in front like a ram |
+| tide_nurse | **Tide Nurse** | healer | a pale jellyfish bell drifting at waist height, long ribbon tendrils, a soft glowing core; sends a green thread to whoever it mends |
 | husk_warden | **The Kelpie** (mini-boss) | enrages | a ghastly water-horse rearing on its hind legs, kelp mane, glowing eyes (can stay humanoid-on-hind-legs to fit the rig) |
 | cinder_matron | **Mother Fathom** (boss) | sweep, summon, ink spit | a towering sea hag: hunched old crone in rotted sailcloth, fish-scale skin, crown of coral and whale bone, a **tentacle arm** for the sweep, lantern-fish lure glowing over her head. Summons Scuttlers; spits a huge ink bomb |
 

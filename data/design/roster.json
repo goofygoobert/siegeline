@@ -1,5 +1,5 @@
 {
- "note": "Design data for docs/design/strategy.md. tools/gen_counters.mjs builds the counter table and runs the design checks from this file. In part 3 these fields move into data/units.json and data/enemies.json and the generator reads those instead.",
+ "note": "Design data for docs/design/strategy.md and the in-game counter hints (loadout screen). tools/gen_counters.mjs builds the counter table and runs the design checks from this file; stats live in data/units.json and data/enemies.json.",
  "slots": {
   "region1": [
    4,
@@ -145,7 +145,7 @@
    ],
    "recruit": {
     "how": "free",
-    "after": 2
+    "after": 3
    }
   },
   {
@@ -165,7 +165,7 @@
    ],
    "recruit": {
     "how": "free",
-    "after": 3
+    "after": 1
    }
   },
   {
@@ -207,7 +207,7 @@
    "recruit": {
     "how": "buy",
     "after": 6,
-    "price": 500
+    "price": 450
    }
   },
   {
@@ -228,8 +228,8 @@
    ],
    "recruit": {
     "how": "buy",
-    "after": 4,
-    "price": 600
+    "after": 3,
+    "price": 500
    }
   },
   {
@@ -248,9 +248,8 @@
     "siege"
    ],
    "recruit": {
-    "how": "buy",
-    "after": 2,
-    "price": 350
+    "how": "free",
+    "after": 2
    }
   },
   {
@@ -633,23 +632,29 @@
     "ashguard",
     "torchbow"
    ],
-   "wrong": "Only shooters: nothing holds the Drowners off them."
+   "wrong": "Only shooters: nothing holds the Drowners off them.",
+   "wrongIds": [
+    "torchbow"
+   ]
   },
   {
    "n": 2,
    "name": "The Smugglers' Steps",
    "slots": 4,
-   "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack.",
+   "teaches": "Swarm: packs run round a lone fighter and eat anyone soft. Bring a wall, slow them with the song, and aim the cannon at the pack.",
    "foes": [
     "husk",
     "gnawer"
    ],
    "right": [
     "ashguard",
-    "bellringer",
-    "netcaster"
+    "bellringer"
    ],
-   "wrong": "Wall and shooters: Scuttlers run round the wall and eat the shooters."
+   "wrong": "Shooter and singer, no wall: the Scuttlers run straight through to them and the fort.",
+   "wrongIds": [
+    "torchbow",
+    "bellringer"
+   ]
   },
   {
    "n": 3,
@@ -663,9 +668,14 @@
    "right": [
     "ashguard",
     "torchbow",
-    "netcaster"
+    "netcaster",
+    "bellringer"
    ],
-   "wrong": "All melee: the Gulls pass overhead and peck the fort down."
+   "wrong": "All hand-to-hand: the Gulls pass overhead and peck the fort down.",
+   "wrongIds": [
+    "ashguard",
+    "bellringer"
+   ]
   },
   {
    "n": 4,
@@ -680,9 +690,17 @@
    "right": [
     "ashguard",
     "cinder_runner",
-    "harpooner"
+    "torchbow",
+    "netcaster",
+    "bellringer"
    ],
-   "wrong": "Wall and Blackpowders: ink falls on them from out of range all fight."
+   "wrong": "Wall, shooter, song and nets: ink falls on them from out of range all fight.",
+   "wrongIds": [
+    "ashguard",
+    "torchbow",
+    "bellringer",
+    "netcaster"
+   ]
   },
   {
    "n": 5,
@@ -697,9 +715,15 @@
    "right": [
     "ashguard",
     "torchbow",
-    "harpooner"
+    "netcaster",
+    "bellringer"
    ],
-   "wrong": "Rope Rats and Anchormen: each burst wipes the melee pile."
+   "wrong": "Rope Rats, song and nets, no door: each burst wipes the melee pile.",
+   "wrongIds": [
+    "cinder_runner",
+    "bellringer",
+    "netcaster"
+   ]
   },
   {
    "n": 6,
@@ -714,10 +738,17 @@
    "right": [
     "ashguard",
     "maulwright",
-    "harpooner",
-    "bellringer"
+    "torchbow",
+    "bellringer",
+    "netcaster"
    ],
-   "wrong": "Rope Rats and Netcasters: nothing they have gets through the plates."
+   "wrong": "Rope Rats and Netcasters with a wall: nothing they have gets through the plates.",
+   "wrongIds": [
+    "cinder_runner",
+    "netcaster",
+    "ashguard",
+    "bellringer"
+   ]
   },
   {
    "n": 7,
@@ -734,9 +765,16 @@
     "maulwright",
     "cinder_runner",
     "bellringer",
-    "netcaster"
+    "netcaster",
+    "ashguard"
    ],
-   "wrong": "Blackpowders and Harpooners: shells soak the shot and the Nurse undoes the rest."
+   "wrong": "Wall, shooter, song and nets: the bells soak every shot and the Nurse undoes the rest.",
+   "wrongIds": [
+    "ashguard",
+    "torchbow",
+    "bellringer",
+    "netcaster"
+   ]
   },
   {
    "n": 8,
@@ -753,10 +791,16 @@
     "ashguard",
     "netcaster",
     "torchbow",
-    "harpooner",
-    "lamplighter"
+    "maulwright",
+    "bellringer"
    ],
-   "wrong": "Any four of one kind."
+   "wrong": "All hand-to-hand: the Gulls and the ink go where they cannot reach.",
+   "wrongIds": [
+    "ashguard",
+    "cinder_runner",
+    "maulwright",
+    "bellringer"
+   ]
   }
  ],
  "skills": {

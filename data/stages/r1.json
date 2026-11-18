@@ -1,25 +1,21 @@
 {
  "stages": [
   {
-   "id": "r1s1",
-   "name": "Tide Turns Green",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
+   "hero": false,
+   "id": "r1s1",
+   "name": "Tide Turns Green",
+   "slots": 4,
    "enemyCastleHp": 1200,
    "par": 110,
    "reward": 120,
    "unlocks": [
-    "cinder_runner",
+    "bellringer",
     "ember_rain"
    ],
    "tutorial": "basics",
-   "available": [
-    "ashguard",
-    "torchbow"
-   ],
-   "hero": false,
-   "abilities": [],
    "waves": [
     {
      "t": 2,
@@ -35,9 +31,9 @@
     },
     {
      "t": 38,
-     "id": "gnawer",
-     "n": 2,
-     "gap": 1.5
+     "id": "husk",
+     "n": 3,
+     "gap": 2
     },
     {
      "t": 52,
@@ -52,10 +48,6 @@
     "pool": [
      [
       "husk",
-      3
-     ],
-     [
-      "gnawer",
       1
      ]
     ],
@@ -75,88 +67,96 @@
      ]
     }
    ],
-   "power": 2.6
+   "power": 2.25,
+   "teaches": "Hold a line: a wall in front, a shooter behind."
   },
   {
-   "id": "r1s2",
-   "name": "The Smugglers' Steps",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
-   "enemyCastleHp": 1600,
-   "par": 140,
+   "hero": false,
+   "id": "r1s2",
+   "name": "The Smugglers' Steps",
+   "slots": 4,
+   "enemyCastleHp": 2600,
+   "par": 170,
    "reward": 150,
    "unlocks": [
-    "maulwright",
+    "netcaster",
     "hero"
    ],
    "tutorial": "ability",
-   "available": [
-    "ashguard",
-    "torchbow",
-    "cinder_runner"
-   ],
-   "hero": false,
-   "abilities": [
-    "ember_rain"
-   ],
    "waves": [
     {
      "t": 2,
      "id": "husk",
-     "n": 3,
+     "n": 2,
      "gap": 2.5
     },
     {
-     "t": 22,
-     "id": "spitter",
-     "n": 1,
-     "gap": 1
+     "t": 10,
+     "id": "gnawer",
+     "n": 4,
+     "gap": 0.4
     },
     {
-     "t": 26,
+     "t": 22,
+     "id": "gnawer",
+     "n": 5,
+     "gap": 0.4
+    },
+    {
+     "t": 30,
+     "id": "husk",
+     "n": 2,
+     "gap": 2
+    },
+    {
+     "t": 36,
+     "id": "gnawer",
+     "n": 6,
+     "gap": 0.35
+    },
+    {
+     "t": 50,
+     "id": "gnawer",
+     "n": 6,
+     "gap": 0.35
+    },
+    {
+     "t": 58,
      "id": "husk",
      "n": 3,
      "gap": 2
     },
     {
-     "t": 45,
-     "id": "gnawer",
-     "n": 4,
-     "gap": 1
-    },
-    {
-     "t": 60,
-     "id": "spitter",
-     "n": 2,
-     "gap": 3
-    },
-    {
      "t": 64,
-     "id": "husk",
-     "n": 4,
-     "gap": 1.5
+     "id": "gnawer",
+     "n": 8,
+     "gap": 0.3
+    },
+    {
+     "t": 78,
+     "id": "gnawer",
+     "n": 8,
+     "gap": 0.3
     }
    ],
    "loop": {
-    "start": 80,
-    "every": 6.5,
+    "start": 88,
+    "every": 5,
     "pool": [
      [
       "husk",
-      4
+      1
      ],
      [
       "gnawer",
-      2
-     ],
-     [
-      "spitter",
-      1
+      4
      ]
     ],
     "ramp": 0.03,
-    "min": 3.2
+    "min": 2.6
    },
    "triggers": [
     {
@@ -165,107 +165,82 @@
       {
        "t": 0,
        "id": "gnawer",
-       "n": 5,
-       "gap": 0.6
-      },
-      {
-       "t": 3,
-       "id": "spitter",
-       "n": 2,
-       "gap": 2
+       "n": 6,
+       "gap": 0.5
       }
      ]
     }
    ],
-   "power": 2.58
+   "power": 1.55,
+   "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack."
   },
   {
-   "id": "r1s3",
-   "name": "Pufferghast Shoals",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
-   "enemyCastleHp": 2000,
-   "par": 155,
-   "reward": 180,
+   "hero": true,
+   "id": "r1s3",
+   "name": "Gallows Roost",
+   "slots": 4,
+   "enemyCastleHp": 1700,
+   "par": 150,
+   "reward": 170,
    "unlocks": [
-    "bellringer",
-    "rally"
+    "cinder_runner"
+   ],
+   "tavern": [
+    "harpooner"
    ],
    "tutorial": "hero",
-   "available": [
-    "ashguard",
-    "torchbow",
-    "cinder_runner",
-    "maulwright"
-   ],
-   "hero": true,
-   "abilities": [
-    "ember_rain"
-   ],
    "waves": [
     {
      "t": 2,
+     "id": "husk",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 14,
+     "id": "gallows_gull",
+     "n": 2,
+     "gap": 2
+    },
+    {
+     "t": 28,
+     "id": "husk",
+     "n": 3,
+     "gap": 2
+    },
+    {
+     "t": 40,
+     "id": "gallows_gull",
+     "n": 3,
+     "gap": 1.5
+    },
+    {
+     "t": 55,
      "id": "husk",
      "n": 4,
      "gap": 2
     },
     {
-     "t": 22,
-     "id": "bloater",
-     "n": 1,
-     "gap": 1
-    },
-    {
-     "t": 30,
-     "id": "spitter",
-     "n": 2,
-     "gap": 2
-    },
-    {
-     "t": 45,
-     "id": "gnawer",
-     "n": 5,
-     "gap": 0.8
-    },
-    {
-     "t": 60,
-     "id": "bloater",
-     "n": 2,
-     "gap": 4
-    },
-    {
-     "t": 75,
-     "id": "husk",
-     "n": 6,
+     "t": 68,
+     "id": "gallows_gull",
+     "n": 4,
      "gap": 1.2
-    },
-    {
-     "t": 90,
-     "id": "brute",
-     "n": 1,
-     "gap": 1
     }
    ],
    "loop": {
-    "start": 100,
+    "start": 80,
     "every": 6,
     "pool": [
      [
       "husk",
-      4
+      3
      ],
      [
-      "gnawer",
+      "gallows_gull",
       2
-     ],
-     [
-      "spitter",
-      2
-     ],
-     [
-      "bloater",
-      1
      ]
     ],
     "ramp": 0.03,
@@ -277,118 +252,195 @@
      "waves": [
       {
        "t": 0,
-       "id": "brute",
-       "n": 1,
-       "gap": 1
-      },
-      {
-       "t": 2,
-       "id": "husk",
+       "id": "gallows_gull",
        "n": 4,
-       "gap": 1
+       "gap": 0.8
       }
      ]
     }
    ],
-   "power": 2.2
+   "power": 2.15,
+   "teaches": "Flying: melee cannot reach. Bring shooters or nets."
   },
   {
-   "id": "r1s4",
-   "name": "The Broken Lighthouse",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
-   "enemyCastleHp": 2500,
-   "par": 190,
-   "reward": 210,
-   "unlocks": [
-    "lamplighter"
-   ],
-   "available": [
-    "ashguard",
-    "torchbow",
-    "cinder_runner",
-    "maulwright",
-    "bellringer"
-   ],
    "hero": true,
-   "abilities": [
-    "ember_rain",
+   "id": "r1s4",
+   "name": "The Broken Lighthouse",
+   "slots": 5,
+   "enemyCastleHp": 2000,
+   "par": 170,
+   "reward": 200,
+   "unlocks": [
     "rally"
    ],
    "waves": [
     {
      "t": 2,
      "id": "husk",
-     "n": 4,
-     "gap": 1.8
+     "n": 3,
+     "gap": 2.5
     },
     {
-     "t": 18,
+     "t": 12,
      "id": "spitter",
      "n": 2,
      "gap": 2
     },
     {
-     "t": 32,
-     "id": "brute",
+     "t": 22,
+     "id": "husk",
+     "n": 3,
+     "gap": 2
+    },
+    {
+     "t": 35,
+     "id": "gnawer",
+     "n": 3,
+     "gap": 0.5
+    },
+    {
+     "t": 42,
+     "id": "spitter",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 55,
+     "id": "husk",
+     "n": 4,
+     "gap": 2
+    },
+    {
+     "t": 66,
+     "id": "spitter",
+     "n": 3,
+     "gap": 2.5
+    }
+   ],
+   "loop": {
+    "start": 85,
+    "every": 6,
+    "pool": [
+     [
+      "husk",
+      3
+     ],
+     [
+      "gnawer",
+      1
+     ],
+     [
+      "spitter",
+      3
+     ]
+    ],
+    "ramp": 0.03,
+    "min": 3
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "spitter",
+       "n": 2,
+       "gap": 2
+      },
+      {
+       "t": 2,
+       "id": "husk",
+       "n": 3,
+       "gap": 1.5
+      }
+     ]
+    }
+   ],
+   "power": 1.6,
+   "teaches": "Siege: something at the back out-ranges you. Send a diver or a sniper."
+  },
+  {
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "hero": true,
+   "id": "r1s5",
+   "name": "Pufferghast Shoals",
+   "slots": 5,
+   "enemyCastleHp": 2300,
+   "par": 185,
+   "reward": 220,
+   "unlocks": [
+    "maulwright"
+   ],
+   "waves": [
+    {
+     "t": 2,
+     "id": "husk",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 14,
+     "id": "bloater",
      "n": 1,
      "gap": 1
     },
     {
-     "t": 34,
+     "t": 24,
      "id": "husk",
+     "n": 3,
+     "gap": 2
+    },
+    {
+     "t": 32,
+     "id": "gallows_gull",
+     "n": 2,
+     "gap": 1.5
+    },
+    {
+     "t": 45,
+     "id": "bloater",
+     "n": 2,
+     "gap": 4
+    },
+    {
+     "t": 58,
+     "id": "husk",
+     "n": 4,
+     "gap": 2
+    },
+    {
+     "t": 66,
+     "id": "gallows_gull",
      "n": 3,
      "gap": 1.5
     },
     {
-     "t": 55,
-     "id": "gnawer",
-     "n": 6,
-     "gap": 0.7
-    },
-    {
-     "t": 70,
+     "t": 75,
      "id": "bloater",
      "n": 2,
-     "gap": 3
-    },
-    {
-     "t": 85,
-     "id": "husk_warden",
-     "n": 1,
-     "gap": 1
-    },
-    {
-     "t": 88,
-     "id": "husk",
-     "n": 4,
-     "gap": 1.5
+     "gap": 4
     }
    ],
    "loop": {
-    "start": 105,
+    "start": 90,
     "every": 5.5,
     "pool": [
      [
       "husk",
-      4
-     ],
-     [
-      "gnawer",
-      2
-     ],
-     [
-      "spitter",
-      2
+      3
      ],
      [
       "bloater",
-      1
+      1.5
      ],
      [
-      "brute",
-      1
+      "gallows_gull",
+      1.5
      ]
     ],
     "ramp": 0.03,
@@ -400,129 +452,107 @@
      "waves": [
       {
        "t": 0,
-       "id": "brute",
+       "id": "bloater",
        "n": 2,
-       "gap": 3
+       "gap": 2
       },
       {
        "t": 1,
-       "id": "spitter",
+       "id": "husk",
        "n": 3,
        "gap": 1.5
       }
      ]
     }
    ],
-   "power": 1.31
+   "power": 2.45,
+   "teaches": "Exploder: kill it at range or behind a door, never in a crowd."
   },
   {
-   "id": "r1s5",
-   "name": "Wreckers' Reef",
    "region": "r1",
    "bg": "r1",
    "music": "battle",
-   "enemyCastleHp": 3000,
-   "par": 205,
-   "reward": 240,
-   "unlocks": [],
-   "available": [
-    "ashguard",
-    "torchbow",
-    "cinder_runner",
-    "maulwright",
-    "bellringer",
-    "lamplighter"
-   ],
    "hero": true,
-   "abilities": [
-    "ember_rain",
-    "rally"
+   "id": "r1s6",
+   "name": "Wreckers' Reef",
+   "slots": 5,
+   "enemyCastleHp": 2700,
+   "par": 200,
+   "reward": 250,
+   "unlocks": [],
+   "tavern": [
+    "lamplighter"
    ],
    "waves": [
     {
      "t": 2,
      "id": "husk",
-     "n": 5,
-     "gap": 1.5
+     "n": 3,
+     "gap": 2.5
     },
     {
-     "t": 15,
-     "id": "gnawer",
-     "n": 4,
-     "gap": 0.8
-    },
-    {
-     "t": 28,
+     "t": 16,
      "id": "brute",
      "n": 1,
      "gap": 1
     },
     {
-     "t": 30,
-     "id": "spitter",
+     "t": 24,
+     "id": "gnawer",
      "n": 3,
-     "gap": 1.5
+     "gap": 0.5
     },
     {
-     "t": 50,
-     "id": "bloater",
+     "t": 32,
+     "id": "husk",
      "n": 3,
      "gap": 2
     },
     {
-     "t": 65,
-     "id": "husk",
-     "n": 4,
-     "gap": 1,
-     "elite": true
-    },
-    {
-     "t": 80,
+     "t": 45,
      "id": "brute",
-     "n": 2,
-     "gap": 4
-    },
-    {
-     "t": 100,
-     "id": "husk_warden",
      "n": 1,
      "gap": 1
     },
     {
-     "t": 102,
+     "t": 55,
      "id": "gnawer",
      "n": 6,
-     "gap": 0.6
+     "gap": 0.5
+    },
+    {
+     "t": 70,
+     "id": "brute",
+     "n": 2,
+     "gap": 6
+    },
+    {
+     "t": 95,
+     "id": "husk_warden",
+     "n": 1,
+     "gap": 1
     }
    ],
    "loop": {
-    "start": 115,
-    "every": 5,
+    "start": 105,
+    "every": 5.5,
     "pool": [
      [
       "husk",
-      4
-     ],
-     [
-      "gnawer",
       3
      ],
      [
-      "spitter",
-      2
-     ],
-     [
-      "bloater",
-      2
+      "gnawer",
+      1.5
      ],
      [
       "brute",
       1
      ]
     ],
-    "ramp": 0.035,
-    "min": 2.5,
-    "eliteChance": 0.15
+    "ramp": 0.03,
+    "min": 2.6,
+    "eliteChance": 0.1
    },
    "triggers": [
     {
@@ -530,20 +560,142 @@
      "waves": [
       {
        "t": 0,
-       "id": "husk_warden",
+       "id": "brute",
        "n": 1,
        "gap": 1
       },
       {
+       "t": 1,
+       "id": "gnawer",
+       "n": 6,
+       "gap": 0.5
+      }
+     ]
+    }
+   ],
+   "power": 0.95,
+   "teaches": "Armoured: small hits bounce. Bring one big hit or burn."
+  },
+  {
+   "region": "r1",
+   "bg": "r1",
+   "music": "battle",
+   "hero": true,
+   "id": "r1s7",
+   "name": "The Bell Ground",
+   "slots": 5,
+   "enemyCastleHp": 3000,
+   "par": 215,
+   "reward": 280,
+   "unlocks": [],
+   "waves": [
+    {
+     "t": 2,
+     "id": "husk",
+     "n": 3,
+     "gap": 2.5
+    },
+    {
+     "t": 12,
+     "id": "bellback",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 18,
+     "id": "tide_nurse",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 26,
+     "id": "gnawer",
+     "n": 3,
+     "gap": 0.5
+    },
+    {
+     "t": 38,
+     "id": "bellback",
+     "n": 2,
+     "gap": 4
+    },
+    {
+     "t": 44,
+     "id": "tide_nurse",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 55,
+     "id": "husk",
+     "n": 4,
+     "gap": 2
+    },
+    {
+     "t": 68,
+     "id": "bellback",
+     "n": 2,
+     "gap": 4
+    },
+    {
+     "t": 72,
+     "id": "tide_nurse",
+     "n": 1,
+     "gap": 1
+    },
+    {
+     "t": 80,
+     "id": "gnawer",
+     "n": 6,
+     "gap": 0.5
+    }
+   ],
+   "loop": {
+    "start": 95,
+    "every": 5.5,
+    "pool": [
+     [
+      "husk",
+      3
+     ],
+     [
+      "bellback",
+      1.5
+     ],
+     [
+      "tide_nurse",
+      1
+     ],
+     [
+      "gnawer",
+      1
+     ]
+    ],
+    "ramp": 0.03,
+    "min": 2.6,
+    "eliteChance": 0.1
+   },
+   "triggers": [
+    {
+     "below": 0.5,
+     "waves": [
+      {
+       "t": 0,
+       "id": "bellback",
+       "n": 2,
+       "gap": 2
+      },
+      {
        "t": 2,
-       "id": "spitter",
-       "n": 3,
+       "id": "tide_nurse",
+       "n": 1,
        "gap": 1
       }
      ]
     }
    ],
-   "power": 1.09
+   "power": 1.5,
+   "teaches": "Shelled and Healer together: break the shell, reach the mender."
   },
   {
    "id": "r1boss",
@@ -558,14 +710,6 @@
    "bossAt": 20,
    "winOn": "boss",
    "unlocks": [],
-   "available": [
-    "ashguard",
-    "torchbow",
-    "cinder_runner",
-    "maulwright",
-    "bellringer",
-    "lamplighter"
-   ],
    "hero": true,
    "abilities": [
     "ember_rain",
@@ -583,6 +727,12 @@
      "id": "spitter",
      "n": 2,
      "gap": 2
+    },
+    {
+     "t": 22,
+     "id": "gallows_gull",
+     "n": 3,
+     "gap": 1.5
     }
    ],
    "loop": {
@@ -591,27 +741,33 @@
     "pool": [
      [
       "husk",
-      4
+      3
      ],
      [
       "gnawer",
-      2
+      1
      ],
      [
       "spitter",
-      2
+      1.5
+     ],
+     [
+      "gallows_gull",
+      1.5
      ],
      [
       "bloater",
-      1
+      0.5
      ]
     ],
     "ramp": 0.02,
     "min": 4
    },
    "triggers": [],
-   "power": 0.97,
-   "bossPower": 1.91
+   "power": 0.4,
+   "bossPower": 0.75,
+   "slots": 5,
+   "teaches": "The exam: she calls packs, spits ink and sends Gulls. No single answer."
   }
  ],
  "tutorials": {

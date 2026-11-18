@@ -25,17 +25,17 @@
   "directBonus": 0.5,
   "knockback": 34,
   "salvage": 4,
-  "dmg": 90,
+  "dmg": 72,
   "dmgPerLevel": 0.12,
   "splash": 55,
-  "reload": 3.5,
+  "reload": 4.2,
   "reloadPerLevel": 0.15,
   "maxLevel": 10,
   "gravity": 900,
   "minSpeed": 380,
   "maxSpeed": 1250,
   "firePatch": {
-   "dps": 12,
+   "dps": 7,
    "time": 3,
    "radius": 45
   }
@@ -43,7 +43,7 @@
  "hero": {
   "id": "marshal",
   "name": "Captain Rook Halloran",
-  "charge": 25,
+  "charge": 35,
   "hp": 1100,
   "dmg": 48,
   "rate": 1.2,

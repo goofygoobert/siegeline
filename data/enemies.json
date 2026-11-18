@@ -12,38 +12,53 @@
    "size": 15,
    "traits": {},
    "desc": "A drowned sailor come back up the beach. Slow, many, relentless.",
-   "art": true
+   "art": true,
+   "tags": [
+    "plain"
+   ]
   },
   {
    "id": "gnawer",
    "name": "Scuttler",
    "faction": "hollow",
-   "hp": 80,
-   "dmg": 10,
+   "hp": 60,
+   "dmg": 14,
    "rate": 0.6,
    "range": 22,
-   "speed": 80,
+   "speed": 85,
    "size": 11,
-   "traits": {},
+   "traits": {
+    "pack": 3,
+    "slip": true,
+    "underGuard": true
+   },
    "desc": "A crab-thing with too many legs. Scuttles past slow defenders.",
-   "art": true
+   "art": true,
+   "tags": [
+    "swarm"
+   ]
   },
   {
    "id": "spitter",
    "name": "Inkspitter",
    "faction": "hollow",
    "hp": 135,
-   "dmg": 24,
+   "dmg": 30,
    "rate": 1.8,
-   "range": 210,
+   "range": 280,
    "speed": 30,
    "size": 14,
    "traits": {
     "projectile": "spit",
-    "lob": true
+    "lob": true,
+    "siege": true,
+    "lobSplash": 48
    },
    "desc": "Squid-headed and patient. Lobs glowing ink from behind the horde.",
-   "art": true
+   "art": true,
+   "tags": [
+    "siege"
+   ]
   },
   {
    "id": "bloater",
@@ -57,12 +72,15 @@
    "size": 20,
    "traits": {
     "deathBlast": {
-     "dmg": 102,
-     "radius": 75
+     "dmg": 140,
+     "radius": 85
     }
    },
    "desc": "A swollen spined puffer on stubby legs. Bursts when killed, hurting everyone nearby.",
-   "art": true
+   "art": true,
+   "tags": [
+    "exploder"
+   ]
   },
   {
    "id": "brute",
@@ -77,10 +95,74 @@
    "large": true,
    "traits": {
     "splash": 40,
-    "knockback": 30
+    "knockback": 30,
+    "plate": 12,
+    "blunt": true
    },
    "desc": "A sea troll crusted in coral. Every swing sends sailors flying.",
-   "art": true
+   "art": true,
+   "tags": [
+    "armoured"
+   ]
+  },
+  {
+   "id": "gallows_gull",
+   "name": "Gallows Gull",
+   "faction": "hollow",
+   "hp": 95,
+   "dmg": 11,
+   "rate": 1.0,
+   "range": 26,
+   "speed": 62,
+   "size": 14,
+   "traits": {
+    "flying": true,
+    "flyH": 95
+   },
+   "tags": [
+    "flying"
+   ],
+   "art": true,
+   "desc": "A drowned sea-bird with a noose of kelp. Flies over your line and pecks at shooters and the fort."
+  },
+  {
+   "id": "bellback",
+   "name": "Bellback",
+   "faction": "hollow",
+   "hp": 300,
+   "dmg": 20,
+   "rate": 1.6,
+   "range": 28,
+   "speed": 26,
+   "size": 20,
+   "traits": {
+    "shell": 300
+   },
+   "tags": [
+    "shelled"
+   ],
+   "art": true,
+   "desc": "A crab in a drowned ship's bell. The bell soaks the first 300 damage from the front, and shields what walks behind it."
+  },
+  {
+   "id": "tide_nurse",
+   "name": "Tide Nurse",
+   "faction": "hollow",
+   "hp": 160,
+   "dmg": 0,
+   "rate": 2.0,
+   "range": 170,
+   "speed": 28,
+   "size": 16,
+   "traits": {
+    "heal": 24,
+    "healTargets": 1
+   },
+   "tags": [
+    "healer"
+   ],
+   "art": true,
+   "desc": "A drifting jellyfish that mends the most hurt monster near it."
   },
   {
    "id": "husk_warden",
@@ -101,10 +183,15 @@
      "below": 0.5,
      "speed": 1.3,
      "rate": 0.75
-    }
+    },
+    "plate": 14,
+    "blunt": true
    },
    "desc": "A ghastly water-horse with a kelp mane. Rears up and rages when wounded.",
-   "art": true
+   "art": true,
+   "tags": [
+    "armoured"
+   ]
   },
   {
    "id": "cinder_matron",
@@ -127,6 +214,10 @@
      "knockback": 90
     },
     "summon": {
+     "ids": [
+      "gnawer",
+      "gallows_gull"
+     ],
      "id": "gnawer",
      "n": 4,
      "every": 18,
@@ -146,7 +237,10 @@
     }
    },
    "desc": "The sea hag of the deep. Raises her tentacle before she sweeps: get clear.",
-   "art": true
+   "art": true,
+   "tags": [
+    "boss"
+   ]
   },
   {
    "id": "wailer",

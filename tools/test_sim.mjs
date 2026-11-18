@@ -2,13 +2,15 @@
 import { loadContent } from "./content_node.mjs";
 import { createBattle, step } from "../src/sim/battle.js";
 import { makeBot } from "../src/sim/bot.js";
+import { withLoadout, right } from "./loadouts.mjs";
 
 const C = loadContent();
 let fail = 0;
 const ok = (c, m) => { if (!c) { fail++; console.log("FAIL", m); } else console.log("ok  ", m); };
 
 function run(stage, seed, prog = {}, skill = 0.7, maxT = 600) {
-  const B = createBattle(C, stage, prog, seed); const bot = makeBot({ skill });
+  const k = C.stages.indexOf(stage);
+  const B = createBattle(C, withLoadout(stage, k, right(k)), prog, seed); const bot = makeBot({ skill });
   while (!B.result && B.t < maxT) { bot(B); step(B); B.events.length = 0; }
   return B;
 }

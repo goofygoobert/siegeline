@@ -14,7 +14,7 @@ export function createBattle(content, stage, progress, seed = 1) {
   const unitDefs = Object.fromEntries(content.units.units.map((u) => [u.id, u]));
   const enemyDefs = Object.fromEntries(content.enemies.enemies.map((e) => [e.id, e]));
   const cards = (stage.available || []).map((id) => {
-    const s = unitStats(unitDefs[id], (progress?.unitLevels || {})[id] || 1, content.units.levels);
+    const s = unitStats(unitDefs[id], (progress?.unitLevels || {})[id] || 1, content.units.levels, (progress?.skills || {})[id]);
     return { id, stats: s, cd: 0 };
   });
   const keepMax = g.keep.hp + g.keep.hpPerLevel * (lv("keep") - 1);
@@ -103,7 +103,7 @@ function applyInputs(B) {
 
 // ------------------------------------------------------------------ entities
 /** Stage difficulty: scales enemy health and damage (tuned by tools/tune.mjs). */
-function powered(B, s, m) { if (m !== 1) { s.hp *= m; s.dmg *= Math.pow(m, 0.75); } return s; }
+function powered(B, s, m) { if (m !== 1) { s.hp *= m; s.dmg *= Math.pow(m, 0.75); s.shellMul = m; } return s; }
 
 function spawn(B, s, side, x) {
   let e = null;
@@ -115,6 +115,8 @@ function spawn(B, s, side, x) {
   e.target = null; e.slow = 0; e.slowT = 0; e.stun = 0; e.burn = 0; e.burnT = 0; e.kb = 0; e.dieT = 0;
   e.flash = 0; e.firstDone = false; e.healCd = 0; e.elite = !!s.elite; e.flareT = 0;
   e.bossT = null; e.windup = null; e.enraged = false; e.vuln = 0; e.phase2 = false;
+  e.shell = ((s.traits && s.traits.shell) || 0) * (s.shellMul || 1); e.crackT = 0; e.netT = 0; e.stunImm = 0; e.leap = null; e.vaulted = false; e.lock = null;
+  e.shots = 0; e._atk = 0;
   if (s.boss) e.bossT = { sweep: 4, summon: 10, spit: 6 };
   ev(B, "spawn", { e });
   return e;
@@ -127,13 +129,30 @@ function heal(B, e, amt) {
 
 function damage(B, e, amt, src, opts) {
   if (!e.alive) return 0;
-  let d = amt;
-  if (e.s.traits && e.s.traits.meleeGuard && opts && opts.melee) d *= 1 - e.s.traits.meleeGuard;
-  if (e.s.traits && e.s.traits.armor) d *= 1 - e.s.traits.armor;
+  let d = amt; const T = e.s.traits || {}, o = opts || {}, kind = o.kind;
+  if (T.meleeGuard && (o.melee || (o.blast && T.blastGuard)) && !(src && src.s && src.s.traits.underGuard)) d *= 1 - T.meleeGuard;     // the hatch door takes blows and blasts (Scuttlers bite under it)
+  if (T.armor) d *= 1 - T.armor;
   if (e.vuln > 0) d *= 1.6;
+  if (e.netT > 0 && e.netHook) d *= 1 + e.netHook;
+  // Shelled: the shell soaks hits from the front until it breaks; a blunt hit shatters it at once; burn already on it keeps burning
+  if (e.shell > 0 && kind !== "burn") {
+    if (o.blunt) { e.shell = 0; ev(B, "shellBreak", { e }); }
+    else if (!o.behind) {
+      const soak = Math.min(e.shell, d); e.shell -= o.blast ? soak * 0.5 : soak; d -= soak;     // blasts ring off the bronze
+      if (e.shell <= 0) ev(B, "shellBreak", { e });
+      if (d <= 0) { ev(B, "shellHit", { e }); return 0; }
+    }
+  }
+  // Armoured: plates take a fixed amount off every hit (halved while cracked); burn and harpoons go through
+  if (T.plate && kind !== "burn" && !o.pierceArmor) {
+    const before = d; d = Math.max(0, d - T.plate * (e.crackT > 0 ? 0.5 : 1));
+    if (d < before * 0.5) ev(B, "plateHit", { e });
+  }
+  if (T.plate && o.blunt) { if (!(e.crackT > 0)) ev(B, "crack", { e }); e.crackT = 6; }
+  if (d <= 0) return 0;
   e.hp -= d; if (!opts || opts.kind !== "burn") e.flash = 0.12;   // damage-over-time never flashes
   if (src && src.side === 1) B.stats.dmgDealt += d;
-  ev(B, "dmg", { e, amt: d, crit: opts && opts.crit, kind: opts && opts.kind });
+  ev(B, "dmg", { e, amt: d, crit: o.crit, kind });
   if (e.hp <= 0) kill(B, e);
   else if (opts && opts.kb) { e.kb = opts.kb * -e.side; e.state = "hit"; e.stateT = 0; e.hitAt = -1; }
   return d;
@@ -145,7 +164,7 @@ function kill(B, e) {
   ev(B, "die", { e });
   const db = e.s.traits && e.s.traits.deathBlast;
   if (db) {
-    explode(B, e.x, db.radius, db.dmg, null, "both");
+    explode(B, e.x, db.radius, db.dmg, null, "both", { blast: true, kind: "blast" });
     ev(B, "burst", { x: e.x, r: db.radius });
   }
   if (e.kind === "boss") { ev(B, "bossDead", { e }); if (B.stage.winOn === "boss") end(B, "win"); }
@@ -154,6 +173,7 @@ function kill(B, e) {
 function explode(B, x, r, dmg, src, who, opts) {
   for (const o of B.ents) {
     if (!o.alive) continue;
+    if (airborne(o) && !(opts && opts.air)) continue;        // a blast on the sand passes under a flier
     if (who === "enemies" && o.side !== -1) continue;
     if (who === "players" && o.side !== 1) continue;
     if (Math.abs(o.x - x) <= r + o.s.size * 0.5) damage(B, o, dmg, src, opts);
@@ -177,15 +197,34 @@ function end(B, r) {
   ev(B, r === "win" ? "win" : "lose", {});
 }
 
-/** Nearest living opponent in front of e (in its walking direction) within reach, else null. */
+// ------------------------------------------------------------------ traits that change who can fight whom
+/** In the air: a Flying monster that is not netted. Melee cannot reach it and ground blasts pass under it. */
+export function airborne(e) { return !!(e.s.traits && e.s.traits.flying) && !(e.netT > 0) && e.alive; }
+/** Fights hand to hand (no projectile, not a mender). */
+function melee(e) { const T = e.s.traits || {}; return !T.projectile && !T.heal; }
+function canHit(a, o) { return !airborne(o) || !melee(a); }
+const PRIORITY = (o) => { const T = o.s.traits || {}; return T.siege || T.heal ? 2 : o.s.large ? 1 : 0; };
+
+/** Nearest living opponent in front of e (in its walking direction) within reach, else null.
+ *  Fliers ignore hand-to-hand crew and go for shooters, menders and the fort; siege picks the furthest crew it can
+ *  reach; snipers pick siege and menders first; swarm monsters slip past a crew member who is already surrounded. */
 function findTarget(B, e, reach) {
   let best = null, bd = 1e9;
+  const T = e.s.traits || {}, fly = airborne(e);
   for (const o of B.ents) {
     if (!o.alive || o.side === e.side) continue;
+    if (!canHit(e, o)) continue;
+    if (fly && melee(o)) continue;
     const d = (o.x - e.x) * e.side;            // distance ahead
     if (d < -(e.s.size + o.s.size) * 0.5) continue;  // behind
     const gap = Math.abs(d) - (e.s.size + o.s.size) * 0.5;
-    if (gap <= reach && gap < bd) { bd = gap; best = o; }
+    if (gap > reach) continue;
+    if (T.slip && o._atk >= 1 && !(e.slowT > 0) && !(e.netT > 0)) continue;     // held by the song or a net, a swarm cannot slip round
+    let score = gap;
+    if (T.siege) score = -gap;                         // lob over the front line onto the back line
+    if (T.sniper) score = gap - PRIORITY(o) * 1000;
+    if (o.s.traits.taunt && !T.siege && !fly) score -= 500;
+    if (score < bd) { bd = score; best = o; }
   }
   return best;
 }
@@ -193,6 +232,7 @@ function findTarget(B, e, reach) {
 function speedMul(B, e) {
   let m = 1;
   if (e.slowT > 0) m *= 1 - e.slow;
+  if (e.netT > 0) m *= 1 - (e.netSlow || 0.5);
   if (e.side === 1 && B.rally > 0) m *= B.g.abilities.rally.speedMul;
   if (e.enraged) m *= e.s.traits.enrage.speed;
   if (e.kind === "boss" && e.phase2) m *= e.s.boss.phase2.speedMul;
@@ -201,8 +241,9 @@ function speedMul(B, e) {
 
 function rateMul(B, e) {
   let m = 1;
-  if (e.slowT > 0) m /= 1 - e.slow * 0.5;
+  if (e.slowT > 0) m /= 1 - e.slow;          // slowed monsters strike as much slower as they walk
   if (e.side === 1 && B.rally > 0) m *= B.g.abilities.rally.rateMul;
+  if (e.hasteT > 0) m *= 1 - e.haste;
   if (e.enraged) m *= e.s.traits.enrage.rate;
   return m;
 }
@@ -211,7 +252,7 @@ function strike(B, e) {
   const s = e.s, T = s.traits || {};
   // ranged attackers fire a projectile; melee hits now
   const reach = s.range;
-  const tgt = (e.target && e.target.alive) ? e.target : findTarget(B, e, reach + 8);
+  const tgt = (e.target && e.target.alive && canHit(e, e.target)) ? e.target : findTarget(B, e, reach + 8);
   const castle = castleOf(B, e.side);
   const castleGap = (castle.front - e.x) * e.side;
   if (T.heal) {   // healer: heal the most injured allies in range
@@ -230,9 +271,12 @@ function strike(B, e) {
   }
   if (T.projectile) {
     const tx = tgt ? tgt.x : castle.front;
+    e.shots++;
+    const grape = T.grape && e.shots % T.grape === 0;
     B.projs.push({ kind: T.projectile, x: e.x + 18 * e.side, y: B.F.groundY - 50, tx, target: tgt, side: e.side,
-      dmg: s.dmg, t: 0, dur: 0.35 + Math.abs(tx - e.x) / 700, sx: e.x + 18 * e.side, alive: true, lob: !!T.lob,
-      burn: T.burn, pierce: T.pierce || 0, toCastle: !tgt, splash: T.lob ? 30 : 0, px: 0, py: 0 });
+      dmg: s.dmg, t: 0, dur: (T.projSpeed ? 0.15 : 0.35) + Math.abs(tx - e.x) / (T.projSpeed || 700), sx: e.x + 18 * e.side, alive: true, lob: !!T.lob,
+      burn: T.burn, pierce: T.pierce || 0, toCastle: !tgt, splash: T.lob ? (T.lobSplash || 30) : grape ? 40 : 0, px: 0, py: 0,
+      net: T.net || null, pierceArmor: !!T.pierceArmor, air: tgt ? airborne(tgt) : false, tar: T.tar || null, barb: T.barb || 0 });
     ev(B, "shoot", { e, kind: T.projectile });
     return;
   }
@@ -242,12 +286,39 @@ function strike(B, e) {
     const big = tgt.s.large ? (T.bonusVsLarge || 1) : 1;
     if (T.splash) {
       const cx = tgt.x;
-      explode(B, cx, T.splash, dmg * big, e, e.side === 1 ? "enemies" : "players", { melee: true, kb: T.knockback || 0, kind: "blunt" });
+      explode(B, cx, T.splash, dmg * big, e, e.side === 1 ? "enemies" : "players", { melee: true, kb: T.knockback || 0, kind: "blunt", blunt: !!T.blunt });
+      if (T.quake) for (const o of B.ents) if (o.alive && o.side !== e.side && Math.abs(o.x - cx) <= T.splash && o.kind !== "boss") stunIt(o, T.quake);
+      if (T.embers) B.patches.push({ x: cx, r: 40, dps: 10, t: 3, side: e.side });
       ev(B, "slam", { x: cx, r: T.splash, side: e.side });
-    } else damage(B, tgt, dmg * big, e, { melee: true, kb: T.knockback || 0, kind: e.side === 1 ? "blade" : "claw", crit: dmg > s.dmg });
+    } else {
+      const behind = (e.x - tgt.x) * tgt.side < 0;
+      e.hits = (e.hits || 0) + 1;
+      damage(B, tgt, dmg * big, e, { melee: true, behind, kb: (T.knockback || 0) + (T.shove && e.hits % 3 === 0 ? T.shove : 0), kind: e.side === 1 ? "blade" : "claw", crit: dmg > s.dmg });
+      if (T.venomBlade && tgt.alive) { tgt.burn = Math.max(tgt.burn, T.venomBlade); tgt.burnT = 3; }
+    }
   } else if (castleGap <= reach + 4) {
     hitCastle(B, e.side, dmg);
   }
+}
+
+/** Stun with a short immunity after, so nets and slams cannot chain-lock a monster. */
+function stunIt(o, t) { if (o.stunImm > 0) return; o.stun = Math.max(o.stun, t); o.stunImm = t + 3; }
+
+/** Rope Rat: on first contact, vault the front line and land behind the best target further back. */
+function tryVault(B, e, front) {
+  const V = e.s.traits.vault; e.vaulted = true;
+  let dest = null, bs = -1e9;
+  for (const o of B.ents) {
+    if (!o.alive || o.side === e.side || o === front || airborne(o) || o.kind === "boss") continue;
+    const d = (o.x - e.x) * e.side; if (d <= 0 || d > V.reach) continue;
+    const sc = PRIORITY(o) * 1000 + (o.s.traits.shell ? 600 : 0) + d;
+    if (sc > bs) { bs = sc; dest = o; }
+  }
+  if (!dest) return false;
+  const to = dest.x + e.side * (dest.s.size * 0.5 + e.s.size * 0.5 + 4);
+  e.leap = { from: e.x, to: Math.min(B.gate.front + 10, to), t: 0, dur: 0.45 }; e.lock = dest; e.state = "walk"; e.stateT = 0;
+  ev(B, "vault", { e });
+  return true;
 }
 
 function bossThink(B, e, dt) {
@@ -266,7 +337,9 @@ function bossThink(B, e, dt) {
         e.vuln = 3; ev(B, "bossWinded", { e });          // the swing leaves her open: a window to punish
         if (e.phase2) B.patches.push({ x: cx, r: 60, dps: 14, t: 4, side: -1 });
       } else if (w.kind === "summon") {
-        for (let k = 0; k < b.summon.n; k++) spawn(B, powered(B, enemyStats(B.enemyDefs[b.summon.id], false, B.content.enemies.elite), B.emul), -1, e.x - 30 - k * 12);
+        const ids = b.summon.ids || [b.summon.id]; e.summons = (e.summons || 0) + 1;
+        const sid = ids[(e.summons - 1) % ids.length], n = sid === b.summon.id ? b.summon.n : Math.max(2, b.summon.n - 1);
+        for (let k = 0; k < n; k++) spawn(B, powered(B, enemyStats(B.enemyDefs[sid], false, B.content.enemies.elite), B.emul), -1, e.x - 30 - k * 12);
         ev(B, "bossSummon", { x: e.x });
       } else if (w.kind === "spit") {
         B.scheduled.push({ at: B.t + 0.01, kind: "bossSpit", x: w.x, dmg: b.spit.dmg, splash: b.spit.radius });
@@ -315,6 +388,16 @@ function stepEntity(B, e, dt) {
   }
   if (e.slowT > 0) e.slowT -= dt;
   if (e.vuln > 0) e.vuln -= dt;
+  if (e.crackT > 0) e.crackT -= dt;
+  if (e.hasteT > 0) e.hasteT -= dt;
+  if (e.stunImm > 0) e.stunImm -= dt;
+  if (e.netT > 0) { e.netT -= dt; if (e.netT <= 0) ev(B, "netFree", { e }); }
+  if (e.leap) {             // mid-vault: fly over the line, nothing else happens
+    const L = e.leap; L.t += dt; const k = Math.min(1, L.t / L.dur);
+    e.x = L.from + (L.to - L.from) * k; e.leapK = Math.sin(k * Math.PI);
+    if (k >= 1) { e.leap = null; e.leapK = 0; e.atkCd = 0; ev(B, "land", { e }); }
+    return;
+  }
   if (e.burnT > 0) { e.burnT -= dt; damage(B, e, e.burn * dt, null, { kind: "burn" }); if (!e.alive) return; }
   if (e.kb !== 0) {         // knockback slide
     const step = Math.sign(e.kb) * Math.min(Math.abs(e.kb), 260 * dt);
@@ -328,6 +411,7 @@ function stepEntity(B, e, dt) {
   // auras
   if (T.slowAura) {
     for (const o of B.ents) if (o.alive && o.side !== e.side && Math.abs(o.x - e.x) <= T.slowAura.radius) { o.slow = T.slowAura.slow; o.slowT = 0.25; }
+    if (T.rateAura) for (const o of B.ents) if (o.alive && o.side === e.side && Math.abs(o.x - e.x) <= T.slowAura.radius) { o.haste = T.rateAura; o.hasteT = 0.25; }
   }
   // hero flare
   if (e.kind === "hero") {
@@ -351,7 +435,9 @@ function stepEntity(B, e, dt) {
     e.state = "walk"; e.stateT = 0;
   }
   const reach = s.range;
-  const tgt = T.heal ? null : findTarget(B, e, reach);
+  if (e.lock && (!e.lock.alive || Math.abs(e.lock.x - e.x) - (e.s.size + e.lock.s.size) * 0.5 > reach + 30)) e.lock = null;
+  let tgt = T.heal ? null : (e.lock || findTarget(B, e, reach));
+  if (tgt && T.vault && !e.vaulted && !e.lock && tryVault(B, e, tgt)) return;
   const castle = castleOf(B, e.side);
   const castleGap = (castle.front - e.x) * e.side;
   let wantsAttack = !!tgt || (castleGap <= reach && !T.heal);
@@ -364,6 +450,10 @@ function stepEntity(B, e, dt) {
     const ahead = (front - e.x * e.side);
     if (need && e.atkCd <= 0) wantsAttack = true;
     else if (ahead < 70 || findTarget(B, e, 120)) { e.state = "idle"; return; }
+  }
+  if (T.slowAura && !tgt) {   // the singer keeps a step behind the front so the song covers the line, not the singer
+    let front = -1e9; for (const o of B.ents) if (o.alive && o.side === e.side && o !== e && !o.s.traits.slowAura && !o.s.traits.heal) front = Math.max(front, o.x * e.side);
+    if (front > -1e9 && front - e.x * e.side < 60) { e.state = "idle"; return; }
   }
   if (wantsAttack) {
     e.target = tgt;
@@ -395,6 +485,7 @@ function stepProjectiles(B, dt) {
       let hit = p.y >= ground - 4, direct = null;
       if (!hit) for (const o of B.ents) {
         if (!o.alive || o.side !== -1) continue;
+        if (airborne(o)) { const fy = ground - (o.s.traits.flyH || 90); if (Math.abs(o.x - p.x) < o.s.size + 10 && Math.abs(p.y - fy) < 40) { hit = true; direct = o; break; } continue; }
         const h = Math.min(260, o.s.size * (o.kind === "boss" ? 5 : 5.4));
         if (Math.abs(o.x - p.x) < o.s.size * 0.7 + 6 && p.y > ground - h) { hit = true; direct = o; break; }
       }
@@ -408,8 +499,9 @@ function stepProjectiles(B, dt) {
           for (const o of B.ents) if (o.alive && o.side === -1 && Math.abs(o.x - p.x) <= p.splash + o.s.size * 0.5) hits++;
           // a ball that strikes a body (not the sand) hits that monster half again as hard
           const bl = B.g.ballista;
-          if (direct && direct.alive && direct.kind !== "boss") damage(B, direct, p.dmg * (bl.directBonus || 0), { side: 1 }, { kind: "fire" });
-          explode(B, p.x, p.splash, p.dmg, { side: 1 }, "enemies", { kb: bl.knockback || 18, kind: "fire" });
+          if (direct && direct.alive && airborne(direct)) damage(B, direct, p.dmg * (1 + (bl.directBonus || 0)), { side: 1 }, { kind: "fire", blast: true });
+          else if (direct && direct.alive && direct.kind !== "boss") damage(B, direct, p.dmg * (bl.directBonus || 0), { side: 1 }, { kind: "fire" });
+          explode(B, p.x, p.splash, p.dmg, { side: 1 }, "enemies", { kb: bl.knockback || 18, kind: "fire", blast: true });
           if (hits) B.stats.shotHits++;
           // salvage: every monster the cannon kills pays powder back, so a shot into a pack buys the next deckhand
           const got = (B.stats.kills - before) * (bl.salvage || 0);
@@ -433,11 +525,29 @@ function stepProjectiles(B, dt) {
       if (p.toCastle) { hitCastle(B, p.side, p.dmg); continue; }
       let tgt = p.target && p.target.alive ? p.target : null;
       if (!tgt) for (const o of B.ents) if (o.alive && o.side !== p.side && Math.abs(o.x - p.x) < 24) { tgt = o; break; }
-      if (p.splash) explode(B, p.x, p.splash, p.dmg, { side: p.side }, p.side === 1 ? "enemies" : "players", { kind: p.kind });
+      // a Bellback's bell shields whatever walks behind it: a straight shot past it hits the bell instead
+      if (tgt && !p.lob && !p.net && !airborne(tgt)) for (const o of B.ents) {
+        if (!o.alive || o === tgt || o.side === p.side || !(o.shell > 0)) continue;
+        if ((o.x - p.sx) * p.side > 0 && (tgt.x - o.x) * p.side > 0) { tgt = o; p.x = o.x; break; }
+      }
+      const po = { kind: p.kind, pierceArmor: p.pierceArmor, air: p.air };
+      if (p.net) {             // a net: everything under it is pinned and slowed; fliers are dragged down to the sand
+        const N = p.net;
+        for (const o of B.ents) if (o.alive && o.side !== p.side && o.kind !== "boss" && Math.abs(o.x - p.x) <= N.radius + o.s.size * 0.5) {
+          const wasAir = airborne(o);
+          o.netT = N.time; o.netSlow = N.slow; o.netHook = N.hook || 0;
+          if (wasAir && N.stun) stunIt(o, N.stun);
+          if (p.dmg > 0) damage(B, o, p.dmg, { side: p.side }, { kind: "net" });
+          ev(B, "netted", { e: o, air: wasAir });
+          if (N.targets === 1) break;
+        }
+      } else if (p.splash) explode(B, p.x, p.splash, p.dmg, { side: p.side }, p.side === 1 ? "enemies" : "players", po);
       else if (tgt) {
-        damage(B, tgt, p.dmg, { side: p.side }, { kind: p.kind });
-        if (p.burn && tgt.alive) { tgt.burn = p.burn.dps; tgt.burnT = p.burn.time; }
-        if (p.pierce) for (const o of B.ents) if (o.alive && o !== tgt && o.side !== p.side && (o.x - tgt.x) * p.side > 0 && (o.x - tgt.x) * p.side < 70) { damage(B, o, p.dmg * 0.6, { side: p.side }, { kind: p.kind }); break; }
+        const dealt = damage(B, tgt, p.dmg, { side: p.side }, po);
+        if (p.burn && tgt.alive && dealt > 0) { tgt.burn = p.burn.dps; tgt.burnT = p.burn.time; }     // a shot the bell soaks sets nothing alight
+        if (p.barb && tgt.alive) { tgt.slow = Math.max(tgt.slowT > 0 ? tgt.slow : 0, 0.4); tgt.slowT = p.barb; }
+        if (p.tar) B.patches.push({ x: tgt.x, r: 26, dps: p.tar, t: 2.5, side: p.side });
+        if (p.pierce) { let left = p.pierce; for (const o of B.ents) if (left > 0 && o.alive && o !== tgt && o.side !== p.side && (o.x - tgt.x) * p.side > 0 && (o.x - tgt.x) * p.side < 90) { damage(B, o, p.dmg * 0.6, { side: p.side }, po); left--; } }
       }
       ev(B, "projHit", { kind: p.kind, x: p.x, y: B.F.groundY - 30 });
     }
@@ -475,7 +585,7 @@ function stepWaves(B, dt) {
       const pool = B.loop.pool; let tot = 0; for (const [, w] of pool) tot += w;
       let r = B.rand() * tot, pick = pool[0][0];
       for (const [id, w] of pool) { r -= w; if (r <= 0) { pick = id; break; } }
-      const n = pick === "gnawer" ? 2 : 1;
+      const n = (B.enemyDefs[pick].traits || {}).pack || 1;
       const over2 = Math.max(0, B.t - (B.stage.par || 180));
       for (let k = 0; k < n; k++) spawnEnemy(pick, B.rand() < (B.loop.eliteChance || 0) + over2 / 240);
     }
@@ -501,6 +611,8 @@ export function step(B) {
   const h = B.hero;
   if (h && !h.called) { const was = h.charge >= h.need; h.charge = Math.min(h.need, h.charge + dt); if (!was && h.charge >= h.need) ev(B, "heroReady", {}); }
   stepWaves(B, dt);
+  for (const e of B.ents) e._atk = 0;          // how many monsters are on each crew member (swarms slip round a surrounded one)
+  for (const e of B.ents) if (e.alive && e.target && e.target.alive) e.target._atk++;
   for (let i = 0; i < B.ents.length; i++) stepEntity(B, B.ents[i], dt);
   stepProjectiles(B, dt);
   // fire patches

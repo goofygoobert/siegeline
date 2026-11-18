@@ -5,24 +5,52 @@
    "name": "Hatchguard",
    "role": "front line",
    "region": 1,
-   "cost": 50,
+   "cost": 60,
    "cooldown": 3,
    "hp": 260,
-   "dmg": 16,
+   "dmg": 12,
    "rate": 1.1,
    "range": 28,
    "speed": 44,
    "size": 18,
    "traits": {
-    "meleeGuard": 0.25
+    "meleeGuard": 0.25,
+    "blastGuard": true
    },
    "counter": "Inkspitters and Pufferghast bursts wear it down",
    "strongVs": "husk, gnawer",
    "tiers": {
-    "5": "Iron-banded hatch: guard 35%",
-    "10": "Gilded hatch and cursed-gold cutlass: guard 45%, +15% damage"
+    "5": "Brace",
+    "10": "Shove or Taunt"
    },
-   "art": true
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Brace",
+     "text": "Iron-banded hatch: blocks 35% of blows and blasts.",
+     "set": {
+      "meleeGuard": 0.35
+     }
+    },
+    "10": [
+     {
+      "name": "Shove",
+      "text": "Every third blow knocks the attacker back.",
+      "set": {
+       "meleeGuard": 0.4,
+       "shove": 45
+      }
+     },
+     {
+      "name": "Taunt",
+      "text": "Monsters in reach must fight him first.",
+      "set": {
+       "meleeGuard": 0.4,
+       "taunt": true
+      }
+     }
+    ]
+   }
   },
   {
    "id": "torchbow",
@@ -47,10 +75,35 @@
    "counter": "Scuttlers rush past the front line",
    "strongVs": "bloater, spitter",
    "tiers": {
-    "5": "Leather jerkin: +1 s burn",
-    "10": "Gilded flintlock: shots pierce one monster"
+    "5": "Tar shot",
+    "10": "Long barrel or Grapeshot"
    },
-   "art": true
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Tar shot",
+     "text": "Burning shot leaves a small fire on the sand.",
+     "set": {
+      "tar": 8
+     }
+    },
+    "10": [
+     {
+      "name": "Long barrel",
+      "text": "Shoots 35% further.",
+      "mul": {
+       "range": 1.35
+      }
+     },
+     {
+      "name": "Grapeshot",
+      "text": "Every fourth shot bursts over a whole pack.",
+      "set": {
+       "grape": 4
+      }
+     }
+    ]
+   }
   },
   {
    "id": "cinder_runner",
@@ -66,22 +119,50 @@
    "speed": 95,
    "size": 12,
    "traits": {
-    "firstStrike": 2.0
+    "firstStrike": 2.0,
+    "vault": {
+     "reach": 260
+    }
    },
    "counter": "Barnacle Trolls crush it in one blow",
    "strongVs": "spitter",
    "tiers": {
-    "5": "Studded vest: +20% hp",
-    "10": "Cursed-gold knives: first strike x3"
+    "5": "Knife in the back",
+    "10": "Second wind or Venom blade"
    },
-   "art": true
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Knife in the back",
+     "text": "The first strike after a vault hits three times as hard.",
+     "set": {
+      "firstStrike": 3
+     }
+    },
+    "10": [
+     {
+      "name": "Second wind",
+      "text": "Half again as much health.",
+      "mul": {
+       "hp": 1.5
+      }
+     },
+     {
+      "name": "Venom blade",
+      "text": "Every cut burns for 3 seconds.",
+      "set": {
+       "venomBlade": 6
+      }
+     }
+    ]
+   }
   },
   {
    "id": "bellringer",
    "name": "Shantyman",
    "role": "support",
    "region": 1,
-   "cost": 100,
+   "cost": 90,
    "cooldown": 14,
    "hp": 140,
    "dmg": 6,
@@ -91,17 +172,42 @@
    "size": 15,
    "traits": {
     "slowAura": {
-     "radius": 170,
-     "slow": 0.3
+     "radius": 200,
+     "slow": 0.4
     }
    },
    "counter": "Inkspitters out-range the song",
    "strongVs": "brute, gnawer swarms",
    "tiers": {
-    "5": "Brass-buttoned squeezebox: slow 35%",
-    "10": "Gilded squeezebox: slow 40%, reach 210"
+    "5": "Rousing verse",
+    "10": "Long note or Work song"
    },
-   "art": true
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Rousing verse",
+     "text": "The song slows monsters 48%.",
+     "set": {
+      "slowAura.slow": 0.48
+     }
+    },
+    "10": [
+     {
+      "name": "Long note",
+      "text": "The song carries 30% further.",
+      "set": {
+       "slowAura.radius": 250
+      }
+     },
+     {
+      "name": "Work song",
+      "text": "Crew in earshot fight 20% faster.",
+      "set": {
+       "rateAura": 0.2
+      }
+     }
+    ]
+   }
   },
   {
    "id": "maulwright",
@@ -118,15 +224,41 @@
    "size": 24,
    "traits": {
     "splash": 55,
-    "knockback": 40
+    "knockback": 40,
+    "blunt": true
    },
    "counter": "Slow: Scuttler swarms and ink chip it down",
    "strongVs": "brute, husk packs",
    "tiers": {
-    "5": "Chain-mail sleeves: +20% hp",
-    "10": "Cursed-gold anchor: splash 75, leaves embers"
+    "5": "Earthshaker",
+    "10": "Wide swing or Embers"
    },
-   "art": true
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Earthshaker",
+     "text": "The slam stuns everything it hits for a moment.",
+     "set": {
+      "quake": 0.6
+     }
+    },
+    "10": [
+     {
+      "name": "Wide swing",
+      "text": "The slam reaches 35% wider.",
+      "set": {
+       "splash": 75
+      }
+     },
+     {
+      "name": "Embers",
+      "text": "The slam leaves burning ground.",
+      "set": {
+       "embers": true
+      }
+     }
+    ]
+   }
   },
   {
    "id": "lamplighter",
@@ -147,10 +279,143 @@
    "counter": "Anything that reaches the back line",
    "strongVs": "long fights, bosses",
    "tiers": {
-    "5": "Second lantern: heals 2 crew",
-    "10": "Golden lamp: heal +50%"
+    "5": "Second lantern",
+    "10": "Golden lamp or Field surgery"
    },
-   "art": true
+   "art": true,
+   "price": 450,
+   "skills": {
+    "5": {
+     "name": "Second lantern",
+     "text": "Mends two crew at once.",
+     "set": {
+      "healTargets": 2
+     }
+    },
+    "10": [
+     {
+      "name": "Golden lamp",
+      "text": "Mends half again as much.",
+      "mul": {
+       "traits.heal": 1.5
+      }
+     },
+     {
+      "name": "Field surgery",
+      "text": "Mends three crew at once.",
+      "set": {
+       "healTargets": 3
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "harpooner",
+   "name": "Harpooner",
+   "role": "sniper",
+   "region": 1,
+   "cost": 110,
+   "cooldown": 7,
+   "hp": 120,
+   "dmg": 62,
+   "rate": 2.6,
+   "range": 330,
+   "speed": 36,
+   "size": 15,
+   "traits": {
+    "projectile": "harpoon",
+    "pierceArmor": true,
+    "sniper": true,
+    "projSpeed": 1100
+   },
+   "counter": "Scuttler packs swamp him; a Bellback's shell soaks his harpoons",
+   "strongVs": "brute, spitter, tide_nurse",
+   "tiers": {
+    "5": "Barbed head",
+    "10": "Twin line or Heavy iron"
+   },
+   "price": 500,
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Barbed head",
+     "text": "A struck monster is slowed for 2 seconds.",
+     "set": {
+      "barb": 2
+     }
+    },
+    "10": [
+     {
+      "name": "Twin line",
+      "text": "Each harpoon goes through to one more monster.",
+      "set": {
+       "pierce": 1
+      }
+     },
+     {
+      "name": "Heavy iron",
+      "text": "Harpoons hit 35% harder.",
+      "mul": {
+       "dmg": 1.35
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "netcaster",
+   "name": "Netcaster",
+   "role": "catcher",
+   "region": 1,
+   "cost": 70,
+   "cooldown": 6,
+   "hp": 130,
+   "dmg": 3,
+   "rate": 2.4,
+   "range": 200,
+   "speed": 40,
+   "size": 15,
+   "traits": {
+    "projectile": "net",
+    "net": {
+     "radius": 34,
+     "time": 3,
+     "slow": 0.5
+    }
+   },
+   "counter": "Nets do no harm; armour and ink shrug them off",
+   "strongVs": "gallows_gull, gnawer",
+   "tiers": {
+    "5": "Weighted net",
+    "10": "Wide net or Hooked net"
+   },
+   "art": true,
+   "skills": {
+    "5": {
+     "name": "Weighted net",
+     "text": "A flier dragged down is stunned for a second.",
+     "set": {
+      "net.stun": 1
+     }
+    },
+    "10": [
+     {
+      "name": "Wide net",
+      "text": "The net covers 60% more sand.",
+      "set": {
+       "net.radius": 55
+      }
+     },
+     {
+      "name": "Hooked net",
+      "text": "Netted monsters take 25% more damage.",
+      "set": {
+       "net.hook": 0.25
+      }
+     }
+    ]
+   }
   },
   {
    "id": "pikewall",
@@ -432,7 +697,7 @@
   },
   {
    "id": "skyward_lancer",
-   "name": "Harpooner",
+   "name": "Gaff Lancer",
    "role": "anti-air",
    "region": 6,
    "cost": 100,
