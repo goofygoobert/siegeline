@@ -1,10 +1,10 @@
 # HANDOFF — current state
-Updated 2026-11-17 (redesign phase 3 done on branch `redesign`; not yet merged to `main`). World: Tales of the Brine.
+Updated 2026-11-17 (redesign is live: `redesign` merged into `main`). World: Tales of the Brine.
 
 ## Where things are
-- **Live (old look):** https://goofygoobert.github.io/siegeline/ — built from `main`.
+- **Live (redesign):** https://goofygoobert.github.io/siegeline/ — built from `main`; scripted play-through run against the live address after the deploy: passed.
 - **Preview (full region redesign):** https://goofygoobert.github.io/siegeline/preview/ — built from `redesign` by the same workflow, added only if its own tests and play-through pass. Re-publish: `gh workflow run test-and-publish --ref main`. Own save slot, no offline install.
-- **To go live:** merge `redesign` into `main` and push (the gate runs). Then remove the preview step from the workflow if no longer wanted. Waiting for the owner's word.
+- The preview at /preview/ still builds from `redesign` (now the same content). Remove the preview step from `.github/workflows/pages.yml` when it is no longer wanted.
 - Read: `docs/design/art-direction.md`, `docs/design/helper-brief.md`, `docs/review/review-4.md`, the "Roll-out" sections of `docs/decisions.md` and `docs/performance.md`, `docs/next-regions.md`.
 
 ## How to rebuild art
