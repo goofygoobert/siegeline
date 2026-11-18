@@ -30,8 +30,9 @@ export function createRenderer(canvas, hooks) {
 
   /** Screen (css px) -> world x. */
   R.toWorldX = (cssX) => (cssX * R.dpr) / R.scale + R.camX;
-  R.toWorldY = (cssY) => (cssY * R.dpr) / R.scale;
-  R.toCss = (wx, wy) => [((wx - R.camX) * R.scale) / R.dpr, (wy * R.scale) / R.dpr];
+  R.yOff = -46;       // the whole scene sits higher so feet stay clear of the card tray
+  R.toWorldY = (cssY) => (cssY * R.dpr) / R.scale - R.yOff;
+  R.toCss = (wx, wy) => [((wx - R.camX) * R.scale) / R.dpr, ((wy + R.yOff) * R.scale) / R.dpr];
   R.clampCam = (B) => { const max = Math.max(0, B.F.width - R.W); R.camX = Math.max(0, Math.min(max, R.camX)); };
 
   // ---------------------------------------------------------------- particles & numbers
@@ -206,9 +207,9 @@ export function createRenderer(canvas, hooks) {
     const c = scaledLayer(L), f = L.parallax || 0;
     const sx = Math.max(0, Math.min(c.width - 1, Math.round(camX * f * R.scale)));
     const sw = Math.min(c.width - sx, Math.ceil(R.W * R.scale));
-    g.setTransform(1, 0, 0, 1, Math.round(R.shakeX * R.scale), Math.round(R.shakeY * R.scale));
+    g.setTransform(1, 0, 0, 1, Math.round(R.shakeX * R.scale), Math.round((R.shakeY + R.yOff) * R.scale));
     g.drawImage(c, sx, 0, sw, c.height, 0, 0, sw, c.height);
-    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
+    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, (R.shakeY + R.yOff) * R.scale);
   }
 
   function spriteDraw(id, anim, t, x, y, opts = {}) {
@@ -302,8 +303,9 @@ export function createRenderer(canvas, hooks) {
     // health bar when hurt (not for boss: boss has its own bar)
     if (e.alive && e.hp < e.maxHp && e.kind !== "boss") {
       const w = Math.max(22, e.s.size * 1.6), hy = y - Math.min(170, e.s.size * 4.6) - 14;
-      g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(sx - w / 2 - 1, hy - 1, w + 2, 5);
-      g.fillStyle = e.side === 1 ? "#7fd36b" : "#ff7a3a"; g.fillRect(sx - w / 2, hy, w * Math.max(0, e.hp / e.maxHp), 3);
+      const bw = Math.max(40, w * 1.5);
+      g.fillStyle = "#10141a"; g.fillRect(sx - bw / 2 - 2, hy - 4, bw + 4, 10);
+      g.fillStyle = e.side === 1 ? "#6fd35a" : "#b48cff"; g.fillRect(sx - bw / 2, hy - 2, bw * Math.max(0, e.hp / e.maxHp), 6);
     }
     if (e.vuln > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 4; i++) { const a = R.t * 4 + i * 1.57; g.fillRect(sx + Math.cos(a) * 26 - 3, y - 250 + Math.sin(a) * 5, 6, 6); } }
     if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - Math.min(170, e.s.size * 4.6) - 4 + Math.sin(a) * 3, 4, 4); } }
@@ -434,7 +436,7 @@ export function createRenderer(canvas, hooks) {
     const q = c.getContext("2d"); let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let x = 30; x < w; x += 150 + rnd() * 260) {
       const kind = rnd();
-      if (kind < 0.62) {       // marram grass
+      if (kind < 2) {       // marram grass
         for (let i = 0; i < 13; i++) { const bx = x + rnd() * 70, h = 26 + rnd() * 46, lean = (rnd() - 0.35) * 34;
           q.strokeStyle = i % 3 ? "#1b1426" : "#2c1f36"; q.lineWidth = 2.5 + rnd() * 2; q.lineCap = "round";
           q.beginPath(); q.moveTo(bx, 130); q.quadraticCurveTo(bx + lean * 0.3, 130 - h * 0.6, bx + lean, 130 - h); q.stroke(); }
@@ -448,7 +450,7 @@ export function createRenderer(canvas, hooks) {
   function drawForeground(B) {
     if (!FG || FG._w !== B.F.width) { FG = buildForeground(B); FG._w = B.F.width; }
     const sx = Math.min(FG.width - R.W - 1, R.camX * 1.35 + 60);
-    g.globalAlpha = 0.92; g.drawImage(FG, sx, 0, R.W + 1, 130, 0, B.F.groundY - 44, R.W + 1, 130); g.globalAlpha = 1;
+    g.globalAlpha = 0.92; g.drawImage(FG, sx, 0, R.W + 1, 130, 0, B.F.groundY + 2, R.W + 1, 130); g.globalAlpha = 1;
   }
 
   // ---------------------------------------------------------------- frame
@@ -465,16 +467,17 @@ export function createRenderer(canvas, hooks) {
     R.shake = Math.max(0, R.shake - dtReal * 1.6);
     const tr = R.shake * R.shake * 14;
     R.shakeX = (Math.random() - 0.5) * tr - R.kick * R.kick * 7; R.shakeY = (Math.random() - 0.5) * tr;
-    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
+    g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, (R.shakeY + R.yOff) * R.scale);
     const L = BG[B.stage.bg] || BG[R.region] || {};
     if (L.sky) drawLayer(L.sky, 0); else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a1418"); gr.addColorStop(1, "#c9602a"); g.fillStyle = gr; g.fillRect(-20, -20, R.W + 40, H + 40); }
     drawLayer(L.far || (BG.r1 && BG.r1.far), R.camX);
     drawWater(B, dtReal);
     haze(0, 250, 150, HZ.far, 0.0, 0.55);            // air between the far shore and the pier
     drawLayer(L.mid || (BG.r1 && BG.r1.mid), R.camX);
-    haze(0, 300, 110, HZ.mid, 0.0, 0.5);             // mist at the foot of the mid-ground: fighters stand clear of it
+    haze(0, 290, 84, HZ.mid, 0.0, 0.42);             // mist at the foot of the mid-ground: fighters stand clear of it
     if (L.near || (BG.r1 && BG.r1.near)) drawLayer(L.near || BG.r1.near, R.camX);
     else { g.fillStyle = "#2b2023"; g.fillRect(-20, B.F.groundY - 6, R.W + 40, H); }
+    g.fillStyle = NIGHT() ? "#0c1614" : "#3a2530"; g.fillRect(-30, H - 2, R.W + 60, 60);
     drawTide(B);
     R.recoil = Math.max(0, R.recoil - dtReal * 3.2); R.muzzle = Math.max(0, R.muzzle - dtReal * 9); R.kick = Math.max(0, R.kick - dtReal * 7);
     for (const d of R.decals) {       // craters and ink on the sand
@@ -523,7 +526,7 @@ export function createRenderer(canvas, hooks) {
         if (p.k === 0 && p.y > B.F.groundY + 8) { p.y = B.F.groundY + 8; p.vx *= 0.5; p.vy = 0; }
         const sx = p.x - R.camX; if (sx < -20 || sx > R.W + 20) continue;
         const a = Math.max(0, p.life / p.max);
-        if (p.k === 1) { g.globalAlpha = a; g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
+        if (p.k === 1) { g.globalAlpha = a; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * 0.6, 0, 7); g.fill(); }
         else if (p.k === 2) { g.globalAlpha = a * 0.5; g.fillStyle = p.c; g.beginPath(); g.arc(sx, p.y, p.size * (1.6 - a * 0.6), 0, 7); g.fill(); }
         else if (p.k === 3) { g.globalAlpha = Math.min(0.5, a) * 0.6; g.fillStyle = p.c; g.fillRect(sx - 1, p.y - 1, 2, 2); }
         else { g.globalAlpha = Math.min(1, a * 1.5); g.fillStyle = p.c; g.fillRect(sx - p.size / 2, p.y - p.size / 2, p.size, p.size); }
@@ -538,7 +541,7 @@ export function createRenderer(canvas, hooks) {
     for (const n of R.nums) {
       if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
       const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
-      g.globalAlpha = a; g.font = `900 ${Math.round((n.head ? 30 : n.big ? 24 : 17) * pop)}px system-ui, sans-serif`;
+      g.globalAlpha = a; g.font = n.head ? `700 ${Math.round(30 * pop)}px Copperplate, "Copperplate Gothic Bold", Rockwell, "DejaVu Serif", Georgia, serif` : `900 ${Math.round((n.big ? 24 : 17) * pop)}px system-ui, sans-serif`;
       g.strokeText(n.t, sx, n.y); g.fillStyle = n.c; g.fillText(n.t, sx, n.y);
     }
     g.globalAlpha = 1;

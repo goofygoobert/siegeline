@@ -214,7 +214,7 @@ async function armoury(backFn) {
   const tabs = h("div", { class: "tabs", role: "tablist" });
   const list = h("div", { class: "list" });
   const setTab = (t) => { armouryTab = t; render(); };
-  const mkTab = (id, label, can) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label, can ? h("span", { class: "dot", "aria-label": "upgrade available" }) : null);
+  const mkTab = (id, label, can) => h("button", { class: "tab" + (armouryTab === id ? " on" : ""), role: "tab", "aria-selected": armouryTab === id, onclick: tap(() => setTab(id)) }, label, can ? h("span", { class: "dot", "aria-label": can + " upgrades you can afford" }, can + "") : null);
   /** One upgrade row. o: {pic, title, role, lvl, max, stats: [[label, now, next]], miles, note, cost, buy, locked, hint} */
   function upRow(o) {
     const maxed = o.lvl >= o.max, can = !o.locked && !maxed && D.marks >= o.cost, shortBy = o.cost - D.marks;
@@ -266,7 +266,7 @@ async function armoury(backFn) {
     }
     return out;
   }
-  const affordable = (tab) => rows(tab).some((o) => !o.locked && o.lvl < o.max && D.marks >= o.cost);
+  const affordable = (tab) => rows(tab).filter((o) => !o.locked && o.lvl < o.max && D.marks >= o.cost).length;
   function render() {
     tabs.replaceChildren(mkTab("units", "Crew", affordable("units")), mkTab("keep", `${W.keep} & ${W.weapon}`, affordable("keep")), mkTab("hero", "Captain & Powers", affordable("hero")));
     document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);

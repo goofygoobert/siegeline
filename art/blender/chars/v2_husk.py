@@ -86,9 +86,9 @@ def dr_walk(t, i, n):
 
 def dr_attack(t, i, n):
     B = _dr_base()
-    rear = dict(B, chest=-30, head=-20, hips=-6, jaw=-52, uaR=178, laR=24, handR=-20, uaL=150, laL=30, thL=20, snL=-30, thR=8, snR=-18,
+    rear = dict(B, chest=(-30, 0, -18), head=-20, hips=-6, jaw=-52, uaR=186, laR=58, handR=-30, uaL=120, laL=80, thL=20, snL=-30, thR=8, snR=-18,
                 root=(-0.08, 0), squash=(0.96, 1.05), tail=(-24, 0.2))
-    slam = dict(B, chest=10, head=0, hips=4, jaw=-40, uaR=62, laR=18, handR=-30, uaL=48, laL=22, thL=32, snL=-40, thR=-14, snR=-24,
+    slam = dict(B, chest=(10, 0, 20), head=0, hips=4, jaw=-40, uaR=58, laR=8, handR=-30, uaL=84, laL=40, thL=32, snL=-40, thR=-14, snR=-24,
                 root=(0.22, 0), squash=(1.05, 0.95), vis=dict(swipe=1), tail=(44, 0.5))
     hold = dict(slam, uaR=40, uaL=30, chest=15, vis=dict(swipe=0), tail=(8, 0.7))
     return keys([(0.0, B), (0.30, rear), (0.42, rear), (0.56, slam), (0.72, hold), (1.0, B)], t)

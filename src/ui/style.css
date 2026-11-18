@@ -631,3 +631,30 @@ input[type=range]::-webkit-slider-thumb { background: #fff; border: 3px solid va
 .ucard { width: 82px; }
 .ucard .nm { font-size: 9.5px; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 @media (max-width: 760px) { .ucard { width: 68px; } .ucard .nm { font-size: 8.5px; } }
+
+/* ---- review 5: the rail is a gunwale with a card tray, not a flat strip; menu gets ledger detail */
+.hud-bottom::before { height: calc(var(--sab) + 54px); background:
+  radial-gradient(circle at 12px 12px, #c9a25a 0 3px, #5b4322 3.5px 4.5px, transparent 5px) 0 4px / 64px 24px repeat-x,
+  repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 126px, rgba(0,0,0,.35) 126px 128px),
+  linear-gradient(180deg, #2f4a66, #14263a 60%, #0c1826); border-top: 4px solid #c9a25a; box-shadow: 0 -2px 0 #0a121b, 0 -12px 24px rgba(0,0,0,.4), inset 0 3px 0 rgba(255,255,255,.12); }
+.cards { padding: 6px 8px 0; margin-bottom: 0; border-radius: 16px 16px 0 0; background: linear-gradient(180deg, rgba(8,14,22,.78), rgba(8,14,22,.92)); box-shadow: inset 0 2px 0 rgba(255,255,255,.1), 0 -4px 14px rgba(0,0,0,.35); border: 2px solid #c9a25a; border-bottom: 0; }
+.ucard { height: 98px; margin-bottom: 6px; }
+.ucard.ready { transform: translateY(-5px); }
+.ucard .cost { font-size: 18px; padding: 2px 0 3px; }
+.ucard .afm { bottom: 26px; } .ucard .cd { bottom: 26px; }
+.weapon svg { width: 64px; height: 64px; }
+.hud-bottom .left, .hud-bottom .side { margin-bottom: 6px; }
+/* menu */
+.card { background: linear-gradient(180deg, #f8efd8, #e9d9b2); box-shadow: inset 0 0 0 2px #f8efd8, inset 0 0 0 3px rgba(120,90,40,.45), 0 6px 0 rgba(0,0,0,.35), 0 14px 24px rgba(0,0,0,.3); }
+.card.can { box-shadow: inset 0 0 0 2px #f8efd8, inset 0 0 0 3px rgba(120,90,40,.45), 0 0 0 3px var(--go), 0 6px 0 rgba(0,0,0,.35), 0 14px 24px rgba(0,0,0,.3); }
+.card .pic { background: linear-gradient(180deg, #2a5578, #173650); border: 3px solid #c9a25a; box-shadow: 0 0 0 2px var(--dark); }
+.stat { background: rgba(28,23,18,.86); color: #fff; }
+.stat small { color: #e6d5ae; }
+.stat b { color: #9df08a; }
+.pips { gap: 3px; margin-top: 8px; }
+.pips i { width: 15px; height: 9px; border-radius: 2px; }
+.pips i.mile { width: 12px; height: 12px; }
+.card.locked { border: 0; background: linear-gradient(180deg, #2a3d52, #1a2a3c); box-shadow: inset 0 0 0 2px rgba(255,255,255,.08); }
+.tab .dot { width: auto; height: auto; min-width: 20px; padding: 2px 6px; border-radius: 10px; background: var(--go); color: var(--go-ink); font: 900 12px/1.2 system-ui, sans-serif; margin-left: 8px; }
+.coin { background: radial-gradient(circle at 35% 30%, #fff0b0, #f0b030 55%, #a8641a); box-shadow: inset 0 0 0 2px #7a4a12, inset 0 0 0 4px rgba(255,240,180,.5); }
+@media (max-width: 760px) { .ucard { height: 86px; } }

@@ -361,6 +361,11 @@ def head_crew(fig, C, brow=(0.24, 0.13, 0.08), beard=None, nose=1.0, jaw=1.0):
         fig.add(orb(r * 0.27, (ex - r * 0.12, y * r * 0.40, cz + r * 0.14), (0.5, 0.9, 1.05), seg=10, name="eyewhite"), "head", V2["white"], glow=0.7, line=0.01)
         fig.add(orb(r * 0.135, (ex + r * 0.0, y * r * 0.40 - 0.01, cz + r * 0.11), (0.5, 1, 1.1), seg=8, name="pupil"), "head", (0.07, 0.05, 0.06), glow=0.9, line=0)
         fig.add(orb(r * 0.2, (cx - r * 0.05, y * r * 0.98, cz - r * 0.02), (0.7, 0.4, 1.0), seg=8, name="ear"), "head", C["skin"], line=0.012)
+    # shut eyes (hit, death): dark lids that cover the whites
+    toggle(fig, "eyes_shut", "head", (ex - r * 0.1, 0, cz + r * 0.14), 0)
+    for y in (-1, 1):
+        fig.add(orb(r * 0.29, (ex - r * 0.10, y * r * 0.40, cz + r * 0.14), (0.52, 0.95, 0.62), seg=10, name="lid"), "eyes_shut", C["skin"], line=0.012)
+        fig.add(block((r * 0.06, r * 0.44, r * 0.07), (ex + r * 0.04, y * r * 0.40, cz + r * 0.10), bevel=0.0, name="lash"), "eyes_shut", (0.12, 0.07, 0.07), glow=0.9, line=0)
     # brow: one dark bar across both eyes, pivots for expression
     fig.joint("brow", (ex - r * 0.05, 0, cz + r * 0.36), "head", 1)
     fig.add(block((r * 0.32, r * 1.3, r * 0.2), (ex - r * 0.08, 0, cz + r * 0.44), rot=(-12, "Y"), bevel=0.02, name="brow"), "brow", brow, line=0.008)

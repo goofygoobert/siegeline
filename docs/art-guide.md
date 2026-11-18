@@ -100,10 +100,10 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 ## Atlas sizes (written by tools/pack_sprites.py)
 | file | size | ppu | bytes | ids |
 |---|---|---|---|---|
-| units.webp | 2044x2020 | 104 | 552 KB | ashguard, torchbow |
-| units2.webp | 2048x1648 | 104 | 524 KB | cinder_runner, bellringer |
-| units3.webp | 2048x2032 | 104 | 365 KB | maulwright |
-| units4.webp | 2028x2024 | 104 | 481 KB | maulwright, lamplighter |
+| units.webp | 2048x2044 | 104 | 546 KB | ashguard, torchbow |
+| units2.webp | 2048x1648 | 104 | 510 KB | cinder_runner, bellringer |
+| units3.webp | 2020x2036 | 104 | 357 KB | maulwright |
+| units4.webp | 2040x2032 | 104 | 461 KB | maulwright, lamplighter |
 | unitsb.webp | 1716x2044 | 80 | 584 KB | ashguard_t2, torchbow_t2, cinder_runner_t2 |
 | unitsb2.webp | 1928x968 | 80 | 211 KB | bellringer_t2 |
 | unitsb3.webp | 1916x2012 | 80 | 370 KB | maulwright_t2 |
@@ -113,12 +113,12 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 | unitsc3.webp | 1656x1984 | 80 | 394 KB | maulwright_t3 |
 | unitsc4.webp | 880x2040 | 80 | 276 KB | lamplighter_t3 |
 | hero.webp | 1364x2012 | 80 | 394 KB | marshal |
-| enemies.webp | 1328x2048 | 104 | 677 KB | husk, gnawer |
-| enemies2.webp | 2000x2048 | 104 | 860 KB | spitter, bloater |
-| enemies3.webp | 2000x2048 | 104 | 585 KB | brute |
-| enemies4.webp | 1060x1992 | 104 | 264 KB | brute |
-| enemies5.webp | 1952x2016 | 104 | 648 KB | husk_warden |
-| enemies6.webp | 756x1716 | 104 | 160 KB | husk_warden |
+| enemies.webp | 1524x2048 | 104 | 669 KB | husk, gnawer |
+| enemies2.webp | 2044x2048 | 104 | 845 KB | spitter, bloater |
+| enemies3.webp | 1156x2040 | 104 | 361 KB | brute |
+| enemies4.webp | 1908x2048 | 104 | 474 KB | brute |
+| enemies5.webp | 1964x2028 | 104 | 629 KB | husk_warden |
+| enemies6.webp | 760x1724 | 104 | 155 KB | husk_warden |
 | boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
 | boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
 | boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |

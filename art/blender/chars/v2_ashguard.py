@@ -53,7 +53,8 @@ def hatchguard_fig(spec):
     bc = V2["cursed"] if t >= 3 else V2["steel"]
     fig.add(slab(blade, 0.035, at=g, bevel=0.01, name="blade"), "handR", bc, metal=True, glow=0.35 if t >= 3 else 0.0, line=0.016)
     fig.add(loft([(-0.14, 0.035, 0.035), (0.05, 0.04, 0.04)], seg=7, axis="x", at=g, name="grip"), "handR", V2["leather"], line=0.012)
-    fig.add(orb(0.085, (g.x + 0.07, g.y, g.z), (0.45, 1.0, 1.25), seg=8, name="guard"), "handR", V2["brass"], metal=True, line=0.012)
+    fig.add(orb(0.12, (g.x + 0.07, g.y, g.z), (0.5, 1.15, 1.5), seg=10, name="guard"), "handR", V2["brass"], metal=True, line=0.014)
+    fig.add(orb(0.05, (g.x - 0.15, g.y, g.z), seg=8, name="pommel"), "handR", V2["brass"], metal=True, line=0.01)
     # swipe arc shown on the strike frames
     toggle(fig, "swipe", "root", (0.2, -0.3, 1.0), 0)
     arc = []; inner = []
@@ -88,31 +89,32 @@ def hg_walk(t, i, n):
 
 def hg_attack(t, i, n):
     G = _hg_guard()
-    wind = dict(G, chest=-13, hips=-4, head=6, uaR=205, laR=-28, handR=-34, shield=-6, off=dict(shield=(-0.06, 0, 0.03)),
+    wind = dict(G, chest=(-13, 0, -24), hips=-4, head=6, uaR=205, laR=-28, handR=-34, shield=-6, off=dict(shield=(-0.06, 0, 0.03)),
                 thL=20, snL=-26, thR=-18, snR=-10, root=(-0.07, 0), squash=(1.03, 0.97), brow=-12, vis=dict(m_open=1, m_shut=0), tail=(-18, 0.2))
-    hit = dict(G, chest=24, hips=7, head=-12, uaR=78, laR=14, handR=-112, shield=-22, off=dict(shield=(-0.10, 0, -0.10)),
+    hit = dict(G, chest=(24, 0, 22), hips=7, head=-12, uaR=78, laR=14, handR=-112, shield=-22, off=dict(shield=(-0.10, 0, -0.10)),
                thL=34, snL=-30, thR=-30, snR=-4, root=(0.20, 0), squash=(0.97, 1.03), brow=-16,
                vis=dict(m_open=1, m_shut=0, swipe=1), tail=(40, 0.5))
-    hold = dict(hit, uaR=58, laR=10, handR=-124, chest=27, vis=dict(m_open=1, m_shut=0, swipe=0), root=(0.22, 0), tail=(10, 0.7))
+    hold = dict(hit, uaR=58, laR=10, handR=-124, chest=(27, 0, 14), vis=dict(m_open=1, m_shut=0, swipe=0), root=(0.22, 0), tail=(10, 0.7))
     return keys([(0.0, G), (0.30, wind), (0.42, wind), (0.56, hit), (0.72, hold), (1.0, dict(G, tail=(0, 1.0)))], t)
 
 
 def hg_hit(t, i, n):
     G = _hg_guard()
     back = dict(G, chest=-19, head=-16, hips=-5, root=(-0.10, 0), squash=(1.06, 0.93), uaR=-70, laR=70, shield=9, brow=14,
-                vis=dict(m_open=1, m_shut=0), tail=(-30, 0.2))
+                vis=dict(m_open=1, m_shut=0, eyes_shut=1), tail=(-30, 0.2))
     return keys([(0.0, back), (0.45, dict(G, chest=-6, root=(-0.05, 0))), (1.0, G)], t)
 
 
 def hg_die(t, i, n):
     G = _hg_guard()
-    reel = dict(G, chest=-22, head=-20, hips=-8, root=(-0.10, 0), uaR=-120, laR=30, uaL=-40, laL=20, brow=16, vis=dict(m_open=1, m_shut=0),
+    reel = dict(G, chest=-22, head=-20, hips=-8, root=(-0.10, 0), uaR=-120, laR=30, uaL=-40, laL=20, brow=16, vis=dict(m_open=1, m_shut=0, eyes_shut=1),
                 shield=10, tail=(-30, 0.2))
     fall = dict(reel, rootrot=-62, root=(-0.22, 0.10), free=1, thL=30, snL=-50, thR=10, snR=-30, uaR=-150, uaL=-100, shield=24, off=dict(shield=(-0.1, 0, 0.0)))
     down = dict(fall, rootrot=-90, root=(-0.34, 0.24), chest=-4, head=-8, thL=14, snL=-20, thR=2, snR=-6, uaR=-165, laR=10, uaL=-140, laL=10,
-                shield=30, off=dict(shield=(-0.16, 0, -0.05)), vis=dict(m_open=0, m_shut=1), brow=0, tail=(0, 0.5))
-    bounce = dict(down, root=(-0.34, 0.30), rootrot=-86)
-    return keys([(0.0, G), (0.2, reel), (0.5, fall), (0.68, down), (0.78, bounce), (0.9, down), (1.0, down)], t)
+                shield=30, off=dict(shield=(-0.16, 0, -0.05)), vis=dict(m_open=0, m_shut=1, eyes_shut=1), brow=0, squash=(1.12, 0.84), tail=(0, 0.5))
+    bounce = dict(down, root=(-0.34, 0.30), rootrot=-86, squash=(0.95, 1.06))
+    rest = dict(down, squash=(1.0, 1.0))
+    return keys([(0.0, G), (0.2, reel), (0.5, fall), (0.68, down), (0.78, bounce), (0.9, rest), (1.0, rest)], t)
 
 
 def _hg(t):

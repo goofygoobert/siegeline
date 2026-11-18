@@ -1,9 +1,9 @@
 {
  "field": {
-  "width": 1380,
+  "width": 1320,
   "groundY": 400,
   "playerCastleX": 150,
-  "enemyCastleX": 1230,
+  "enemyCastleX": 1180,
   "laneJitter": 22
  },
  "simHz": 30,

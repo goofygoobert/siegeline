@@ -22,8 +22,8 @@ export function createBattle(content, stage, progress, seed = 1) {
     t: 0, dt: DT_DEFAULT, tick: 0, rand: rng(seed), stage, content, F, g,
     energy: g.energy.start, energyMax: g.energy.max + g.energy.maxPerLevel * (lv("energyMax") - 1),
     regen: g.energy.regen + g.energy.regenPerLevel * (lv("energyRegen") - 1),
-    keep: { hp: keepMax, max: keepMax, x: F.playerCastleX, front: F.playerCastleX + 70, hitT: 0 },
-    gate: { hp: stage.enemyCastleHp, max: stage.enemyCastleHp, x: F.enemyCastleX, front: F.enemyCastleX - 80, hitT: 0,
+    keep: { hp: keepMax, max: keepMax, x: F.playerCastleX, front: F.playerCastleX + 110, hitT: 0 },
+    gate: { hp: stage.enemyCastleHp, max: stage.enemyCastleHp, x: F.enemyCastleX, front: F.enemyCastleX - 190, hitT: 0,     // monsters gather on open sand, not inside the Grotto mouth
             sealed: stage.winOn === "boss" },
     cards, unitDefs, enemyDefs,
     ents: [], nextId: 1, projs: [], patches: [], marks: [], scheduled: [],
