@@ -112,11 +112,13 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 | unitsc2.webp | 1928x968 | 80 | 215 KB | bellringer_t3 |
 | unitsc3.webp | 1656x1984 | 80 | 394 KB | maulwright_t3 |
 | unitsc4.webp | 880x2040 | 80 | 276 KB | lamplighter_t3 |
-| hero.webp | 1364x2012 | 80 | 389 KB | marshal |
-| enemies.webp | 2044x1732 | 104 | 745 KB | husk, gnawer, spitter |
-| enemies2.webp | 1968x932 | 104 | 340 KB | bloater |
-| enemies3.webp | 1568x1928 | 104 | 439 KB | brute |
-| enemies4.webp | 1520x1976 | 104 | 426 KB | husk_warden |
+| hero.webp | 1364x2012 | 80 | 394 KB | marshal |
+| enemies.webp | 1328x2048 | 104 | 677 KB | husk, gnawer |
+| enemies2.webp | 2000x2048 | 104 | 860 KB | spitter, bloater |
+| enemies3.webp | 2000x2048 | 104 | 585 KB | brute |
+| enemies4.webp | 1060x1992 | 104 | 264 KB | brute |
+| enemies5.webp | 1952x2016 | 104 | 648 KB | husk_warden |
+| enemies6.webp | 756x1716 | 104 | 160 KB | husk_warden |
 | boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
 | boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
 | boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |

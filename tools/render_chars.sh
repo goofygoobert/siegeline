@@ -11,6 +11,7 @@ OLDCHARS=$(echo "$CHARS" | tr ' ' '\n' | grep -v '/v2_')
 declare -A MINE=([look_h1]="torchbow cinder_runner bellringer" [look_h2]="maulwright lamplighter marshal" [look_h3]="gnawer spitter bloater" [look_h4]="brute husk_warden" [look_boss]="cinder_matron" [look]="ashguard husk" [v2]="ashguard torchbow cinder_runner bellringer maulwright lamplighter")
 for J in "$@"; do
   # a helper's test job bundles only that helper's own new files, so one broken file cannot stop the others
+  LIBS=""; for f in art/blender/cast.py art/blender/kit2.py $CHARS; do LIBS="$LIBS --lib $f"; done      # reset per job (a helper list must not leak into the next job)
   if [[ -n "${MINE[$J]}" ]]; then
     LIBS=""; for f in art/blender/cast.py art/blender/kit2.py $OLDCHARS; do LIBS="$LIBS --lib $f"; done
     for id in ${MINE[$J]}; do [ -f art/blender/chars/v2_$id.py ] && LIBS="$LIBS --lib art/blender/chars/v2_$id.py"; done
