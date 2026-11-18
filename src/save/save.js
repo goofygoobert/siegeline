@@ -4,7 +4,7 @@
 const PREVIEW = typeof location !== "undefined" && /\/preview\//.test(location.pathname);
 const KEY = PREVIEW ? "siegeline.preview.save" : "siegeline.save", BAK = KEY + ".bak";
 if (PREVIEW) try { const ls = window.localStorage; if (!ls.getItem(KEY) && ls.getItem("siegeline.save")) ls.setItem(KEY, ls.getItem("siegeline.save")); } catch {}
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export function freshData() {
   return {
@@ -14,6 +14,9 @@ export function freshData() {
     unlocked: { units: ["ashguard", "torchbow"], hero: false, abilities: [] },
     keep: 1, ballista: 1, energyMax: 1, energyRegen: 1, hero: 1, abilities: {},
     tutorials: [], seen: {},
+    loadouts: {},                    // stage id -> last crew taken in
+    skills: {},                      // crew id -> level-10 skill choice (0 or 1)
+    tavern: [],                      // crew offered in the Tavern so far (bought ones move to unlocked.units)
     settings: { music: 0.6, sfx: 0.85, reducedMotion: false, largeText: false, speed: 1 },
     playTime: 0,
   };
@@ -26,6 +29,16 @@ const MIGRATIONS = {
       const s = d.stages[id];
       if (typeof s.stars === "number") s.stars = [s.stars >= 1, s.stars >= 2, s.stars >= 3];
     }
+    return d;
+  },
+  // v2 -> v3: region 1 grew from six stages to eight. Old progress moves to the stage that teaches the same thing
+  // (old 3 Pufferghast Shoals is now 5, old 5 Wreckers' Reef is now 6); new stages 3 and 7 start unplayed but open.
+  // Crew owned stay owned, and any free recruit already earned by a cleared stage is given.
+  2: (d) => {
+    const old = d.stages || {}, map = { r1s1: "r1s1", r1s2: "r1s2", r1s3: "r1s5", r1s4: "r1s4", r1s5: "r1s6", r1boss: "r1boss" }, out = {};
+    for (const [o, n] of Object.entries(map)) if (old[o]) out[n] = old[o];
+    d.stages = out;
+    d.migratedFrom2 = true;
     return d;
   },
 };
@@ -62,6 +75,9 @@ function repair(d) {
   out.unitLevels = { ...f.unitLevels, ...(d.unitLevels || {}) };
   out.abilities = { ...(d.abilities || {}) };
   out.stages = d.stages || {};
+  out.loadouts = { ...(d.loadouts || {}) };
+  out.skills = { ...(d.skills || {}) };
+  out.tavern = Array.isArray(d.tavern) ? d.tavern : [];
   if (!(out.marks >= 0)) out.marks = 0;
   return out;
 }

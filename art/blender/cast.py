@@ -29,14 +29,14 @@ ANIMSETS = {
                ("die", 14, 9, False, None)],
 }
 
-UNITS = ["ashguard", "torchbow", "cinder_runner", "bellringer", "maulwright", "lamplighter"]
-ENEMIES = ["husk", "gnawer", "spitter", "bloater", "brute", "husk_warden"]
+UNITS = ["ashguard", "torchbow", "cinder_runner", "bellringer", "maulwright", "lamplighter", "harpooner", "netcaster"]
+ENEMIES = ["husk", "gnawer", "spitter", "bloater", "brute", "husk_warden", "gallows_gull", "bellback", "tide_nurse"]
 ICONS = ["i_ember_rain", "i_rally", "i_mark", "i_star", "i_star_empty", "i_energy", "i_lock"]
 PORTRAITS = ["p_" + u for u in UNITS] + ["p_marshal"]
 
 TIERED = UNITS + [u + "_t2" for u in UNITS] + [u + "_t3" for u in UNITS]
 NEW_UNITS = ["harpooner", "netcaster"]; NEW_ENEMIES = ["gallows_gull", "bellback", "tide_nurse"]   # part 3 cast
-V2_IDS = TIERED + ENEMIES + ["marshal", "cinder_matron"] + NEW_UNITS + [u + t for u in NEW_UNITS for t in ("_t2", "_t3")] + NEW_ENEMIES
+V2_IDS = TIERED + ENEMIES + ["marshal", "cinder_matron"]
 ANIMSET_OF = {i: "v2" for i in V2_IDS}
 ANIMSET_OF.update({"marshal": "v2hero", "cinder_matron": "v2boss", "cinder_runner": "v2fast", "cinder_runner_t2": "v2fast",
                    "cinder_runner_t3": "v2fast", "gnawer": "v2fast", "bloater": "v2slow", "brute": "v2slow",

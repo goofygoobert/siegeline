@@ -5,6 +5,7 @@ import game from "../data/game.json";
 import regions from "../data/regions.json";
 import r1 from "../data/stages/r1.json";
 import W from "../data/world.json";
+import ROSTER from "../data/design/roster.json";
 import { createBattle, step, input, canSend, stars as starCount } from "./sim/battle.js";
 import { makeBot } from "./sim/bot.js";
 import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
@@ -21,6 +22,8 @@ const enemyById = Object.fromEntries(enemies.enemies.map((e) => [e.id, e]));
 const abilityNames = W.abilities;
 const SHORT = W.short;
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k]);
+const crewPlan = Object.fromEntries(ROSTER.crew.map((c) => [c.id, c]));        // strong / weak traits per crew member
+const TRAITS = ROSTER.traits;
 
 const ui = document.getElementById("ui");
 const TEST = new URLSearchParams(location.search).has("test");
@@ -48,6 +51,7 @@ for (const [k, f] of Object.entries({ coin: "icons/coin.webp", cannon: "icons/ca
   document.documentElement.style.setProperty("--img-" + k, `url("${new URL("assets/" + f, document.baseURI).href}")`);   // absolute: a url() inside a custom property resolves against the stylesheet that uses it
 const artIcon = (k, cls = "art") => h("span", { class: cls + " art-" + k, "aria-hidden": "true" });
 const I = {
+  mug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 7h11v11a3 3 0 01-3 3H7a3 3 0 01-3-3z"/><path d="M15 10h2.5a2.5 2.5 0 010 5H15"/><path d="M5 4.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10.3 2.5h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.3"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
@@ -115,9 +119,61 @@ function topbar(title, backFn, extra = []) {
 // ---------------------------------------------------------------- progress helpers
 const regionStages = content.stages.filter((s) => s.region === "r1");
 const cleared = (id) => !!(D.stages[id] && D.stages[id].clears > 0);
-const stageOpen = (i) => i === 0 || cleared(regionStages[i - 1].id);
+const stageOpen = (i) => i === 0 || cleared(regionStages[i].id) || cleared(regionStages[i - 1].id);
 const starsOf = (id) => (D.stages[id] && D.stages[id].stars) || [false, false, false];
 const totalStars = () => regionStages.reduce((n, s) => n + starsOf(s.id).filter(Boolean).length, 0);
+const owned = (id) => D.unlocked.units.includes(id);
+/** Monsters of a stage in the order they first arrive (waves, then the loop, then the boss). */
+function foesOf(s) {
+  const seen = new Map();
+  for (const w of [...s.waves].sort((a, b) => a.t - b.t)) if (!seen.has(w.id)) seen.set(w.id, w.t);
+  for (const [id] of (s.loop ? s.loop.pool : [])) if (!seen.has(id)) seen.set(id, 1e3);
+  const out = [...seen.keys()]; if (s.boss) out.unshift(s.boss);
+  return out;
+}
+const tagsOf = (id) => enemyById[id].tags || [];
+/** The first stage in the region where a trait appears: that stage introduces it. */
+function firstWithTrait(tag) { return regionStages.find((st) => foesOf(st).some((f) => tagsOf(f).includes(tag))); }
+/** Give every free recruit and Tavern offer earned by cleared stages (also repairs migrated saves). Returns new names. */
+function syncRecruits() {
+  const got = [];
+  for (const st of regionStages) {
+    if (!cleared(st.id)) continue;
+    for (const u of st.unlocks) {
+      if (unitById[u] && !owned(u)) { D.unlocked.units.push(u); D.unitLevels[u] = D.unitLevels[u] || 1; got.push({ id: u, how: "free" }); }
+      else if (u === "hero" && !D.unlocked.hero) D.unlocked.hero = true;
+      else if (game.abilities[u] && !D.unlocked.abilities.includes(u)) { D.unlocked.abilities.push(u); D.abilities[u] = D.abilities[u] || 1; }
+    }
+    for (const u of st.tavern || []) if (!owned(u) && !D.tavern.includes(u)) { D.tavern.push(u); got.push({ id: u, how: "tavern" }); }
+  }
+  return got;
+}
+const TICON = {
+  plain: '<circle cx="12" cy="12" r="5"/>',
+  swarm: '<circle cx="6" cy="15" r="3"/><circle cx="12" cy="9" r="3"/><circle cx="18" cy="15" r="3"/>',
+  flying: '<path d="M2 14c4-6 8-7 10-3 2-4 6-3 10 3-4-2-7-1-10 3-3-4-6-5-10-3z"/>',
+  siege: '<path d="M3 20c2-10 9-15 18-14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="19" cy="7" r="3.2"/><rect x="2" y="17" width="7" height="5" rx="1"/>',
+  exploder: '<path d="M12 2l2.2 6.2L20 5l-2.6 6.2L22 14l-6.3.6L16 22l-4-5-4 5 .3-7.4L2 14l4.6-2.8L4 5l5.8 3.2z"/>',
+  armoured: '<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/>',
+  shelled: '<path d="M6 17c0-6 2-12 6-12s6 6 6 12z"/><rect x="4" y="17" width="16" height="3" rx="1.5"/><circle cx="12" cy="21.5" r="1.5"/>',
+  healer: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 6c2.5 3.5 4 5.5 4 7.5a4 4 0 01-8 0c0-2 1.5-4 4-7.5z"/>',
+  boss: '<path d="M3 18l2-11 4.5 5L12 5l2.5 7L19 7l2 11z"/><rect x="3" y="19" width="18" height="2.5" rx="1"/>',
+};
+const traitIcon = (tag) => h("span", { class: "ticon t-" + tag, "aria-hidden": "true", html: `<svg viewBox="0 0 24 24" fill="currentColor">${TICON[tag] || TICON.plain}</svg>` });
+const traitName = (tag) => (TRAITS[tag] ? TRAITS[tag].name : tag === "boss" ? "Boss" : tag);
+/** A still of any fighter (first idle frame), for monster portraits on the scouting strip. */
+const figCache = {};
+function figure(id) {
+  const sp = sprites[id];
+  if (!sp) return h("span", { class: "ph" });
+  if (!figCache[id]) {
+    const fr = (sp.anims.idle || Object.values(sp.anims)[0]).frames[0];
+    const c = document.createElement("canvas"); c.width = fr[2]; c.height = fr[3];
+    c.getContext("2d").drawImage(sp.atlas.img, fr[0], fr[1], fr[2], fr[3], 0, 0, fr[2], fr[3]);
+    figCache[id] = c.toDataURL();
+  }
+  return h("img", { src: figCache[id], alt: "", draggable: "false" });
+}
 
 // ---------------------------------------------------------------- title
 async function titleScreen() {
@@ -150,7 +206,7 @@ async function worldMap() {
     const open = !!r.playable;
     map.append(h("button", { class: "pin" + (open ? "" : " locked"), style: `left:${p.x * 100}%;top:${p.y * 100}%`, "aria-label": r.name + (open ? "" : " (locked)"),
       onclick: open ? tap(() => regionScreen(r)) : tap(() => toast(`${r.name}: ${r.blurb.split(".")[0]}. Coming in a later update.`, 3200), "ui_locked") },
-      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/18` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
+      h("span", { class: "dot" }), h("span", { class: "lbl" }, open ? `${r.name} · ${totalStars()}/${regionStages.length * 3}` : h("span", { style: "display:inline-flex;align-items:center;gap:4px" }, h("span", { class: "icon", style: "width:12px;height:12px;display:inline-block;margin-right:3px", html: I.lock.replace('<svg', '<svg width="12" height="12"') }), r.name)),
       open && cleared("r1boss") ? h("span", { class: "cleared" }, "Cleared") : null));
   });
   const ann = D.seen.regionCleared === "new" ? h("div", { class: "announce", role: "status" }, h("b", {}, W.regionCleared.title),
@@ -167,7 +223,7 @@ async function regionScreen(region) {
   playMusic("map");
   await loadAtlas("ui", { white: false });
   const bgs = await loadBackgrounds("r1");
-  const pts = [[0.1, 0.72], [0.25, 0.4], [0.4, 0.68], [0.55, 0.36], [0.7, 0.66], [0.87, 0.42]];
+  const pts = [[0.08, 0.72], [0.19, 0.42], [0.31, 0.7], [0.43, 0.4], [0.55, 0.7], [0.67, 0.4], [0.78, 0.68], [0.9, 0.38]];
   const path = h("div", { class: "path" });
   const svgPts = pts.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
   path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="#2a1b11" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke" style="stroke-width:9px"/><polyline points="${svgPts}" fill="none" stroke="#d9bb82" stroke-linecap="round" stroke-dasharray="7 5" vector-effect="non-scaling-stroke" style="stroke-width:5px"/>` }));
@@ -176,7 +232,7 @@ async function regionScreen(region) {
     const open = stageOpen(i), st = starsOf(s.id);
     const node = h("button", { class: "node" + (s.boss ? " boss" : "") + (open ? "" : " locked") + (i === nextIdx ? " next" : ""),
       style: `left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%`, "aria-label": `${s.name}${open ? "" : " (locked)"}`,
-      onclick: open ? tap(() => stageSheet(s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
+      onclick: open ? tap(() => prepScreen(s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
       s.boss ? "☠︎" : String(i + 1),
       h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))),
       open ? h("span", { class: "nm" }, s.name) : null);
@@ -187,32 +243,103 @@ async function regionScreen(region) {
   const back = bgs && (bgs.mid || bgs.far);
   show(h("div", { class: "screen" },
     h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
-    topbar(region.name, worldMap, [h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
+    topbar(region.name, worldMap, [
+      D.tavern.length || regionStages.some((st) => st.tavern) ? h("button", { class: "btn" + (D.tavern.some((u) => !owned(u)) ? " has-new" : ""), onclick: tap(() => tavern(() => regionScreen(region))) }, icon(I.mug), W.tavern.title) : null,
+      h("button", { class: "btn", onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), W.armoury.title)]),
     path));
-  if (nextIdx >= 0 && !D.seen.firstSheet) { D.seen.firstSheet = true; stageSheet(regionStages[nextIdx], region); }
 }
 
-function stageSheet(s, region) {
-  for (const m of ui.querySelectorAll(".sheet")) m.remove();
-  const foes = new Set(); for (const w of s.waves) foes.add(w.id); for (const [id] of (s.loop ? s.loop.pool : [])) foes.add(id); if (s.boss) foes.add(s.boss);
-  const st = starsOf(s.id), first = !cleared(s.id);
+/** Scouting + loadout: who you will face (in arrival order, with their traits) and who you take in. Tapping a
+ *  monster lights the crew who answer it and dims the ones it beats, straight from the counter data. */
+async function prepScreen(s, region, preset) {
+  await Promise.all([loadAtlas("ui", { white: false }), loadAtlas("enemies", { white: false }), s.boss ? loadAtlas("boss", { white: false }) : null]);
+  const idx = regionStages.indexOf(s), slots = s.slots || 5, first = !cleared(s.id);
   const reward = first ? s.reward : Math.round(s.reward * game.rewards.replayFraction);
-  const sheet = h("div", { class: "sheet", role: "dialog", "aria-label": s.name }, h("div", { class: "sheet-body" },
-    h("div", { class: "row" }, h("div", { class: "muted", style: "font-weight:700" }, s.boss ? "Boss battle" : `Stage ${regionStages.indexOf(s) + 1}`), h("div", { class: "spacer" }),
-      h("button", { class: "btn icon", "aria-label": "Close", onclick: tap(() => sheet.remove(), "ui_back") }, h("span", { html: "&#x2715;" }))),
-    h("h2", {}, s.name),
-    s.boss ? h("p", { class: "note", style: "margin:0" }, enemyById[s.boss].desc) : null,
-    h("div", { class: "muted", style: "font-size:13px;font-weight:700" }, "You'll face"),
-    h("div", { class: "chips" }, ...[...foes].map((id) => h("span", { class: "chip" }, h("span", { class: "dot", style: "width:10px;height:10px;border-radius:50%;background:#ff7a3a;margin-left:6px" }), enemyById[id].name))),
-    h("div", { class: "starrow" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (st[i] ? " on" : "") }), i === 2 ? `Win in under ${Math.floor(s.par / 60)}:${String(s.par % 60).padStart(2, "0")}` : d))),
-    ),
-    h("button", { class: "btn primary big", onclick: tap(() => startBattle(s)), "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} ${W.currency}` }, "Fight",
-      h("span", { style: "display:inline-flex;align-items:center;gap:4px;font-size:14px;opacity:.85;margin-left:10px" }, "+", coin(), reward + "")));
-  current.append(sheet);
+  const crew = units.units.filter((u) => owned(u.id));
+  let pick = (preset || D.loadouts[s.id] || D.loadouts._last || []).filter(owned).slice(0, slots);
+  if (!pick.length) pick = crew.slice(0, slots).map((u) => u.id);
+  const foes = foesOf(s);
+  let focus = null;
+  const strip = h("div", { class: "scout", role: "list", "aria-label": "Monsters in this battle, in the order they arrive" });
+  const roster = h("div", { class: "roster" });
+  const fightBtn = h("button", { class: "btn primary big", onclick: tap(() => { if (!pick.length) return; D.loadouts[s.id] = pick.slice(); D.loadouts._last = pick.slice(); persist(); startBattle(s, pick); }),
+    "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} ${W.currency}` }, "Fight", h("span", { class: "reward" }, "+", coin(), reward + ""));
+  const verdict = (u) => {
+    if (!focus) return "";
+    const tags = tagsOf(focus), c = crewPlan[u];
+    if (!c) return "";
+    if (tags.some((t) => c.strong.includes(t))) return "good";
+    if (tags.some((t) => c.weak.includes(t))) return "bad";
+    return "";
+  };
+  function render() {
+    strip.replaceChildren(...foes.map((f) => {
+      const tags = tagsOf(f), isNew = tags.some((t) => t !== "plain" && t !== "boss" && firstWithTrait(t) === s);
+      return h("button", { class: "foe" + (focus === f ? " on" : "") + (isNew ? " new" : ""), role: "listitem", "aria-pressed": focus === f,
+        "aria-label": `${enemyById[f].name}: ${tags.map(traitName).join(", ")}. Show who answers it.`, onclick: tap(() => { focus = focus === f ? null : f; render(); }) },
+        h("span", { class: "pic" }, figure(f)), h("b", {}, enemyById[f].name),
+        h("span", { class: "tags" }, ...tags.filter((t) => t !== "plain").map((t) => h("span", { class: "tag" }, traitIcon(t), traitName(t)))),
+        isNew ? h("span", { class: "newflag" }, "New") : null);
+    }));
+    const ft = focus ? tagsOf(focus).filter((t) => TRAITS[t] && t !== "plain") : [];
+    const newTag = foes.flatMap(tagsOf).find((t) => TRAITS[t] && t !== "plain" && firstWithTrait(t) === s);
+    hint.replaceChildren(...(ft.length ? [h("b", {}, traitName(ft[0]) + ": "), TRAITS[ft[0]].rule]
+      : newTag ? [h("b", {}, "New: " + traitName(newTag) + ". "), TRAITS[newTag].rule] : [s.teaches || ""]));
+    roster.replaceChildren(...crew.map((u) => {
+      const inT = pick.includes(u.id), v = verdict(u.id);
+      return h("button", { class: "rcard" + (inT ? " in" : "") + (v ? " " + v : ""), "aria-pressed": inT,
+        "aria-label": `${u.name}, ${u.cost} ${W.energy}${v === "good" ? ", answers it" : v === "bad" ? ", weak against it" : ""}. ${inT ? "Remove from" : "Add to"} the crew.`,
+        onclick: tap(() => { if (inT) pick = pick.filter((x) => x !== u.id); else if (pick.length < slots) pick.push(u.id); else { sfx("ui_locked"); toast(`Only ${slots} places on this stage. Tap a crew member above to take them out.`); return; } render(); }) },
+        h("span", { class: "pic" }, portrait(u.id, 56), h("span", { class: "lvb" }, (D.unitLevels[u.id] || 1) + "")),
+        h("b", {}, SHORT[u.id] || u.name), h("span", { class: "cost" }, h("span", { class: "fl" }), u.cost + ""),
+        v === "good" ? h("span", { class: "verdict" }, "Answers it") : v === "bad" ? h("span", { class: "verdict" }, "Weak to it") : null);
+    }));
+    fightBtn.disabled = !pick.length || null;
+    count.textContent = pick.length ? `${pick.length} of ${slots} places filled` : "Tap crew to take them in";
+  }
+  const hint = h("p", { class: "scout-hint", role: "status" });
+  const count = h("span", { class: "muted count", role: "status" });
+  render();
+  const st = starsOf(s.id);
+  show(h("div", { class: "screen prep" },
+    topbar(s.boss ? "Boss · " + s.name : `Stage ${idx + 1} · ${s.name}`, () => regionScreen(region)),
+    h("div", { class: "prep-body" },
+      h("section", { class: "panel paper scouting" }, h("h3", {}, "You'll face"), strip, hint),
+      h("section", { class: "panel paper loadout" },
+        h("div", { class: "row" }, h("h3", {}, "Your crew"), h("div", { class: "spacer" }),
+          h("span", { class: "starmini", "aria-label": `${st.filter(Boolean).length} of 3 stars` }, ...st.map((on) => h("i", { class: on ? "on" : "" })))),
+        roster,
+        h("div", { class: "row prep-foot" }, count, h("div", { class: "spacer" }), fightBtn)))));
+}
+
+// ---------------------------------------------------------------- tavern (crew bought with doubloons)
+async function tavern(backFn) {
+  await loadAtlas("ui", { white: false });
+  const list = h("div", { class: "list" });
+  function render() {
+    const offers = D.tavern.map((id) => unitById[id]).filter(Boolean);
+    document.getElementById("markval") && (document.getElementById("markval").textContent = D.marks);
+    list.replaceChildren(...(offers.length ? offers.map((u) => {
+      const have = owned(u.id), c = crewPlan[u.id] || { strong: [], weak: [] }, price = u.price || 400, can = D.marks >= price;
+      return h("div", { class: "card tav" + (have ? " owned" : can ? " can" : "") },
+        h("div", { class: "pic" }, portrait(u.id)),
+        h("div", {}, h("h3", {}, u.name), h("div", { class: "role" }, `${u.role} · ${u.cost} ${W.energy}`),
+          h("p", { class: "job" }, c.job || ""),
+          h("div", { class: "tags" }, h("small", {}, "Answers"), ...c.strong.map((t) => h("span", { class: "tag" }, traitIcon(t), traitName(t))))),
+        have ? h("span", { class: "owned-mark" }, "Aboard")
+          : h("button", { class: "btn upbtn" + (can ? " primary" : " short"), "aria-label": `Recruit ${u.name} for ${price} ${W.currency}`,
+            onclick: () => { if (!can) { sfx("ui_locked"); toast(`${price - D.marks} more ${W.currency} needed. Replays earn them too.`); return; }
+              D.marks -= price; D.unlocked.units.push(u.id); D.unitLevels[u.id] = D.unitLevels[u.id] || 1; sfx("ui_upgrade"); persist(); toast(`${u.name} joins the crew.`); render(); } },
+            "Recruit", h("small", {}, coin(), price + ""), can ? null : h("em", {}, `need ${price - D.marks} more`)));
+    }) : [h("p", { class: "note empty" }, W.tavern.empty)]));
+  }
+  render();
+  show(h("div", { class: "screen qm tavern" }, topbar(W.tavern.title, backFn), h("p", { class: "note tav-note" }, W.tavern.note), list));
 }
 
 // ---------------------------------------------------------------- armoury (upgrades)
 let armouryTab = "units";
+let lastCrew = null;
 async function armoury(backFn) {
   await loadAtlas("ui", { white: false });
   const tabs = h("div", { class: "tabs", role: "tablist" });
@@ -229,12 +356,14 @@ async function armoury(backFn) {
       maxed ? "Highest level" : "Upgrade", maxed ? null : h("small", {}, coin(), o.cost + ""), !maxed && !can ? h("em", {}, `need ${shortBy} more`) : null);
     const pips = h("div", { class: "pips", "aria-label": `Level ${o.lvl} of ${o.max}` });
     for (let i = 1; i <= o.max; i++) pips.append(h("i", { class: (i <= o.lvl ? "on" : "") + (o.miles && (i === 5 || i === 10) ? " mile" : "") }));
-    if (o.note) pips.append(h("span", {}, o.note));
+
+    const choose = o.choose ? h("div", { class: "choose", role: "group", "aria-label": "Choose a level 10 skill" }, h("small", {}, "Choose a skill (for good):"),
+      ...o.choose.opts.map((x, i) => h("button", { class: "btn skillbtn", onclick: tap(() => { D.skills[o.choose.id] = i; sfx("ui_upgrade"); persist(); render(); }) }, h("b", {}, x.name), h("span", {}, x.text)))) : null;
     return h("div", { class: "card" + (o.locked ? " locked" : can ? " can" : ""), "data-k": o.title },
       h("div", { class: "pic" }, o.pic, o.locked ? null : h("span", { class: "lvb" }, o.lvl + "")),
       h("div", {}, h("h3", {}, o.title), o.role ? h("div", { class: "role" }, o.role) : null,
         o.locked ? h("div", { class: "hint" }, o.hint) : h("div", { class: "stats" }, ...o.stats.map(([k, a, b]) => h("span", { class: "stat" }, h("small", {}, k), a + "", !maxed && b != null && b + "" !== a + "" ? h("b", {}, "→ " + b) : null))),
-        o.locked ? null : pips),
+        o.locked ? null : pips, o.locked || !o.note ? null : h("div", { class: "skill" }, o.note), choose),
       o.locked ? icon(I.lock) : btn);
   }
   function rows(tab) {
@@ -243,9 +372,12 @@ async function armoury(backFn) {
       for (const u of units.units.filter((u) => u.region === 1)) {
         const locked = !D.unlocked.units.includes(u.id), L = D.unitLevels[u.id] || 1;
         const a = unitStats(u, L, units.levels), b = unitStats(u, L + 1, units.levels), heal = u.id === "lamplighter";
+        const sk = u.skills || {}, ch = D.skills[u.id];
+        const skill = L < 5 ? (sk["5"] ? `Level 5: learns ${sk["5"].name}` : "") : L < 10 ? `${sk["5"].name}: ${sk["5"].text} Level 10: choose ${sk["10"].map((x) => x.name).join(" or ")}` : `${sk["5"].name}${ch != null ? " · " + sk["10"][ch].name : ""}`;
         out.push({ pic: portrait(u.id), title: u.name, role: `${u.role} · ${u.cost} ${W.energy}`, lvl: L, max: 10, miles: true,
           stats: [["HP", Math.round(a.hp), Math.round(b.hp)], [heal ? "Heal" : "Dmg", Math.round(heal ? a.traits.heal : a.dmg), Math.round(heal ? b.traits.heal : b.dmg)]],
-          note: L < 5 ? "new look at 5" : L < 10 ? "new look at 10" : "", cost: upgradeCost("unit", L, game), buy: () => (D.unitLevels[u.id] = L + 1), locked, hint: unlockHint(u.id) });
+          note: skill, choose: L >= 10 && ch == null && sk["10"] ? { id: u.id, opts: sk["10"] } : null,
+          cost: upgradeCost("unit", L, game), buy: () => (D.unitLevels[u.id] = L + 1), locked, hint: unlockHint(u.id) });
       }
     } else if (tab === "keep") {
       const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen, gb = game.ballista, ge = game.energy;
@@ -332,20 +464,22 @@ function resetUI(box) {
 // ---------------------------------------------------------------- battle
 let battle = null;
 
-async function startBattle(stage) {
+async function startBattle(stage, crew) {
+  crew = (crew || D.loadouts[stage.id] || D.loadouts._last || D.unlocked.units).filter(owned).slice(0, stage.slots || 5);
+  lastCrew = crew;
   const loading = h("div", { class: "screen loading" }, h("div", { style: "text-align:center" }, h("div", { class: "title-s", style: "margin-bottom:12px" }, stage.name), h("div", { class: "bar" }, h("i", { style: "transform:scaleX(.1)" }))));
   show(loading);
   const bar = loading.querySelector(".bar > i");
   // load only what this battle needs: upgrade-look pages only once a unit reaches level 5 / 10
   const groups = ["units", "enemies", "castles", "fx", "ui"]; if (D.unlocked.hero) groups.push("hero"); if (stage.boss) groups.push("boss");
-  const tiers = D.unlocked.units.map((u) => tierFor(D.unitLevels[u] || 1));
+  const tiers = crew.map((u) => tierFor(D.unitLevels[u] || 1));
   const pages = groups.map((g) => [g, true]);
   if (tiers.some((t) => t >= 2)) pages.push(["unitsb", true]); if (tiers.some((t) => t >= 3)) pages.push(["unitsc", true]);
   let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
   await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: false }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
-  const st = { ...stage, available: D.unlocked.units.slice(0, 6), hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
-  const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities };
+  const st = { ...stage, available: crew, hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
+  const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities, skills: D.skills };
   const seedQ = new URLSearchParams(location.search).get("seed");
   const B = createBattle(content, st, prog, seedQ ? +seedQ : (Math.random() * 1e9) | 0);
   R.resetForBattle(); R.region = stage.bg; R.grade = (W.fx.grades || {})[stage.bg] || null;
@@ -385,7 +519,7 @@ class BattleView {
         portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cdn" }), h("span", { class: "afm" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
       return el;
     });
-    const empty = Math.max(0, 5 - this.cardEls.length);       // sockets for crew not yet recruited: the tray is always full width
+    const empty = Math.max(0, (this.stage.slots || 5) - this.cardEls.length);       // empty places this stage allows: the tray shows them all
     const cards = h("div", { class: "cards" }, ...this.cardEls, ...Array.from({ length: empty }, () => h("span", { class: "slot", "aria-hidden": "true" })));
     this.abilEls = B.abilities.map((a) => {
       const el = h("button", { class: "abil", "aria-label": abilityNames[a.id], "data-id": a.id, onpointerdown: (e) => { e.preventDefault(); this.useAbility(a, el); } },
@@ -622,12 +756,14 @@ class BattleView {
       for (let i = 0; i < 3; i++) if (got[i] && !rec.stars[i]) { rec.stars[i] = true; newStars++; }
       earned = (rec.clears === 0 ? s.reward : Math.round(s.reward * game.rewards.replayFraction)) + newStars * game.rewards.perNewStar;
       rec.best = rec.best ? Math.min(rec.best, Math.round(B.endT)) : Math.round(B.endT);
-      if (rec.clears === 0) for (const u of s.unlocks) {
-        if (unitById[u] && !D.unlocked.units.includes(u)) { D.unlocked.units.push(u); D.unitLevels[u] = D.unitLevels[u] || 1; unlocks.push(unitById[u].name); }
-        else if (u === "hero" && !D.unlocked.hero) { D.unlocked.hero = true; unlocks.push(game.hero.name + " (hero)"); }
-        else if (game.abilities[u] && !D.unlocked.abilities.includes(u)) { D.unlocked.abilities.push(u); D.abilities[u] = D.abilities[u] || 1; unlocks.push(abilityNames[u]); }
-      }
+      const firstClear = rec.clears === 0;
+      const hadHero = D.unlocked.hero, hadAb = D.unlocked.abilities.slice();
       rec.clears++;
+      if (firstClear) {
+        for (const r of syncRecruits()) unlocks.push(r);
+        if (!hadHero && D.unlocked.hero) unlocks.push({ name: game.hero.name, how: "hero" });
+        for (const a of D.unlocked.abilities) if (!hadAb.includes(a)) unlocks.push({ name: abilityNames[a], how: "power" });
+      }
     } else earned = Math.round(Math.min(40, B.stats.kills * 2));      // a little for trying: losses still move you forward
     D.marks += earned; D.totalMarks += earned; D.playTime += Math.round(B.t);
     persist(true);
@@ -649,12 +785,16 @@ class BattleView {
         tip),
       win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
       h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " " + W.currency)),
-      unlocks.length ? h("div", { class: "unlock" }, h("span", { class: "star on", style: "width:26px;height:26px" }), h("span", {}, h("small", {}, "New aboard"), unlocks.join(" · "))) : null,
+      ...unlocks.filter((u) => u.how === "free").map((u) => h("div", { class: "recruit" }, h("span", { class: "pic" }, portrait(u.id, 72)),
+        h("span", {}, h("small", {}, W.tavern.joins), h("b", {}, unitById[u.id].name), (crewPlan[u.id] || {}).job || ""))),
+      ...unlocks.filter((u) => u.how === "tavern").map((u) => h("div", { class: "unlock" }, icon(I.mug), h("span", {}, h("small", {}, W.tavern.opened), `${unitById[u.id].name} will sign on for ${unitById[u.id].price} ${W.currency}`))),
+      unlocks.some((u) => u.how === "hero" || u.how === "power") ? h("div", { class: "unlock" }, h("span", { class: "star on", style: "width:26px;height:26px" }), h("span", {}, h("small", {}, "Unlocked"), unlocks.filter((u) => u.name).map((u) => u.name).join(" · "))) : null,
       h("div", { class: "btnrow" },
-        win && next ? h("button", { class: "btn primary big", onclick: tap(() => startBattle(next)) }, "Next stage") : null,
+        win && next ? h("button", { class: "btn primary big", onclick: tap(() => prepScreen(next, regions.regions[0])) }, "Next stage") : null,
         win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { D.seen.regionCleared = D.seen.regionCleared || "new"; worldMap(); }) }, "Continue") : null,
-        !win ? h("button", { class: "btn primary big", onclick: tap(() => armoury(() => regionScreen(regions.regions[0]))) }, "Upgrade") : null,
-        h("button", { class: "btn big", onclick: tap(() => startBattle(s)) }, "Retry"),
+        win && next ? null : null,
+        !win ? h("button", { class: "btn primary big", onclick: tap(() => prepScreen(s, regions.regions[0])) }, "Change crew") : null,
+        h("button", { class: "btn big", onclick: tap(() => startBattle(s, lastCrew)) }, "Retry"),
         h("button", { class: "btn big", onclick: tap(() => regionScreen(regions.regions[0]), "ui_back") }, "Map")));
     const m = h("div", { class: "modal" }, panel, marks);
     this.el.append(m);
@@ -680,10 +820,20 @@ class BattleView {
 /** "Unlocks when you clear <stage> (stage N)", read from stage data so it follows any world. */
 function unlockHint(id) {
   const st = content.stages.find((x) => x.unlocks.includes(id));
-  return st ? `Unlocks when you clear ${st.name} (stage ${regionStages.indexOf(st) + 1})` : "Unlocks later";
+  if (st) return `Joins free when you clear ${st.name} (stage ${regionStages.indexOf(st) + 1})`;
+  const tv = content.stages.find((x) => (x.tavern || []).includes(id));
+  return tv ? `In the Tavern after ${tv.name} (stage ${regionStages.indexOf(tv) + 1}), for ${unitById[id].price} ${W.currency}` : "Joins later";
 }
 function fmt(t) { t = Math.floor(t); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; }
 function loseTip(B) {
+  // name the trait that beat you and one crew member you own (or can get) who answers it
+  const crew = B.cards.map((c) => c.id), foes = foesOf(B.stage);
+  for (const tag of foes.flatMap(tagsOf)) {
+    if (!TRAITS[tag] || tag === "plain") continue;
+    if (crew.some((c) => crewPlan[c] && crewPlan[c].strong.includes(tag))) continue;
+    const ans = units.units.find((u) => crewPlan[u.id] && crewPlan[u.id].strong.includes(tag) && (owned(u.id) || D.tavern.includes(u.id)));
+    if (ans) return h("span", {}, h("b", {}, `${traitName(tag)} beat you. `), TRAITS[tag].rule + " ", h("b", {}, `Try ${ans.name}${owned(ans.id) ? "" : " (in the Tavern)"}.`));
+  }
   const alive = B.ents.filter((e) => e.alive && e.side === -1);
   const has = (id) => alive.some((e) => e.id === id);
   if (B.stats.shots < 3) return W.tips.weapon;
@@ -707,7 +857,8 @@ function boot() {
   setInterval(() => { D.playTime = D.playTime || 0; }, 60000);
   // register the offline cache after first load settles, so it never competes with the first screen
   if ("serviceWorker" in navigator && import.meta.env.PROD && !/\/preview\//.test(location.pathname)) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
-  window.__siegeline = { get D() { return D; }, get battle() { return battle; }, startBattle: (id) => startBattle(stageById[id]), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
+  if (syncRecruits().length) persist(true);
+  window.__siegeline = { prepScreen: (id) => prepScreen(stageById[id], regions.regions[0]), tavern: () => tavern(worldMap), get D() { return D; }, get battle() { return battle; }, startBattle: (id, crew) => startBattle(stageById[id], crew), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
     ...(TEST ? { setSpeed: (x) => (testSpeed = x), autoplay: (skill) => (autoBot = skill == null ? null : makeBot({ skill })), save: () => save(D), reload: () => { S = load(); D = S.data; } } : {}) };
   titleScreen();
 }

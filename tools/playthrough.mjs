@@ -4,6 +4,10 @@
 import puppeteer from "puppeteer-core";
 import { mkdirSync, existsSync, rmSync } from "node:fs";
 import os from "node:os";
+import { readFileSync } from "node:fs";
+const ROSTER = JSON.parse(readFileSync(new URL("../data/design/roster.json", import.meta.url)));
+const UNITS = JSON.parse(readFileSync(new URL("../data/units.json", import.meta.url))).units;
+const nameOf = (id) => UNITS.find((u) => u.id === id).name;
 
 const base = (process.argv[2] || "http://127.0.0.1:5194/").replace(/\/?$/, "/");
 const out = process.argv[3] || "docs/shots/playthrough";
@@ -71,6 +75,23 @@ async function playStage(id) {
   return win;
 }
 
+/** On the loadout screen: take out anyone not in the plan, then tap in the planned crew (as a player would after
+ *  tapping the new monster and reading who answers it). Then press Fight. */
+async function chooseCrewAndFight(k) {
+  await waitFor(".prep .rcard"); await sl(300);
+  const want = ROSTER.stages[k].right.map(nameOf);
+  const match = (n) => want.some((w) => w.startsWith(n) || n.startsWith(w));
+  if (k === 2) { await tapEl(await page.$(".foe.new") || await page.$(".foe")); await shot("scouting-tap-monster"); }
+  // each tap redraws the roster, so look the cards up again after every tap
+  for (const sel of [".rcard.in", ".rcard:not(.in)"]) for (let guard = 0; guard < 12; guard++) {
+    let hit = null;
+    for (const el of await page.$$(sel)) { const n = await el.$eval("b", (b) => b.textContent); if ((sel === ".rcard.in") !== match(n)) { hit = el; break; } }
+    if (!hit) break; await tapEl(hit);
+  }
+  if (k === 2 || k === 7) await shot(`loadout-${k + 1}`);
+  await tapText(".prep button", "Fight");
+}
+
 async function buyUpgrades() {
   for (let ti = 0; ti < 3; ti++) {
     const tabs = await page.$$(".tab"); await tapEl(tabs[ti]);
@@ -87,7 +108,7 @@ try {
   await waitFor(".map"); await sl(500); await shot("worldmap");
   await tapEl(await page.$(".pin:not(.locked)"));
   await waitFor(".node"); await sl(600); await shot("region");
-  const stages = ["r1s1", "r1s2", "r1s3", "r1s4", "r1s5", "r1boss"];
+  const stages = ["r1s1", "r1s2", "r1s3", "r1s4", "r1s5", "r1s6", "r1s7", "r1boss"];
   const results = [];
   for (let i = 0; i < stages.length; i++) {
     const id = stages[i];
@@ -95,13 +116,14 @@ try {
     while (!won && tries < 4) {
       tries++;
       if (!(await page.$(".hud"))) {        // start from the region screen
-        if (!(await page.$(".sheet"))) { await sl(600); const nodes = await page.$$(".screen:not(.out) .node"); await tapEl(nodes[i]); }
-        await waitFor(".sheet"); await tapText(".sheet button", "Fight");
+        if (!(await page.$(".prep"))) { await sl(600); const nodes = await page.$$(".screen:not(.out) .node"); await tapEl(nodes[i]); }
+        await chooseCrewAndFight(i);
       }
       won = await playStage(id);
       results.push(`${id} try ${tries}: ${won ? "win" : "loss"}`); log(results.at(-1));
       if (!won) {
-        await tapText(".result button", "Upgrade"); await waitFor(".list"); await buyUpgrades();
+        await tapText(".result button", "Map"); await waitFor(".node"); await sl(500);
+        await tapText(".topbar button", "Quartermaster"); await waitFor(".list"); await buyUpgrades();
         await tapEl(await page.$('button[aria-label="Back"]')); await waitFor(".node");
       } else if (i < stages.length - 1) {
         // reload mid-region once (after stage 2) to prove progress survives a restart
@@ -115,8 +137,15 @@ try {
           const nodes = await page.$$(".screen:not(.out) .node");
           if (!nodes[i + 1]) throw new Error("dead end: next stage node missing after reload (" + nodes.length + " nodes)");
           await tapEl(nodes[i + 1]);
-          await waitFor(".sheet"); await tapText(".sheet button", "Fight");
-        } else await tapText(".result button", "Next stage");
+          await chooseCrewAndFight(i + 1);
+        } else if (id === "r1s3") {
+          // the Tavern opens after stage 3: go and look, recruit if the doubloons are there
+          await tapText(".result button", "Map"); await waitFor(".node"); await sl(500);
+          await tapText(".topbar button", "Tavern"); await waitFor(".tavern .list"); await sl(300); await shot("tavern");
+          const rb = await page.$(".tavern .upbtn.primary"); if (rb) { await tapEl(rb); await sl(300); await shot("tavern-recruited"); }
+          await tapEl(await page.$('button[aria-label="Back"]')); await waitFor(".node"); await sl(500);
+          const nodes = await page.$$(".screen:not(.out) .node"); await tapEl(nodes[i + 1]); await chooseCrewAndFight(i + 1);
+        } else { await tapText(".result button", "Next stage"); await chooseCrewAndFight(i + 1); }
         await waitFor(".hud .weapon", 30000);
       }
     }
@@ -127,7 +156,8 @@ try {
   const ga = await page.$(".announce button"); if (ga) await tapEl(ga);
   const D = await G(() => __siegeline.D);
   log(`marks ${D.marks}, stars ${Object.values(D.stages).map((s) => s.stars.filter(Boolean).length).join(",")}, units ${D.unlocked.units.length}`);
-  if (D.unlocked.units.length !== 6) problems.push(`expected 6 units unlocked, got ${D.unlocked.units.length}`);
+  const nUnits = D.unlocked.units.length;
+  if (nUnits < 6) problems.push(`expected at least 6 crew aboard (4 free recruits), got ${nUnits}`);
 
   // ---- save tests
   // export via the settings UI
@@ -144,7 +174,7 @@ try {
   await (await waitFor(".panel textarea")).type(code.slice(0, 40)); await page.$eval(".panel textarea", (e, c) => (e.value = c), code);
   await tapText(".panel button", "Import", 8000, true); await waitFor(".map");
   const back = await G(() => __siegeline.D.unlocked.units.length);
-  if (back !== 6) problems.push("import did not restore progress");
+  if (back !== nUnits) problems.push("import did not restore progress");
   // a bad code must be refused politely
   await sl(800); await tapEl(await page.$('button[aria-label="Settings"]')); await sl(500);
   for (let k = 0; k < 3 && !(await page.$(".panel textarea")); k++) { await tapText(".panel button", "Import save"); await sl(400); }
@@ -156,7 +186,7 @@ try {
   await G(() => __siegeline.save());
   await G(() => { __siegeline.save(); localStorage.setItem("siegeline.save", '{"v":2,"sum":"x","data":"{broken'); });
   await page.reload({ waitUntil: "networkidle0" }); await waitFor(".logo"); await sl(400);
-  const restored = await G(() => __siegeline.D.unlocked.units.length === 6);
+  const restored = await G((n) => __siegeline.D.unlocked.units.length === n, nUnits);
   const msg = await G(() => document.querySelector(".toast")?.textContent || "");
   await shot("damaged-save-restored");
   if (!restored) problems.push("damaged save: backup not restored");

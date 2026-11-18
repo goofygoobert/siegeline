@@ -117,7 +117,7 @@
    "size": 14,
    "traits": {
     "flying": true,
-    "flyH": 95
+    "flyH": 115
    },
    "tags": [
     "flying"

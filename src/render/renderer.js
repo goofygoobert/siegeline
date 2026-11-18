@@ -173,6 +173,13 @@ export function createRenderer(canvas, hooks) {
         case "rush": hooks.onRush && hooks.onRush(); break;
         case "angry": hooks.onAngry && hooks.onAngry(); R.sfx("boss_warn", { rate: 0.7 }); break;
         case "sealed": break;
+        case "shellHit": if (onScreen(e.e.x)) { spark(e.e.x - 14, gy - e.e.s.size * 2.4, 18, "#ffd890"); R.sfx("hit_blunt", { pan: panOf(e.e.x), rate: 1.6, gain: 0.45, minGap: 0.08 }); } break;
+        case "shellBreak": if (onScreen(e.e.x)) { burst(e.e.x, gy - e.e.s.size * 2.4, 18, "#b97a3a", 240, 5, 2, 500, 1.4); burst(e.e.x, gy - 30, 8, "#6fb39a", 160, 3, 1, 300, 0.8); addShake(0.25); hitstop(0.06); R.sfx("castle_hit", { pan: panOf(e.e.x), rate: 1.3 }); num(e.e.x, gy - 150, TH.shellWord || "Bell cracked!", "#ffe28a", true); } break;
+        case "plateHit": if (onScreen(e.e.x) && Math.random() < 0.5) spark(e.e.x - 10, gy - e.e.s.size * 2.6, 12, "#d8e4ec"); break;
+        case "crack": if (onScreen(e.e.x)) burst(e.e.x, gy - e.e.s.size * 3, 10, "#cfc6b4", 180, 3.5, 2, 400, 0.9); break;
+        case "netted": if (onScreen(e.e.x)) { burst(e.e.x, gy - 40, 6, "#e8d8b0", 120, 2, 0, 200, 0.5); if (e.air) { addShake(0.12); R.sfx("hit_blunt", { pan: panOf(e.e.x), rate: 0.8, gain: 0.6 }); } } break;
+        case "vault": R.sfx("arrow_fire", { pan: panOf(e.e.x), rate: 0.6, gain: 0.5 }); burst(e.e.x, gy - 4, 6, SAND, 120, 4, 2, -10, 0.5); break;
+        case "land": burst(e.e.x, gy - 4, 8, SAND, 140, 4, 2, -10, 0.6); break;
         case "win": if (B.stage.winOn !== "boss") { R.slowmo = 1.2; addShake(0.8); flash(0.35, "#fff1c8"); R.sfx("castle_crumble"); } break;
         case "lose": R.slowmo = 1.2; addShake(0.9); flash(0.3, "#ff6a4a"); R.sfx("castle_crumble", { rate: 0.8 }); break;
       }
@@ -264,17 +271,22 @@ export function createRenderer(canvas, hooks) {
   function drawEntity(B, e, alpha) {
     const x = e.px + (e.x - e.px) * alpha;
     if (x < R.camX - 160 || x > R.camX + R.W + 160) return;          // off-screen skip
-    let sx = x - R.camX; const y = B.F.groundY + e.lane * 0.35;
+    let sx = x - R.camX; const gy0 = B.F.groundY + e.lane * 0.35;
+    const flier = e.s.traits && e.s.traits.flying;
+    // a netted flier is dragged down to the sand; a vaulting Rope Rat arcs over the line
+    const drop = flier && e.alive ? (e.netT > 0 ? Math.min(1, (3 - e.netT) * 4) : 0) : 0;
+    const y = gy0 + (flier ? 70 * drop : 0) - (e.leapK || 0) * 74;
     const big = e.kind === "boss" ? 1 : 1;
     const lie = e.side === -1 ? 3.4 : 2.3;
     const fadeOut = !e.alive && e.dieT > lie ? Math.max(0, 1 - (e.dieT - lie) / 0.7) : 1;
     if (fadeOut <= 0) return;
     // shadow
     const sz = e.s.size * (e.kind === "boss" ? 1 : 1.3);
-    g.globalAlpha = 0.5 * fadeOut;
-    g.drawImage(SHADOW, sx - sz * 3.4, y - sz * 0.42, sz * 4.6, sz * 0.84);      // long soft shadow thrown left
-    g.globalAlpha = 0.85 * fadeOut;
-    g.drawImage(SHADOW, sx - sz * 1.25, y - sz * 0.3, sz * 2.5, sz * 0.6);       // tight contact shadow
+    const air = (flier && e.alive && !(e.netT > 0)) || (e.leapK || 0) > 0.2;
+    g.globalAlpha = (air ? 0.18 : 0.5) * fadeOut;
+    g.drawImage(SHADOW, sx - sz * 3.4, gy0 - sz * 0.42, sz * 4.6, sz * 0.84);      // long soft shadow thrown left
+    g.globalAlpha = (air ? 0.35 : 0.85) * fadeOut;
+    g.drawImage(SHADOW, sx - sz * 1.25, gy0 - sz * 0.3, sz * 2.5, sz * 0.6);       // tight contact shadow (stays on the sand under fliers)
     // elite / enrage glow
     if ((e.elite || e.enraged || (e.kind === "boss" && e.phase2)) && e.alive) {
       g.globalAlpha = 0.55 + 0.25 * Math.sin(R.t * 6);
@@ -308,6 +320,21 @@ export function createRenderer(canvas, hooks) {
       g.fillStyle = e.side === 1 ? "#8be06a" : "#c4a6ff"; g.beginPath(); g.roundRect(x0, yb, Math.max(3, bw * f), 4, 2); g.fill();
       g.strokeStyle = "rgba(255,236,200,.55)"; g.lineWidth = 1; g.beginPath(); g.roundRect(x0 - 2, yb - 2, bw + 4, 8, 4); g.stroke(); g.globalAlpha = 1;
     }
+    if (e.alive && e.netT > 0) {          // the net: a mesh thrown over the figure, weights on its rim
+      const h = Math.min(150, e.s.size * 4.4) * (flier ? 0.7 : 1), w = e.s.size * 2.6, cy = y - h * 0.5, a = Math.min(1, e.netT);
+      g.save(); g.globalAlpha = 0.85 * a; g.strokeStyle = "#e8d8b0"; g.lineWidth = 1.5;
+      g.beginPath(); g.ellipse(sx, cy, w, h * 0.55, 0, 0, 7); g.clip();
+      g.beginPath(); for (let k = -6; k <= 6; k++) { g.moveTo(sx + k * 9 - h, cy - h); g.lineTo(sx + k * 9 + h, cy + h); g.moveTo(sx + k * 9 + h, cy - h); g.lineTo(sx + k * 9 - h, cy + h); } g.stroke(); g.restore();
+      g.globalAlpha = 0.9 * a; g.fillStyle = "#5a5050"; for (let k = 0; k < 6; k++) { const t = k / 5; g.beginPath(); g.arc(sx - w + 2 * w * t, cy + h * 0.5 - Math.sin(t * Math.PI) * 4, 3, 0, 7); g.fill(); } g.globalAlpha = 1;
+    }
+    if (e.alive && e.shell > 0) {          // the bell: a bronze bar above the health pip shows how much it can still soak
+      const top = y - Math.min(170, e.s.size * 4.6) - 26, bw = 38, f = Math.min(1, e.shell / ((e.s.traits.shell || 1) * (e.s.shellMul || 1)));
+      g.fillStyle = "rgba(20,12,8,.8)"; g.beginPath(); g.roundRect(sx - bw / 2 - 2, top - 2, bw + 4, 7, 3); g.fill();
+      g.fillStyle = "#d39a46"; g.beginPath(); g.roundRect(sx - bw / 2, top, Math.max(2, bw * f), 3, 2); g.fill();
+    }
+    if (e.alive && e.crackT > 0) {         // cracked plates: a jagged white mark on the shell
+      const cy = y - e.s.size * 3.2; g.strokeStyle = "rgba(255,250,235,.9)"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(sx - 9, cy - 10); g.lineTo(sx - 2, cy - 2); g.lineTo(sx - 7, cy + 3); g.lineTo(sx + 3, cy + 11); g.stroke();
+    }
     if (e.vuln > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 4; i++) { const a = R.t * 4 + i * 1.57; g.fillRect(sx + Math.cos(a) * 26 - 3, y - 250 + Math.sin(a) * 5, 6, 6); } }
     if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - Math.min(170, e.s.size * 4.6) - 4 + Math.sin(a) * 3, 4, 4); } }
   }
@@ -333,6 +360,16 @@ export function createRenderer(canvas, hooks) {
     const x = p.px ? p.px + (p.x - p.px) * alpha : p.x, y = p.py ? p.py + (p.y - p.py) * alpha : p.y;
     const sx = x - R.camX; if (sx < -50 || sx > R.W + 50) return;
     const ang = Math.atan2(p.y - (p.py || p.y), p.x - (p.px || p.x));
+    if (p.kind === "net") {             // a spinning open net
+      const r = 9 + 7 * Math.min(1, p.t * 4); g.save(); g.translate(sx, y); g.rotate(p.t * 9); g.strokeStyle = "#e8d8b0"; g.lineWidth = 1.4;
+      g.beginPath(); g.arc(0, 0, r, 0, 7); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4; g.moveTo(Math.cos(a) * r, Math.sin(a) * r); g.lineTo(-Math.cos(a) * r, -Math.sin(a) * r); } g.stroke();
+      g.fillStyle = "#5a5050"; for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; g.beginPath(); g.arc(Math.cos(a) * r, Math.sin(a) * r, 2, 0, 7); g.fill(); } g.restore(); return;
+    }
+    if (p.kind === "harpoon") {         // a long iron shaft with a barbed head and a trailing line back to the gun
+      g.save(); g.strokeStyle = "rgba(220,205,170,.55)"; g.lineWidth = 1; g.beginPath(); g.moveTo(p.sx - R.camX, B.F.groundY - 50); g.lineTo(sx, y); g.stroke();
+      g.translate(sx, y); g.rotate(ang); g.fillStyle = "#3a3436"; g.fillRect(-30, -1.6, 30, 3.2); g.fillStyle = "#d8d2c4";
+      g.beginPath(); g.moveTo(8, 0); g.lineTo(-2, -5); g.lineTo(0, 0); g.lineTo(-2, 5); g.closePath(); g.fill(); g.restore(); return;
+    }
     const id = p.kind === "bolt" ? "bolt" : p.kind === "spit" ? "spit" : "arrow";
     if (!spriteDraw(id, "idle", R.t, sx, y, { rot: id === "spit" ? 0 : ang })) {
       g.save(); g.translate(sx, y); g.rotate(ang);

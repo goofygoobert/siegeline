@@ -17,15 +17,17 @@
   "cinder_runner": "Rope Rat",
   "maulwright": "Anchorman",
   "bellringer": "Shantyman",
-  "lamplighter": "Sawbones"
+  "lamplighter": "Sawbones",
+  "harpooner": "Harpooner",
+  "netcaster": "Netcaster"
  },
  "abilities": {
   "ember_rain": "Broadside",
   "rally": "Sea Shanty"
  },
  "abilityDesc": {
-  "ember_rain": "{n} cannonballs, {d} dmg each \u00b7 {cd}s",
-  "rally": "Crew sings: +35% speed, faster attacks, heals 15% \u00b7 {t}s \u00b7 {cd}s"
+  "ember_rain": "{n} cannonballs, {d} dmg each · {cd}s",
+  "rally": "Crew sings: +35% speed, faster attacks, heals 15% · {t}s · {cd}s"
  },
  "armTarget": "Tap the beach where the Broadside should land",
  "callouts": {
@@ -60,12 +62,12 @@
   "keepWalls": "Hull planks",
   "keepHp": "Fort health {hp}",
   "weapon": "Long Tom",
-  "weaponDesc": "Cannonball damage {d} \u00b7 reload {r}s",
+  "weaponDesc": "Cannonball damage {d} · reload {r}s",
   "store": "Powder store",
   "storeDesc": "Hold up to {n} powder",
   "flow": "Powder flow",
   "flowDesc": "{n} powder per second",
-  "heroDesc": "HP {hp} \u00b7 DMG {d} \u00b7 Flare pistol stuns nearby monsters"
+  "heroDesc": "HP {hp} · DMG {d} · Flare pistol stuns nearby monsters"
  },
  "regionCleared": {
   "title": "Saltwick Cove is safe",
@@ -83,6 +85,15 @@
   "sand": "#d9b488",
   "energyWord": "powder",
   "directWord": "Direct hit!",
-  "grades": { "r1n": "#d3e2e0" }
+  "grades": {
+   "r1n": "#d3e2e0"
+  }
+ },
+ "tavern": {
+  "title": "Tavern",
+  "empty": "No one is looking for a berth yet. Clear more of the coast and sailors will come asking.",
+  "note": "Sailors who heard of your stand. They sign on for doubloons won in battle, never for real money.",
+  "joins": "Joins the crew",
+  "opened": "New face in the Tavern"
  }
 }
