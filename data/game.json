@@ -1,13 +1,13 @@
 {
  "field": {
-  "width": 2600,
+  "width": 1380,
   "groundY": 400,
   "playerCastleX": 150,
-  "enemyCastleX": 2450,
+  "enemyCastleX": 1230,
   "laneJitter": 22
  },
  "simHz": 30,
- "speedScale": 1.5,
+ "speedScale": 1.15,
  "energy": {
   "start": 55,
   "max": 100,

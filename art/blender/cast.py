@@ -63,13 +63,13 @@ JOBS = {
 # atlas groups: name -> (job, ids, ppu). Pages overflow to <group>2, <group>3... Upgrade looks live in their own groups
 # (unitsb = level 5, unitsc = level 10) so they load only when a unit has reached that level.
 ATLASES = {
-    "units": dict(job="v2", ids=UNITS, ppu=80, contour=2),
+    "units": dict(job="v2", ids=UNITS, ppu=104, contour=2),
     "unitsb": dict(job="v2", ids=[u + "_t2" for u in UNITS], ppu=80, contour=2),
     "unitsc": dict(job="v2", ids=[u + "_t3" for u in UNITS], ppu=80, contour=2),
     "hero": dict(job="v2field", ids=["marshal"], ppu=80, contour=2),
-    "enemies": dict(job="v2field", ids=ENEMIES, ppu=80, contour=2),
+    "enemies": dict(job="v2field", ids=ENEMIES, ppu=104, contour=2),
     "boss": dict(job="v2boss", ids=["cinder_matron"], ppu=64, contour=2),
-    "ui": dict(job="ui", ids=PORTRAITS + ICONS, ppu=72, out_scale=0.5),
+    "ui": dict(job="ui", ids=PORTRAITS + ICONS, ppu=72, out_scale=1.0),
 }
 
 

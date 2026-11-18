@@ -100,9 +100,10 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 ## Atlas sizes (written by tools/pack_sprites.py)
 | file | size | ppu | bytes | ids |
 |---|---|---|---|---|
-| units.webp | 2040x2048 | 80 | 770 KB | ashguard, torchbow, cinder_runner, bellringer |
-| units2.webp | 2032x2044 | 80 | 359 KB | maulwright |
-| units3.webp | 928x2032 | 80 | 270 KB | lamplighter |
+| units.webp | 2044x2020 | 104 | 552 KB | ashguard, torchbow |
+| units2.webp | 2048x1648 | 104 | 524 KB | cinder_runner, bellringer |
+| units3.webp | 2048x2032 | 104 | 365 KB | maulwright |
+| units4.webp | 2028x2024 | 104 | 481 KB | maulwright, lamplighter |
 | unitsb.webp | 1716x2044 | 80 | 584 KB | ashguard_t2, torchbow_t2, cinder_runner_t2 |
 | unitsb2.webp | 1928x968 | 80 | 211 KB | bellringer_t2 |
 | unitsb3.webp | 1916x2012 | 80 | 370 KB | maulwright_t2 |
@@ -112,13 +113,14 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 | unitsc3.webp | 1656x1984 | 80 | 394 KB | maulwright_t3 |
 | unitsc4.webp | 880x2040 | 80 | 276 KB | lamplighter_t3 |
 | hero.webp | 1364x2012 | 80 | 389 KB | marshal |
-| enemies.webp | 2048x2048 | 80 | 757 KB | husk, gnawer, spitter, bloater |
-| enemies2.webp | 1992x2044 | 80 | 447 KB | brute |
-| enemies3.webp | 1348x2044 | 80 | 397 KB | husk_warden |
+| enemies.webp | 2044x1732 | 104 | 745 KB | husk, gnawer, spitter |
+| enemies2.webp | 1968x932 | 104 | 340 KB | bloater |
+| enemies3.webp | 1568x1928 | 104 | 439 KB | brute |
+| enemies4.webp | 1520x1976 | 104 | 426 KB | husk_warden |
 | boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
 | boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
 | boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |
 | boss4.webp | 1220x1684 | 64 | 213 KB | cinder_matron |
 | boss5.webp | 2004x2044 | 64 | 325 KB | cinder_matron |
 | boss6.webp | 1876x2012 | 64 | 258 KB | cinder_matron |
-| ui.webp | 1372x100 | 72 | 37 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
+| ui.webp | 1940x972 | 72 | 70 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |

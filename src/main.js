@@ -127,7 +127,7 @@ async function titleScreen() {
       h("div", { class: "row" },
         h("button", { class: "btn primary big", onclick: tap(() => worldMap()) }, cleared("r1s1") ? "Continue" : "Play"),
         h("button", { class: "btn icon big", "aria-label": "Settings", onclick: tap(() => openSettings()) }, icon(I.gear)))),
-    h("div", { class: "foot" }, "Saves stay on this device · v" + (import.meta.env.VITE_VERSION || "0.1").split(" ")[0]));
+    null);
   show(el);
   if (S.note === "restored") toast("Your save was damaged. Restored the last good copy.", 4000);
   if (S.note === "corrupt") toast("Your save could not be read. Started fresh (the old copy was kept).", 5000);
@@ -293,10 +293,11 @@ function openSettings(onClose) {
       slider("music", "Music"), slider("sfx", "Sound effects"), tgl("reducedMotion", "Reduced motion (no shake or flashes)"), tgl("largeText", "Larger text"),
       h("div", { class: "row", style: "flex-wrap:wrap" },
         h("button", { class: "btn", onclick: tap(() => exportUI(io)) }, "Export save"),
-        h("button", { class: "btn", onclick: tap(() => importUI(io)) }, "Import save"),
-        h("button", { class: "btn", style: "color:#ff9a8a", onclick: tap(() => resetUI(io)) }, "Reset progress")),
+        h("button", { class: "btn", onclick: tap(() => importUI(io)) }, "Import save")),
       io,
-      h("p", { class: "note", style: "margin:0" }, "Progress saves automatically on this device. Export a code or file to move it to another phone or keep a backup.")));
+      h("button", { class: "danger-link", onclick: tap(() => resetUI(io)) }, "Reset progress\u2026"),
+      h("p", { class: "note", style: "margin:0" }, "Progress saves automatically on this device. Export a code or file to move it to another phone or keep a backup."),
+      h("p", { class: "note ver", style: "margin:0" }, "Version " + (import.meta.env.VITE_VERSION || "0.1"))));
   function close() { m.remove(); onClose && onClose(); }
   ui.append(m);
 }
@@ -377,7 +378,7 @@ class BattleView {
     this.cardEls = B.cards.map((c) => {
       const el = h("button", { class: "ucard", "aria-label": `Send ${unitById[c.id].name}, ${c.stats.cost} ${W.energy}`, "data-id": c.id,
         onpointerdown: (e) => { e.preventDefault(); this.send(c.id, el); } },
-        portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
+        portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cdn" }), h("span", { class: "afm" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
       return el;
     });
     const cards = h("div", { class: "cards" }, ...this.cardEls);
@@ -545,7 +546,9 @@ class BattleView {
     B.cards.forEach((c, i) => {
       const el = this.cardEls[i], cdf = Math.max(0, c.cd / c.stats.cooldown), poor = B.energy < c.stats.cost;
       (el._cd || (el._cd = el.querySelector(".cd"))).style.transform = `scaleY(${cdf})`;
-      el.classList.toggle("poor", poor); el.classList.toggle("ready", !poor && cdf <= 0);
+      el.classList.toggle("poor", poor); el.classList.toggle("ready", !poor && cdf <= 0); el.classList.toggle("cool", cdf > 0);
+      const aff = Math.min(1, B.energy / c.stats.cost); if (el._aff !== aff) { el._aff = aff; el.style.setProperty("--aff", aff.toFixed(3)); }
+      const cs = cdf > 0 ? Math.ceil(c.cd) + "" : ""; if (el._cs !== cs) { el._cs = cs; (el._cdn || (el._cdn = el.querySelector(".cdn"))).textContent = cs; }
     });
     B.abilities.forEach((a, i) => {
       const el = this.abilEls[i], t = el.querySelector(".cdtxt");

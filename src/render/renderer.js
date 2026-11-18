@@ -5,7 +5,7 @@ import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
 const H = 540;                 // logical height
 const MAXP = 360, MAXN = 48;
 const KEEP_S = 1.2;          // the Gullwake and Long Tom are drawn larger than their atlas size (sim pivot matches)
-const CH = 1.3;              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
+const CH = 1.75;             // figures stand about a quarter of the screen tall              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
 
 export function createRenderer(canvas, hooks) {
   const g = canvas.getContext("2d", { alpha: false });
@@ -62,7 +62,7 @@ export function createRenderer(canvas, hooks) {
       for (const m of R.nums) if (m !== n && m.life > 0.4 && Math.abs(m.x - nx) < 34 && Math.abs(m.y - ny) < 16) { ny = m.y - 17; bump = true; }
       if (!bump) break;
     }
-    n.x = nx; n.y = ny; n.t = text; n.c = color; n.life = 0.9; n.big = big; n.key = key; n.amt = amt;
+    n.head = false; n.x = nx; n.y = ny; n.t = text; n.c = color; n.life = 0.9; n.big = big; n.key = key; n.amt = amt;
   }
   // ground decals (craters, ink), hit sparks, shock rings: small fixed pools
   R.decals = Array.from({ length: 24 }, () => ({ t: 0 })); R.di = 0;
@@ -92,7 +92,11 @@ export function createRenderer(canvas, hooks) {
           const t = e.e; if (!onScreen(t.x)) break;
           if (e.kind === "burn") { if (Math.random() < 0.15) part(t.x + (Math.random() - 0.5) * 16, gy - 30, 0, -40, 0.6, 3, EMBER, 1, -60); break; }
           const enemy = t.side === -1;
-          if (R.quality === 2 || e.amt >= 25) num(t.x, gy - (Math.min(170, t.s.size * 4.6) + 26), Math.max(1, Math.round(e.amt)) + "", enemy ? "#fff2b8" : "#ff7a6a", e.amt >= 60, t.uid, e.amt);
+          // feedback is merged and ranked, never stacked: cannon and fire damage is summed into ONE figure per blast
+          // (see the end of this function); ordinary blows show a spark and the health pip, and only heavy single
+          // blows (40+) earn a number of their own.
+          if (e.kind === "fire") { R._fire = (R._fire || 0) + e.amt; R._fireX = t.x; }
+          else if (e.amt >= 40) num(t.x, gy - (Math.min(230, t.s.size * 6.2) + 30), Math.round(e.amt) + "", enemy ? "#fff2b8" : "#ff7a6a", e.amt >= 60, t.uid, e.amt);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (e.kind !== "fire") spark(t.x + t.side * t.s.size * 0.7, gy - t.s.size * (2.2 + Math.random()), e.amt >= 40 ? 26 : 17);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, GLOWE, 120, 2, 1, 200, 0.5);
@@ -129,14 +133,14 @@ export function createRenderer(canvas, hooks) {
           break;
         }
         case "salvage": R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;     // shown at the powder counter, not in the fight
-        case "directHit": num(e.x, e.y - 150, TH.directWord || "Direct hit!", "#fff1c8", true); spark(e.x, e.y, 46); hitstop(0.09); R.sfx("hit_blunt", { pan: panOf(e.x), rate: 0.7, gain: 1 }); break;
+        case "directHit": R._direct = true; spark(e.x, e.y, 46); hitstop(0.09); R.sfx("hit_blunt", { pan: panOf(e.x), rate: 0.7, gain: 1 }); break;
         case "boltHit":
           burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
           for (let i = 0; i < 16; i++) { const a = -Math.PI * (0.15 + 0.7 * Math.random()), v = 180 + Math.random() * 260; part(e.x, gy - 4, Math.cos(a) * v, Math.sin(a) * v, 0.5 + Math.random() * 0.5, 3 + Math.random() * 3, SAND, 0, 900); }
           decal(e.x, B.g.ballista.splash * 0.8, 5, "#3a2630", false); ring(e.x, gy, B.g.ballista.splash * 1.25);
           addShake(e.hits ? 0.5 : 0.22); if (e.hits) hitstop(e.kills ? 0.08 : 0.05); if (e.kills >= 2) flash(0.14, "#ffe2a0");
           R.sfx("bolt_hit", { pan: panOf(e.x) }); fxAt("blast", e.x, e.y - 20, 1.15);
-          if (e.kills >= 2) num(e.x, e.y - 118, e.kills + " down!", "#ffe28a", true);
+          R._boltX = e.x; R._kills = e.kills;
           break;
         case "reloaded": R.sfx("ballista_reload", { gain: 0.6 }); break;
         case "shoot": if (onScreen(e.e.x)) R.sfx(e.kind === "spit" ? "spit" : "arrow_fire", { pan: panOf(e.e.x), gain: 0.6, minGap: 0.08 }); break;
@@ -172,6 +176,13 @@ export function createRenderer(canvas, hooks) {
         case "lose": R.slowmo = 1.2; addShake(0.9); flash(0.3, "#ff6a4a"); R.sfx("castle_crumble", { rate: 0.8 }); break;
       }
     }
+    if (R._fire > 0) {       // one headline per blast: "Direct hit!  225  x3"
+      const x = R._boltX != null ? R._boltX : R._fireX;
+      for (const m of R.nums) if (m.life > 0 && m.head && Math.abs(m.x - x) < 160) m.life = 0;      // a newer blast replaces the old headline
+      num(x, gy - 215, (R._direct ? (TH.directWord || "Direct hit!") + "  " : "") + Math.round(R._fire) + (R._kills >= 2 ? "  \u00d7" + R._kills : ""), R._direct ? "#ffffff" : "#ffe28a", true);
+      R.nums[(R.ni + MAXN - 1) % MAXN].head = true; R.nums[(R.ni + MAXN - 1) % MAXN].life = 1.2;
+    }
+    R._fire = 0; R._direct = false; R._boltX = null; R._kills = 0;
     B.events.length = 0;
   };
 
@@ -258,8 +269,11 @@ export function createRenderer(canvas, hooks) {
     const fadeOut = !e.alive && e.dieT > lie ? Math.max(0, 1 - (e.dieT - lie) / 0.7) : 1;
     if (fadeOut <= 0) return;
     // shadow
-    g.globalAlpha = 0.8 * fadeOut;
-    g.drawImage(SHADOW, sx - e.s.size * 1.5, y - e.s.size * 0.45, e.s.size * 3, e.s.size * 0.9);
+    const sz = e.s.size * (e.kind === "boss" ? 1 : 1.3);
+    g.globalAlpha = 0.5 * fadeOut;
+    g.drawImage(SHADOW, sx - sz * 3.4, y - sz * 0.42, sz * 4.6, sz * 0.84);      // long soft shadow thrown left
+    g.globalAlpha = 0.85 * fadeOut;
+    g.drawImage(SHADOW, sx - sz * 1.25, y - sz * 0.3, sz * 2.5, sz * 0.6);       // tight contact shadow
     // elite / enrage glow
     if ((e.elite || e.enraged || (e.kind === "boss" && e.phase2)) && e.alive) {
       g.globalAlpha = 0.55 + 0.25 * Math.sin(R.t * 6);
@@ -383,6 +397,60 @@ export function createRenderer(canvas, hooks) {
     }
   }
 
+  // ---------------------------------------------------------------- atmosphere: haze, moving water, foreground
+  const NIGHT = () => !!R.grade;
+  const HZ = { get far() { return NIGHT() ? "70,150,120" : "255,196,140"; }, get mid() { return NIGHT() ? "90,170,140" : "255,214,170"; } };
+  function haze(x, y, hgt, rgb, a0, a1) {
+    const gr = g.createLinearGradient(0, y, 0, y + hgt); gr.addColorStop(0, `rgba(${rgb},${a0})`); gr.addColorStop(1, `rgba(${rgb},${a1})`);
+    g.fillStyle = gr; g.fillRect(-30, y, R.W + 60, hgt);
+  }
+  // sun (or moon) glints that twinkle on the sea, and two foam lines that roll in: all cheap fills, no images
+  const GL = Array.from({ length: 34 }, (_, i) => ({ x: (i * 97.3) % 1, y: 0.1 + ((i * 53.7) % 1) * 0.9, w: 10 + ((i * 31.1) % 1) * 34, p: i * 1.7, s: 0.6 + ((i * 17.3) % 1) }));
+  function drawWater(B, dt) {
+    const y0 = 292, y1 = 372, night = NIGHT();
+    g.fillStyle = night ? "#baffd6" : "#fff0c8";
+    for (const k of GL) {
+      const a = 0.5 + 0.5 * Math.sin(R.t * k.s * 2.2 + k.p); if (a < 0.35) continue;
+      const yy = y0 + (y1 - y0) * k.y, xx = ((k.x * (R.W + 300) - R.camX * (0.2 + 0.25 * k.y) + R.t * 6 * k.s) % (R.W + 300) + R.W + 300) % (R.W + 300) - 150;
+      g.globalAlpha = (a - 0.35) * (night ? 0.5 : 0.75) * (0.4 + 0.6 * k.y);
+      g.fillRect(xx, yy, k.w * (0.5 + k.y), 1.6 + k.y * 1.6);
+    }
+    g.globalAlpha = 1;
+  }
+  function drawTide(B) {      // the wash slides up the wet sand and back, with a bright foam lip
+    const gy = B.F.groundY, ph = Math.sin(R.t * 0.9), reach = 4 + 6 * ph, night = NIGHT();
+    g.fillStyle = night ? "rgba(120,220,170,0.16)" : "rgba(255,226,190,0.2)";
+    g.beginPath(); g.moveTo(-20, gy - 34);
+    for (let x = -20; x <= R.W + 20; x += 24) g.lineTo(x, gy - 24 + reach + 3.5 * Math.sin((x + R.camX) * 0.021 + R.t * 1.3));
+    g.lineTo(R.W + 20, gy - 34); g.closePath(); g.fill();
+    g.strokeStyle = night ? "rgba(190,255,220,0.55)" : "rgba(255,246,226,0.8)"; g.lineWidth = 2.2; g.beginPath();
+    for (let x = -20; x <= R.W + 20; x += 24) { const yy = gy - 24 + reach + 3.5 * Math.sin((x + R.camX) * 0.021 + R.t * 1.3); if (x === -20) g.moveTo(x, yy); else g.lineTo(x, yy); }
+    g.stroke();
+  }
+  // foreground: dark shapes close to the camera (dune grass, mooring posts and rope) that slide faster than the beach
+  let FG = null;
+  function buildForeground(B) {
+    const w = Math.ceil(B.F.width * 1.35 + 400), c = document.createElement("canvas"); c.width = w; c.height = 130;
+    const q = c.getContext("2d"); let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let x = 30; x < w; x += 150 + rnd() * 260) {
+      const kind = rnd();
+      if (kind < 0.62) {       // marram grass
+        for (let i = 0; i < 13; i++) { const bx = x + rnd() * 70, h = 26 + rnd() * 46, lean = (rnd() - 0.35) * 34;
+          q.strokeStyle = i % 3 ? "#1b1426" : "#2c1f36"; q.lineWidth = 2.5 + rnd() * 2; q.lineCap = "round";
+          q.beginPath(); q.moveTo(bx, 130); q.quadraticCurveTo(bx + lean * 0.3, 130 - h * 0.6, bx + lean, 130 - h); q.stroke(); }
+      } else {                 // two posts and a sagging rope
+        q.fillStyle = "#1b1426"; q.fillRect(x, 52, 13, 80); q.fillRect(x + 120, 66, 12, 70); q.fillStyle = "#2c1f36"; q.fillRect(x - 2, 48, 17, 7); q.fillRect(x + 118, 62, 16, 7);
+        q.strokeStyle = "#1b1426"; q.lineWidth = 4; q.beginPath(); q.moveTo(x + 8, 64); q.quadraticCurveTo(x + 66, 108, x + 126, 78); q.stroke();
+      }
+    }
+    return c;
+  }
+  function drawForeground(B) {
+    if (!FG || FG._w !== B.F.width) { FG = buildForeground(B); FG._w = B.F.width; }
+    const sx = Math.min(FG.width - R.W - 1, R.camX * 1.35 + 60);
+    g.globalAlpha = 0.92; g.drawImage(FG, sx, 0, R.W + 1, 130, 0, B.F.groundY - 44, R.W + 1, 130); g.globalAlpha = 1;
+  }
+
   // ---------------------------------------------------------------- frame
   R.draw = (B, alpha, dtReal) => {
     R.t += dtReal;
@@ -400,9 +468,14 @@ export function createRenderer(canvas, hooks) {
     g.setTransform(R.scale, 0, 0, R.scale, R.shakeX * R.scale, R.shakeY * R.scale);
     const L = BG[B.stage.bg] || BG[R.region] || {};
     if (L.sky) drawLayer(L.sky, 0); else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a1418"); gr.addColorStop(1, "#c9602a"); g.fillStyle = gr; g.fillRect(-20, -20, R.W + 40, H + 40); }
-    drawLayer(L.far || (BG.r1 && BG.r1.far), R.camX); drawLayer(L.mid || (BG.r1 && BG.r1.mid), R.camX);
+    drawLayer(L.far || (BG.r1 && BG.r1.far), R.camX);
+    drawWater(B, dtReal);
+    haze(0, 250, 150, HZ.far, 0.0, 0.55);            // air between the far shore and the pier
+    drawLayer(L.mid || (BG.r1 && BG.r1.mid), R.camX);
+    haze(0, 300, 110, HZ.mid, 0.0, 0.5);             // mist at the foot of the mid-ground: fighters stand clear of it
     if (L.near || (BG.r1 && BG.r1.near)) drawLayer(L.near || BG.r1.near, R.camX);
     else { g.fillStyle = "#2b2023"; g.fillRect(-20, B.F.groundY - 6, R.W + 40, H); }
+    drawTide(B);
     R.recoil = Math.max(0, R.recoil - dtReal * 3.2); R.muzzle = Math.max(0, R.muzzle - dtReal * 9); R.kick = Math.max(0, R.kick - dtReal * 7);
     for (const d of R.decals) {       // craters and ink on the sand
       if (d.t <= 0) continue; d.t -= dtReal; const dx = d.x - R.camX; if (dx < -120 || dx > R.W + 120) continue;
@@ -419,6 +492,7 @@ export function createRenderer(canvas, hooks) {
     list.sort((a, b) => a.lane - b.lane || (b.alive ? 1 : 0) - (a.alive ? 1 : 0));
     for (const e of list) drawEntity(B, e, alpha);
     for (const p of B.projs) if (p.alive) drawProj(B, p, alpha);
+    drawForeground(B);
     if (R.grade) {      // night stages: moonlight grade over the sunset-lit figures and forts (one fill)
       g.globalCompositeOperation = "multiply"; g.fillStyle = R.grade; g.fillRect(-30, -30, R.W + 60, H + 60); g.globalCompositeOperation = "source-over";
     }
@@ -464,7 +538,7 @@ export function createRenderer(canvas, hooks) {
     for (const n of R.nums) {
       if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
       const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
-      g.globalAlpha = a; g.font = `800 ${Math.round((n.big ? 22 : 15) * pop)}px system-ui, sans-serif`;
+      g.globalAlpha = a; g.font = `900 ${Math.round((n.head ? 30 : n.big ? 24 : 17) * pop)}px system-ui, sans-serif`;
       g.strokeText(n.t, sx, n.y); g.fillStyle = n.c; g.fillText(n.t, sx, n.y);
     }
     g.globalAlpha = 1;

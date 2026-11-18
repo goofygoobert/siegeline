@@ -4,17 +4,18 @@ from kit import *
 
 def drowner_fig(spec):
     fig = Fig("dr", INK_DEEP, h=1.7, line=0.024)
+    fig.rim = 2.4          # the sunset behind it draws a hot edge down its back (art direction: monsters are rim-lit)
     T = (0.27, 0.50, 0.49); D = (0.12, 0.25, 0.30)
     C = dict(skin=T, body=(0.50, 0.54, 0.47), sleeve=(0.50, 0.54, 0.47), arm=T, legs=D, boots=D, hand=(0.13, 0.27, 0.30), claw=V2["bone"], shin=T)
-    P = dict(hip=0.56, chest_h=0.64, wy=0.29, wx=0.25, shoulder=0.35, head_r=0.27, belly=0.82, arm_r=0.085, upper_arm=0.33, lower_arm=0.37,
-             leg_r=0.105, thigh=0.26, shin=0.26, hip_w=0.14, lean=15, head_rest=-2, neck_x=0.07, arm_k=dict(R=1.14, L=0.95),
+    P = dict(hip=0.56, chest_h=0.64, wy=0.29, wx=0.25, shoulder=0.35, head_r=0.34, belly=0.82, arm_r=0.085, upper_arm=0.33, lower_arm=0.37,
+             leg_r=0.105, thigh=0.26, shin=0.26, hip_w=0.14, lean=10, head_rest=-16, neck_x=0.07, arm_k=dict(R=1.14, L=0.95),
              sh_up=dict(L=0.06), ankle=0.7, chest_x=0.05)
     body(fig, P, C); fists(fig, C, 0.135, claws=True); bare_feet(fig, C)
     n = fig.neck; r = fig.head_r; cz = n.z + r * 0.55; cx = n.x + 0.10
     fig.head_c = Vector((cx, 0, cz))
     # skull: long, low, pushed forward; no neck
     fig.add(loft([(-r * 0.9, r * 0.80, r * 0.82, 0.02), (0.0, r * 0.98, r * 0.92), (r * 0.75, r * 0.80, r * 0.78, 0.03), (r * 1.25, r * 0.50, r * 0.56, -0.02)],
-                 seg=12, axis="x", at=(cx, 0, cz), name="skull", sq=0.2), "head", T)
+                 seg=12, axis="x", at=(cx, 0, cz), name="skull", sq=0.2), "head", (0.62, 0.74, 0.66))
     # hanging jaw with teeth
     fig.joint("jaw", (cx + r * 0.1, 0, cz - r * 0.55), "head", -1)
     fig.add(loft([(r * 0.0, r * 0.26, r * 0.62), (r * 0.7, r * 0.24, r * 0.56), (r * 1.2, r * 0.16, r * 0.40)], seg=10, axis="x",
@@ -24,8 +25,8 @@ def drowner_fig(spec):
         fig.add(cone((cx + r * (0.95 + 0.1 * (i % 2)), r * y, cz - r * 0.62), (cx + r * 1.0, r * y, cz - r * 0.26), r * 0.10, 0.0, seg=5), "jaw", V2["bone"], line=0.01)
         fig.add(cone((cx + r * (1.02 - 0.1 * (i % 2)), r * y * 0.9, cz - r * 0.40), (cx + r * 1.05, r * y * 0.9, cz - r * 0.72), r * 0.09, 0.0, seg=5), "head", V2["bone"], line=0.01)
     for y in (-1, 1):
-        fig.add(orb(r * 0.34, (cx + r * 0.80, y * r * 0.50, cz + r * 0.10), (0.7, 0.85, 0.95), seg=8, name="eye"), "head", V2["glow"], glow=1.3)
-        fig.add(block((r * 0.5, r * 0.34, r * 0.13), (cx + r * 0.74, y * r * 0.50, cz + r * 0.40), rot=(-24, "Y"), bevel=0.02, name="lid"), "head", D, line=0.008)
+        fig.add(orb(r * 0.40, (cx + r * 0.80, y * r * 0.50, cz + r * 0.12), (0.7, 0.9, 1.0), seg=8, name="eye"), "head", V2["glow"], glow=1.3)
+        fig.add(block((r * 0.5, r * 0.36, r * 0.1), (cx + r * 0.76, y * r * 0.50, cz + r * 0.54), rot=(-24, "Y"), bevel=0.02, name="lid"), "head", D, line=0.008)
     # kelp hair: long strands down the back, one over the face
     for i, (y, ln, ph) in enumerate(((-0.6, 0.30, 0.0), (0.0, 0.36, 0.25), (0.6, 0.28, 0.5), (-0.3, 0.24, 0.7))):
         chain(fig, "kelp%d" % i, "head", (cx - r * (0.5 + 0.12 * i), r * y, cz + r * 0.55), [ln * 0.8, ln * 0.7, ln * 0.55], 0.075,
@@ -62,7 +63,7 @@ def drowner_fig(spec):
 
 
 def _dr_base():
-    return dict(chest=0, head=0, jaw=-14, uaR=14, laR=16, handR=10, uaL=4, laL=30, thL=16, snL=-30, thR=4, snR=-20)
+    return dict(chest=0, head=0, jaw=-34, uaR=14, laR=16, handR=10, uaL=4, laL=30, thL=16, snL=-30, thR=4, snR=-20)
 
 
 def dr_idle(t, i, n):

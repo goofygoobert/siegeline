@@ -58,6 +58,10 @@ def cut_frames(atlas, ppu):
                 fat = al.filter(ImageFilter.MaxFilter(2 * int(A["contour"]) + 1)).filter(ImageFilter.GaussianBlur(0.7))
                 fat = fat.point(lambda v: min(255, int(v * 1.6)))
                 under = Image.new("RGBA", small.size, ink + (0,)); under.putalpha(fat)
+                if cast.is_enemy(sid):      # monsters carry a thin sick-green halo outside the ink so they never sink into a dark background
+                    halo = al.filter(ImageFilter.MaxFilter(2 * int(A["contour"]) + 5)).filter(ImageFilter.GaussianBlur(1.0)).point(lambda v: int(v * 0.6))
+                    hl = Image.new("RGBA", small.size, (125, 255, 168, 0)); hl.putalpha(halo)
+                    under = Image.alpha_composite(hl, under)
                 small = Image.alpha_composite(under, small)
             ax, ay = cast.cell_anchor(job, sid)
             ax, ay = ax * scale, ay * scale

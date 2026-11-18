@@ -93,9 +93,9 @@ def paint(fig, color, glow=0.0, metal=False, rough=1.0):
     L.new(f, fm.inputs[0])
     col = mix("ADD", fm.outputs[0], col, fillc)
     # rim: faces turned away from the camera and toward the sun behind
-    r = dot(RIM_DIR, 0.42, 0.62)
+    r = dot(RIM_DIR, 0.30, 0.52)
     rimc = lin((1.0, 0.60, 0.26))
-    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.75 * rough
+    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.85 * rough * getattr(fig, "rim", 1.0)
     L.new(r, rm.inputs[0])
     col = mix("ADD", rm.outputs[0], col, rimc)
     if glow > 0:
@@ -358,12 +358,12 @@ def head_crew(fig, C, brow=(0.24, 0.13, 0.08), beard=None, nose=1.0, jaw=1.0):
     ex = cx + r * 0.90
     fig.add(orb(r * 0.26 * nose, (ex + r * 0.12, 0, cz - r * 0.12), (1.15, 0.85, 0.9), seg=10, name="nose"), "head", C.get("nose", C["skin"]), line=0.012)
     for y in (-1, 1):
-        fig.add(orb(r * 0.20, (ex - r * 0.10, y * r * 0.40, cz + r * 0.14), (0.5, 0.9, 1.05), seg=10, name="eyewhite"), "head", V2["white"], glow=0.7, line=0.01)
-        fig.add(orb(r * 0.095, (ex - r * 0.01, y * r * 0.40 - 0.01, cz + r * 0.12), (0.5, 1, 1.1), seg=8, name="pupil"), "head", (0.07, 0.05, 0.06), glow=0.9, line=0)
+        fig.add(orb(r * 0.27, (ex - r * 0.12, y * r * 0.40, cz + r * 0.14), (0.5, 0.9, 1.05), seg=10, name="eyewhite"), "head", V2["white"], glow=0.7, line=0.01)
+        fig.add(orb(r * 0.135, (ex + r * 0.0, y * r * 0.40 - 0.01, cz + r * 0.11), (0.5, 1, 1.1), seg=8, name="pupil"), "head", (0.07, 0.05, 0.06), glow=0.9, line=0)
         fig.add(orb(r * 0.2, (cx - r * 0.05, y * r * 0.98, cz - r * 0.02), (0.7, 0.4, 1.0), seg=8, name="ear"), "head", C["skin"], line=0.012)
     # brow: one dark bar across both eyes, pivots for expression
     fig.joint("brow", (ex - r * 0.05, 0, cz + r * 0.36), "head", 1)
-    fig.add(block((r * 0.30, r * 1.25, r * 0.17), (ex - r * 0.08, 0, cz + r * 0.37), rot=(-12, "Y"), bevel=0.02, name="brow"), "brow", brow, line=0.008)
+    fig.add(block((r * 0.32, r * 1.3, r * 0.2), (ex - r * 0.08, 0, cz + r * 0.44), rot=(-12, "Y"), bevel=0.02, name="brow"), "brow", brow, line=0.008)
     if beard:
         fig.add(loft([(cz - r * 1.30, r * 0.26, r * 0.32, 0.16), (cz - r * 0.95, r * 0.62, r * 0.70, 0.12), (cz - r * 0.56, r * 0.86, r * 0.97, 0.09),
                       (cz - r * 0.40, r * 0.80, r * 0.98, 0.06)], seg=12, at=(cx, 0, 0), name="beard", sq=0.2, round_=(True, False)), "head", beard)
