@@ -2,14 +2,14 @@
 # Bundle + render scenery jobs on the 5070, then pack: art/blender/bg/render_all.sh [bg castles fx title worldmap]
 cd "$(dirname "$0")/../../.."
 SC="--lib art/blender/scenery.py"
-declare -A SRC=([bg]=r1_bgs [castles]=castles [fx]=fx [title]=title [worldmap]=worldmap)
-declare -A FR=([bg]=1-8 [castles]=1-8 [fx]=1-25 [title]=1 [worldmap]=1)
+declare -A SRC=([uiart]=ui_art [bg]=r1_bgs [castles]=castles [fx]=fx [title]=title [worldmap]=worldmap)
+declare -A FR=([uiart]=1-3 [bg]=1-8 [castles]=1-8 [fx]=1-25 [title]=1 [worldmap]=1)
 for j in "${@:-bg castles fx title worldmap}"; do for k in $j; do
   case $k in
     bg) L="$SC --lib art/blender/bg/r1_lib.py";;
     worldmap) L="$SC --lib art/blender/bg/map_lib.py";;
     title) L="$(cat art/blender/bg/title_libs.txt)";;
-    castles) L="$SC --lib art/blender/kit2.py";;
+    castles|uiart) L="$SC --lib art/blender/kit2.py";;
     *) L="$SC";;
   esac
   python3 tools/bundle_blend.py art/blender/bg/${SRC[$k]}.py art/build/sc_$k.py $L >/dev/null
@@ -20,5 +20,5 @@ for j in "${@:-bg castles fx title worldmap}"; do for k in $j; do
     grep -q "failed" art/build/sc_$k.log && { echo "FAIL $k"; grep -m3 Error art/build/sc_$k.log; break; }
     sleep 30
   done
-  grep -q "Look at a frame" art/build/sc_$k.log && .venv/bin/python tools/pack_scenery.py $k
+  if [ "$k" = uiart ]; then .venv/bin/python tools/pack_uiart.py; else grep -q "Look at a frame" art/build/sc_$k.log && .venv/bin/python tools/pack_scenery.py $k; fi
 done; done

@@ -61,6 +61,9 @@ Region 1 teaches Swarm, Flying, Siege, Exploder, Armoured, Shelled and Healer. V
 | 7 | The Bell Ground | 5 | Shelled and Healer together: break the shell, reach the mender. | Bellback, Tide Nurse, Drowner, Scuttler | Anchorman, Rope Rat, Shantyman, Netcaster | Blackpowders and Harpooners: shells soak the shot and the Nurse undoes the rest. |
 | 8 | Mother Fathom | 5 | The exam: she calls packs, spits ink and sends Gulls. No single answer. | cinder_matron, Scuttler, Gallows Gull, Inkspitter | Hatchguard, Netcaster, Blackpowder, Harpooner, Sawbones | Any four of one kind. |
 
+## Recruiting and skills
+Some first clears give a crew member free (Rope Rat after stage 2, Shantyman after 3, Anchorman after 5). Others are bought in the Tavern with doubloons (Netcaster 350 after stage 2, Harpooner 600 after 4, Sawbones 500 after 6); the Tavern also sells one later-region crew member early at a high price. No real money. Each crew member learns a skill at level 5 and chooses one of two at level 10 (e.g. Hatchguard: Brace, then Shove or Taunt).
+
 ## Status effects
 Poison (stacks to 3, halves healing), Burn (ignores armour and shells), Slow, Stun (3 s immunity after), Shell break, and Solid (light makes ghosts hittable). Each has one colour and one mark.
 

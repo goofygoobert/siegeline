@@ -98,7 +98,11 @@
     "siege",
     "armoured",
     "ghostly"
-   ]
+   ],
+   "recruit": {
+    "how": "start",
+    "after": 0
+   }
   },
   {
    "id": "torchbow",
@@ -116,7 +120,11 @@
     "shelled",
     "submerged",
     "siege"
-   ]
+   ],
+   "recruit": {
+    "how": "start",
+    "after": 0
+   }
   },
   {
    "id": "cinder_runner",
@@ -134,7 +142,11 @@
     "venomous",
     "armoured",
     "flying"
-   ]
+   ],
+   "recruit": {
+    "how": "free",
+    "after": 2
+   }
   },
   {
    "id": "bellringer",
@@ -150,7 +162,11 @@
     "siege",
     "ghostly",
     "healer"
-   ]
+   ],
+   "recruit": {
+    "how": "free",
+    "after": 3
+   }
   },
   {
    "id": "maulwright",
@@ -167,7 +183,11 @@
     "swarm",
     "flying",
     "ghostly"
-   ]
+   ],
+   "recruit": {
+    "how": "free",
+    "after": 5
+   }
   },
   {
    "id": "lamplighter",
@@ -183,7 +203,12 @@
     "submerged",
     "flying",
     "siege"
-   ]
+   ],
+   "recruit": {
+    "how": "buy",
+    "after": 6,
+    "price": 500
+   }
   },
   {
    "id": "harpooner",
@@ -200,7 +225,12 @@
     "swarm",
     "shelled",
     "ghostly"
-   ]
+   ],
+   "recruit": {
+    "how": "buy",
+    "after": 4,
+    "price": 600
+   }
   },
   {
    "id": "netcaster",
@@ -216,7 +246,12 @@
     "ghostly",
     "armoured",
     "siege"
-   ]
+   ],
+   "recruit": {
+    "how": "buy",
+    "after": 2,
+    "price": 350
+   }
   },
   {
    "id": "fire_eater",
@@ -723,5 +758,36 @@
    ],
    "wrong": "Any four of one kind."
   }
- ]
+ ],
+ "skills": {
+  "note": "Each crew member learns one skill at level 5 and chooses one of two at level 10. A skill changes what a crew member does, not just a number.",
+  "examples": {
+   "ashguard": {
+    "5": "Brace: while braced (standing still) the door also blocks ranged shots for those behind him.",
+    "10": [
+     "Shove: every third block knocks the attacker back.",
+     "Taunt: monsters within reach must attack him first."
+    ]
+   },
+   "torchbow": {
+    "5": "Tar shot: burning shot leaves a small fire patch.",
+    "10": [
+     "Long barrel: +40% range.",
+     "Grapeshot: every fourth shot splits into three."
+    ]
+   },
+   "netcaster": {
+    "5": "Weighted net: netted fliers fall and are stunned.",
+    "10": [
+     "Wide net: nets two targets.",
+     "Hooked net: netted monsters take +25% damage."
+    ]
+   }
+  }
+ },
+ "recruiting": {
+  "free": "Some first clears give a crew member for nothing; they join with a short scene on the results screen.",
+  "tavern": "Others appear in the Tavern after a clear and cost doubloons. The Tavern also offers one rotating crew member from a later region early, at a high price.",
+  "rule": "Nothing is for real money. Every crew member can be earned by playing; buying early only spends doubloons sooner."
+ }
 }

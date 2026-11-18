@@ -43,6 +43,10 @@ function h(tag, attrs = {}, ...kids) {
   for (const k of kids.flat()) if (k != null && k !== false) el.append(k.nodeType ? k : document.createTextNode(k));
   return el;
 }
+// rendered interface art (art/blender/bg/ui_art.py) and material textures (tools/ui_textures.py), exposed to the CSS
+for (const [k, f] of Object.entries({ coin: "icons/coin.webp", cannon: "icons/cannon.webp", keg: "icons/keg.webp", wood: "ui/wood.webp", paper: "ui/parchment.webp" }))
+  document.documentElement.style.setProperty("--img-" + k, `url("${new URL("assets/" + f, document.baseURI).href}")`);   // absolute: a url() inside a custom property resolves against the stylesheet that uses it
+const artIcon = (k, cls = "art") => h("span", { class: cls + " art-" + k, "aria-hidden": "true" });
 const I = {
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10.3 2.5h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.3"/></svg>',
@@ -247,11 +251,11 @@ async function armoury(backFn) {
       const k = D.keep, bl = D.ballista, em = D.energyMax, er = D.energyRegen, gb = game.ballista, ge = game.energy;
       const keg = (c) => h("span", { style: `display:block;width:30px;height:36px;border-radius:8px/14px;background:linear-gradient(90deg,#5a3516,${c} 45%,#6a421c);box-shadow:inset 0 9px 0 -6px #2a1a10,inset 0 -9px 0 -6px #2a1a10` });
       out.push({ pic: icon(I.shield || I.lock), title: W.armoury.keepWalls, role: `The ${W.keep} takes more of a beating`, lvl: k, max: 10, stats: [["Fort HP", game.keep.hp + game.keep.hpPerLevel * (k - 1), game.keep.hp + game.keep.hpPerLevel * k]], cost: upgradeCost("keep", k, game), buy: () => D.keep++ });
-      out.push({ pic: icon(I.ballista), title: W.armoury.weapon, role: "Your cannon: harder hits, faster reload", lvl: bl, max: 10,
+      out.push({ pic: artIcon("cannon"), title: W.armoury.weapon, role: "Your cannon: harder hits, faster reload", lvl: bl, max: 10,
         stats: [["Dmg", Math.round(gb.dmg * (1 + gb.dmgPerLevel * (bl - 1))), Math.round(gb.dmg * (1 + gb.dmgPerLevel * bl))], ["Reload", Math.max(1.2, gb.reload - gb.reloadPerLevel * (bl - 1)).toFixed(2) + "s", Math.max(1.2, gb.reload - gb.reloadPerLevel * bl).toFixed(2) + "s"]],
         cost: upgradeCost("ballista", bl, game), buy: () => D.ballista++ });
-      out.push({ pic: keg("#a8703a"), title: W.armoury.store, role: `Hold more ${W.energy} between sends`, lvl: em, max: ge.maxLevel, stats: [["Holds", ge.max + ge.maxPerLevel * (em - 1), ge.max + ge.maxPerLevel * em]], cost: upgradeCost("energyMax", em, game), buy: () => D.energyMax++ });
-      out.push({ pic: keg("#d9a04a"), title: W.armoury.flow, role: `${W.energy[0].toUpperCase() + W.energy.slice(1)} arrives faster`, lvl: er, max: ge.maxLevel, stats: [["Per second", (ge.regen + ge.regenPerLevel * (er - 1)).toFixed(1), (ge.regen + ge.regenPerLevel * er).toFixed(1)]], cost: upgradeCost("energyRegen", er, game), buy: () => D.energyRegen++ });
+      out.push({ pic: artIcon("keg"), title: W.armoury.store, role: `Hold more ${W.energy} between sends`, lvl: em, max: ge.maxLevel, stats: [["Holds", ge.max + ge.maxPerLevel * (em - 1), ge.max + ge.maxPerLevel * em]], cost: upgradeCost("energyMax", em, game), buy: () => D.energyMax++ });
+      out.push({ pic: h("span", { class: "kegs" }, artIcon("keg"), artIcon("keg")), title: W.armoury.flow, role: `${W.energy[0].toUpperCase() + W.energy.slice(1)} arrives faster`, lvl: er, max: ge.maxLevel, stats: [["Per second", (ge.regen + ge.regenPerLevel * (er - 1)).toFixed(1), (ge.regen + ge.regenPerLevel * er).toFixed(1)]], cost: upgradeCost("energyRegen", er, game), buy: () => D.energyRegen++ });
     } else {
       const hl = D.hero, hg = game.hero;
       out.push({ pic: portrait("marshal"), title: hg.name, role: "Hero · flare pistol stuns nearby monsters", lvl: hl, max: hg.maxLevel,
@@ -372,7 +376,7 @@ class BattleView {
     const top = h("div", { class: "hud-top" }, this.hpKeep, h("div", { class: "spacer" }), h("div", { class: "hud-mid" }, this.timer, this.speedBtn,
       h("button", { class: "pill", "aria-label": "Pause", onclick: tap(() => this.pause(true)) }, icon(I.pause))), h("div", { class: "spacer" }), this.hpGate);
     // ballista (hold + drag back to aim)
-    this.weapon = h("button", { class: "weapon", "aria-label": W.weaponHelp }, icon(I.ballista), h("span", { class: "ring" }));
+    this.weapon = h("button", { class: "weapon", "aria-label": W.weaponHelp }, artIcon("cannon"), h("span", { class: "ring" }));
     this.bindWeapon();
     this.energy = h("div", { class: "energy" }, h("div", { class: "val" }, h("span", { class: "fl" }), h("span", { class: "n" }, "0"), h("span", { class: "muted", style: "font-size:13px" }, h("span", { class: "mx" }, "/100"))), h("div", { class: "bar" }, h("i")));
     this.cardEls = B.cards.map((c) => {

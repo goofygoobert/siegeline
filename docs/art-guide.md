@@ -100,29 +100,21 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 ## Atlas sizes (written by tools/pack_sprites.py)
 | file | size | ppu | bytes | ids |
 |---|---|---|---|---|
-| units.webp | 2048x2044 | 104 | 546 KB | ashguard, torchbow |
-| units2.webp | 2048x1648 | 104 | 510 KB | cinder_runner, bellringer |
-| units3.webp | 2020x2036 | 104 | 357 KB | maulwright |
-| units4.webp | 2040x2032 | 104 | 461 KB | maulwright, lamplighter |
-| unitsb.webp | 1716x2044 | 80 | 584 KB | ashguard_t2, torchbow_t2, cinder_runner_t2 |
-| unitsb2.webp | 1928x968 | 80 | 211 KB | bellringer_t2 |
-| unitsb3.webp | 1916x2012 | 80 | 370 KB | maulwright_t2 |
-| unitsb4.webp | 1072x1996 | 80 | 274 KB | lamplighter_t2 |
-| unitsc.webp | 1712x2048 | 80 | 609 KB | ashguard_t3, torchbow_t3, cinder_runner_t3 |
-| unitsc2.webp | 1928x968 | 80 | 215 KB | bellringer_t3 |
-| unitsc3.webp | 1656x1984 | 80 | 394 KB | maulwright_t3 |
-| unitsc4.webp | 880x2040 | 80 | 276 KB | lamplighter_t3 |
-| hero.webp | 1364x2012 | 80 | 394 KB | marshal |
-| enemies.webp | 1524x2048 | 104 | 669 KB | husk, gnawer |
-| enemies2.webp | 2044x2048 | 104 | 845 KB | spitter, bloater |
-| enemies3.webp | 1156x2040 | 104 | 361 KB | brute |
-| enemies4.webp | 1908x2048 | 104 | 474 KB | brute |
-| enemies5.webp | 1964x2028 | 104 | 629 KB | husk_warden |
-| enemies6.webp | 760x1724 | 104 | 155 KB | husk_warden |
+| units.webp | 2048x2028 | 80 | 996 KB | ashguard, torchbow, cinder_runner, bellringer |
+| units2.webp | 2036x2040 | 80 | 881 KB | maulwright, lamplighter |
+| unitsb.webp | 2048x2048 | 80 | 1036 KB | ashguard_t2, torchbow_t2, cinder_runner_t2, bellringer_t2 |
+| unitsb2.webp | 1516x2040 | 80 | 503 KB | maulwright_t2 |
+| unitsb3.webp | 748x1996 | 80 | 381 KB | lamplighter_t2 |
+| unitsc.webp | 2048x2048 | 80 | 1067 KB | ashguard_t3, torchbow_t3, cinder_runner_t3, bellringer_t3 |
+| unitsc2.webp | 2048x2036 | 80 | 915 KB | maulwright_t3, lamplighter_t3 |
+| hero.webp | 1292x2048 | 80 | 503 KB | marshal |
+| enemies.webp | 1692x2048 | 80 | 1012 KB | husk, gnawer, spitter, bloater |
+| enemies2.webp | 1480x2040 | 80 | 574 KB | brute |
+| enemies3.webp | 1360x2032 | 80 | 554 KB | husk_warden |
 | boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
 | boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
 | boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |
 | boss4.webp | 1220x1684 | 64 | 213 KB | cinder_matron |
 | boss5.webp | 2004x2044 | 64 | 325 KB | cinder_matron |
 | boss6.webp | 1876x2012 | 64 | 258 KB | cinder_matron |
-| ui.webp | 1940x972 | 72 | 70 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
+| ui.webp | 1940x972 | 72 | 69 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |

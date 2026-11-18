@@ -61,41 +61,25 @@ def paint(fig, color, glow=0.0, metal=False, rough=1.0):
                 L.new(v, sock)
         return x.outputs[2]
 
-    # paint mottle + height gradient in the figure's own space
-    tc = N.new("ShaderNodeTexCoord"); tc.object = fig.root
-    noise = N.new("ShaderNodeTexNoise"); noise.inputs["Scale"].default_value = 5.0
-    noise.inputs["Detail"].default_value = 2.0
-    L.new(tc.outputs["Object"], noise.inputs["Vector"])
-    nr = N.new("ShaderNodeMapRange"); nr.inputs[1].default_value = 0.3; nr.inputs[2].default_value = 0.7
-    nr.inputs[3].default_value = 0.90; nr.inputs[4].default_value = 1.06
-    L.new(noise.outputs[0], nr.inputs[0])
-    sep = N.new("ShaderNodeSeparateXYZ"); L.new(tc.outputs["Object"], sep.inputs[0])
-    hr = N.new("ShaderNodeMapRange"); hr.inputs[1].default_value = 0.0; hr.inputs[2].default_value = fig.h * 0.7
-    hr.inputs[3].default_value = 0.74; hr.inputs[4].default_value = 1.0
-    L.new(sep.outputs["Z"], hr.inputs[0])
-    val = N.new("ShaderNodeMath"); val.operation = "MULTIPLY"
-    L.new(nr.outputs[0], val.inputs[0]); L.new(hr.outputs[0], val.inputs[1])
-    vcol = N.new("ShaderNodeCombineXYZ")
-    for i in range(3):
-        L.new(val.outputs[0], vcol.inputs[i])
-    base = mix("MULTIPLY", 1.0, c, vcol.outputs[0])
-
-    shadow = mix("MULTIPLY", 1.0, base, lin((0.60, 0.50, 0.74)))        # plum, not black
-    lit = mix("MULTIPLY", 1.0, base, (1.08, 1.0, 0.88))
-    k1 = dot(KEY_DIR, -0.08, 0.10)                                       # shadow -> lit
-    k2 = dot(KEY_DIR, 0.60, 0.72 if not metal else 0.64)                 # lit -> highlight
+    # Cel paint (art direction v2): flat colour areas with hard-edged, designed shadow shapes. No mottle, no gradients,
+    # no airbrushed fill, so figures belong to the same flat-painted world as the backdrop.
+    base = c
+    shadow = mix("MULTIPLY", 1.0, base, lin((0.62, 0.50, 0.70)))       # plum shadow shape, not black
+    lit = mix("MULTIPLY", 1.0, base, (1.04, 1.0, 0.92))
+    k1 = dot(KEY_DIR, -0.02, 0.02)                                       # hard terminator
     col = mix("MIX", k1, shadow, lit)
-    hi = mix("ADD", 0.16 if not metal else 0.55, col, lin((1.0, 0.86, 0.62)))
+    k2 = dot(KEY_DIR, 0.80 if not metal else 0.66, 0.82 if not metal else 0.68)    # small hard highlight
+    hi = mix("ADD", 0.12 if not metal else 0.45, col, lin((1.0, 0.88, 0.66)))
     col = mix("MIX", k2, col, hi)
-    f = dot(FILL_DIR, 0.25, 0.9)
-    fillc = mix("MULTIPLY", 1.0, base, lin((0.62, 0.66, 0.95)))
-    fm = N.new("ShaderNodeMath"); fm.operation = "MULTIPLY"; fm.inputs[1].default_value = 0.30
-    L.new(f, fm.inputs[0])
-    col = mix("ADD", fm.outputs[0], col, fillc)
-    # rim: faces turned away from the camera and toward the sun behind
-    r = dot(RIM_DIR, 0.30, 0.52)
-    rimc = lin((1.0, 0.60, 0.26))
-    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.85 * rough * getattr(fig, "rim", 1.0)
+    # bounce from the sand: faces turned to the ground pick up the beach colour, so feet sit IN the scene
+    gb = dot((0.0, 0.0, -1.0), 0.30, 0.34)
+    gbm = N.new("ShaderNodeMath"); gbm.operation = "MULTIPLY"; gbm.inputs[1].default_value = 0.35
+    L.new(gb, gbm.inputs[0])
+    col = mix("MIX", gbm.outputs[0], col, mix("MULTIPLY", 1.0, base, lin((1.0, 0.72, 0.55))))
+    # rim: a thin hard band of sunset on the edge away from the camera
+    r = dot(RIM_DIR, 0.56, 0.58)
+    rimc = lin((1.0, 0.66, 0.34))
+    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.55 * rough * getattr(fig, "rim", 1.0)
     L.new(r, rm.inputs[0])
     col = mix("ADD", rm.outputs[0], col, rimc)
     if glow > 0:
@@ -123,7 +107,8 @@ def ink_mat(fig):
 # ---------------------------------------------------------------- figure
 class Fig:
     def __init__(self, name, ink=INK_CREW, h=1.9, line=0.022):
-        self.name = name; self.ink = ink; self.h = h; self.line = line
+        # thinner, coloured ink (owner: thick outlines made figures look pasted on)
+        self.name = name; self.ink = tuple(min(1.0, v * 1.6 + 0.06) for v in ink); self.h = h; self.line = line * 0.6
         self.mats = {}; self.J = {}; self.W = {}; self.sign = {}; self.rest = {}; self.L = {}; self.vis_default = {}
         self.root = self.joint("root", (0, 0, 0), None)
         self.tails = []          # (joint names chain, sway, phase)
@@ -156,7 +141,7 @@ class Fig:
             ob.data.materials.append(ink_mat(self))
             for p in ob.data.polygons:
                 p.use_smooth = not flat
-            ln = self.line if line is None else line
+            ln = self.line if line is None else line * 0.6
             if ln > 0 and glow < 1.0:
                 s = ob.modifiers.new("ol", "SOLIDIFY"); s.thickness = ln; s.offset = 1
                 s.use_flip_normals = True; s.material_offset = 1; s.use_rim = False

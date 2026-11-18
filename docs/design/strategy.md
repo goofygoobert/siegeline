@@ -196,6 +196,43 @@ A failing check blocks publishing, like the play-through.
 - All design checks pass: every trait has 2+ answers (and 2+ inside region 1 for region 1 traits), every crew member has 2+ weaknesses, nobody is strong against more than half the enemies, every region 1 crew member is in at least one intended loadout and none is in all of them.
 <!-- /GEN:CHECKS -->
 
+## Recruiting (owner's request: some crew free, some to buy)
+
+- **Free recruits.** Some first clears give a crew member for nothing. They walk up the beach on the results screen
+  and join the roster.
+- **The Tavern.** Others appear in the Tavern after a given clear and cost doubloons. The Tavern also offers one crew
+  member from a later region early, at a high price, changing after each stage you clear.
+- **No real money**, ever. Every crew member can be earned by playing; buying only spends doubloons sooner.
+
+Region 1 plan (from `data/design/roster.json`):
+
+| Crew | How you get them |
+|---|---|
+| Hatchguard, Blackpowder | from the start |
+| Rope Rat | free after stage 2 |
+| Netcaster | Tavern after stage 2, 350 doubloons |
+| Shantyman | free after stage 3 |
+| Harpooner | Tavern after stage 4, 600 doubloons |
+| Anchorman | free after stage 5 |
+| Sawbones | Tavern after stage 6, 500 doubloons |
+
+The stage plan is built so a stage never needs a crew member you could not have yet: each stage's intended loadout
+uses only crew available by then, with the Tavern ones being the clever choice, not the only one.
+
+## Skills (owner's request: new abilities)
+
+Each crew member learns one skill at level 5 and picks one of two at level 10 (the level 5 and 10 looks already
+exist). A skill changes what they do, not just a number, so it opens new answers to traits. Examples:
+
+| Crew | Level 5 | Level 10: pick one |
+|---|---|---|
+| Hatchguard | Brace: standing still, the door blocks shots for those behind him | Shove: every third block knocks back · Taunt: nearby monsters must attack him |
+| Blackpowder | Tar shot: leaves a small fire patch | Long barrel: +40% range · Grapeshot: every fourth shot splits in three |
+| Netcaster | Weighted net: netted fliers fall and are stunned | Wide net: two targets · Hooked net: netted monsters take +25% |
+
+The rest are written in part 3. Skills never remove a crew member's weakness; they widen what the crew member is
+good for.
+
 ## Saves
 
 Old saves keep loading. Unlocked crew, levels and stars carry over; the two new stages appear as not yet played; a

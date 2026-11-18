@@ -5,7 +5,7 @@ import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
 const H = 540;                 // logical height
 const MAXP = 360, MAXN = 48;
 const KEEP_S = 1.2;          // the Gullwake and Long Tom are drawn larger than their atlas size (sim pivot matches)
-const CH = 1.75;             // figures stand about a quarter of the screen tall              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
+const CH = 1.33;             // figures stand about a fifth of the screen tall (owner: 25% smaller than the first slice)              // characters drawn 1.3x the contract scale so they read on a phone next to the keep   // particle / number pools (fixed, reused: no per-frame garbage)
 
 export function createRenderer(canvas, hooks) {
   const g = canvas.getContext("2d", { alpha: false });
@@ -97,7 +97,7 @@ export function createRenderer(canvas, hooks) {
           // (see the end of this function); ordinary blows show a spark and the health pip, and only heavy single
           // blows (40+) earn a number of their own.
           if (e.kind === "fire") { R._fire = (R._fire || 0) + e.amt; R._fireX = t.x; }
-          else if (e.amt >= 40) num(t.x, gy - (Math.min(230, t.s.size * 6.2) + 30), Math.round(e.amt) + "", enemy ? "#fff2b8" : "#ff7a6a", e.amt >= 60, t.uid, e.amt);
+          else if (e.amt >= 40) num(t.x, gy - (Math.min(200, t.s.size * 4.8) + 26), Math.round(e.amt) + "", enemy ? "#fff2b8" : "#ff7a6a", e.amt >= 60, t.uid, e.amt);
           burst(t.x - t.side * 6, gy - t.s.size * 2.8, e.amt > 40 ? 10 : 5, enemy ? ICHOR : BLOOD_W, 150, 3.2, 0);
           if (e.kind !== "fire") spark(t.x + t.side * t.s.size * 0.7, gy - t.s.size * (2.2 + Math.random()), e.amt >= 40 ? 26 : 17);
           if (enemy && Math.random() < 0.6) burst(t.x, gy - t.s.size * 2.2, 3, GLOWE, 120, 2, 1, 200, 0.5);

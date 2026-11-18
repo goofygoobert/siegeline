@@ -658,3 +658,104 @@ input[type=range]::-webkit-slider-thumb { background: #fff; border: 3px solid va
 .tab .dot { width: auto; height: auto; min-width: 20px; padding: 2px 6px; border-radius: 10px; background: var(--go); color: var(--go-ink); font: 900 12px/1.2 system-ui, sans-serif; margin-left: 8px; }
 .coin { background: radial-gradient(circle at 35% 30%, #fff0b0, #f0b030 55%, #a8641a); box-shadow: inset 0 0 0 2px #7a4a12, inset 0 0 0 4px rgba(255,240,180,.5); }
 @media (max-width: 760px) { .ucard { height: 86px; } }
+
+/* ================================================================ v4: a pirate interface (owner, round 2: "bland, not exciting, not pirate")
+   Materials: tarred deck planks, brass, rope, chart parchment. Contrast: light parchment text on dark wood, dark ink on
+   parchment. One accent: gold means "you can press this". Rendered art for the coin, keg and cannon. */
+:root { --deck: #2e1f15; --deck-2: #4a3221; --brass: #e8b24a; --brass-dk: #8a5a1c; --rope: #c8a46a; --parch: #f4e8c8; --ink: #2a1a10; --go: #ffb627; --go-2: #ffd978; --go-ink: #2a1500; --sea-dk: #0d1a24; }
+.art { display: inline-block; background: center / contain no-repeat; vertical-align: middle; }
+.art-coin { background-image: var(--img-coin); } .art-keg { background-image: var(--img-keg); } .art-cannon { background-image: var(--img-cannon); }
+.coin { background: var(--img-coin) center / contain no-repeat !important; box-shadow: none !important; border-radius: 0; width: 24px; height: 24px; }
+.energy .val .fl, .ucard .cost .fl { background: var(--img-keg) center / contain no-repeat !important; }
+.energy .val .fl { width: 26px; height: 26px; }
+.ucard .cost .fl { width: 17px; height: 17px; }
+.kegs { position: relative; width: 60px; height: 60px; } .kegs .art { position: absolute; width: 42px; height: 42px; } .kegs .art:first-child { left: 0; top: 14px; } .kegs .art:last-child { right: 0; top: 2px; }
+.card .pic .art { width: 64px; height: 64px; }
+
+/* surfaces */
+.screen:not(.hud):not(.loading), .qm { background: linear-gradient(180deg, rgba(10,6,4,.35), rgba(10,6,4,.6)), var(--img-wood) 0 0 / 512px 256px, var(--deck); }
+.panel, .sheet, .announce { background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.25)), var(--img-wood) 0 0 / 512px 256px, var(--deck);
+  border: 3px solid var(--brass); border-radius: 14px; box-shadow: 0 0 0 3px #1a0f08, inset 0 0 0 2px rgba(255,220,150,.18), 0 24px 60px rgba(0,0,0,.65); color: var(--parch); }
+.panel h2, .sheet h2, .title-s { color: var(--parch); text-shadow: 0 2px 0 #000, 0 0 18px rgba(255,190,90,.25); }
+.title-s { font-size: 22px; }
+.sheet .muted, .note { color: #e2d3ae; }
+.chip { background: var(--parch); color: var(--ink); border: 0; font-weight: 800; }
+.chip img { background: #2a5578; }
+.result.lose { background: linear-gradient(180deg, rgba(20,40,50,.6), rgba(0,0,0,.4)), var(--img-wood) 0 0 / 512px 256px, #1c2a30; border-color: #7fa3a6; }
+.result .starrow { background: var(--parch); color: var(--ink); }
+.result .starrow .star:not(.on) { background: rgba(42,26,16,.3); }
+.result .earn { color: var(--go-2); }
+
+/* buttons: brass-rimmed wood for ordinary, gold for "press me" */
+.btn { background: linear-gradient(180deg, #5c3f28, #3a2718); border: 2px solid var(--brass); color: var(--parch); box-shadow: 0 0 0 2px #1a0f08, 0 4px 0 #1a0f08, inset 0 2px 0 rgba(255,220,150,.25); font: 800 15px/1 system-ui, sans-serif; }
+.btn:active { transform: translateY(3px); box-shadow: 0 0 0 2px #1a0f08, 0 1px 0 #1a0f08; }
+.btn.primary, .btnrow .btn.primary { background: linear-gradient(180deg, var(--go-2), var(--go) 55%, #e08a00); color: var(--go-ink); border: 2px solid #fff1c4;
+  box-shadow: 0 0 0 2px #5a3200, 0 5px 0 #5a3200, 0 10px 22px rgba(255,170,30,.4), inset 0 2px 0 rgba(255,255,255,.55); }
+.btn.primary:active { transform: translateY(4px); box-shadow: 0 0 0 2px #5a3200, 0 1px 0 #5a3200; }
+.btn.icon { border-color: var(--brass); }
+.btn.icon svg, .btn svg { color: var(--brass); }
+.marks { background: linear-gradient(180deg, #5c3f28, #3a2718); border: 2px solid var(--brass); color: var(--go-2); box-shadow: 0 0 0 2px #1a0f08; font-size: 18px; padding: 0 14px 0 6px; }
+.marks .coin { width: 28px; height: 28px; }
+.danger-link { color: #ffb0a0; }
+.toggle { background: #1a0f08; border: 2px solid #7a5a3a; }
+.toggle::after { background: #9a8a74; }
+.toggle.on { background: #4f9a3a; border-color: #c8f0b0; }
+.toggle.on::after { background: #fff; }
+input[type=range] { background: #1a0f08; border-color: #7a5a3a; }
+input[type=range]::-webkit-slider-thumb { background: radial-gradient(circle at 38% 32%, #fff3c4, var(--brass) 60%, #8a5a1c); border: 2px solid #1a0f08; }
+.toast { background: var(--parch); color: var(--ink); box-shadow: 0 0 0 2px var(--brass), 0 10px 26px rgba(0,0,0,.5); }
+.setting { border-bottom: 1px dashed rgba(232,178,74,.35); color: var(--parch); }
+
+/* Quartermaster: ledger pages nailed to the bulkhead */
+.tab { background: linear-gradient(180deg, #5c3f28, #3a2718); color: #e2d3ae; border: 2px solid #7a5a3a; border-radius: 10px; box-shadow: 0 3px 0 #1a0f08; }
+.tab.on { background: var(--parch); color: var(--ink); border-color: var(--brass); }
+.card { background: linear-gradient(180deg, rgba(255,255,255,.25), rgba(0,0,0,.05)), var(--img-paper) 0 0 / 512px, var(--parch); border-radius: 6px; color: var(--ink);
+  box-shadow: 0 0 0 2px #6b4a24, 0 6px 0 rgba(0,0,0,.45), 0 14px 24px rgba(0,0,0,.4); transform: rotate(-.3deg); }
+.card:nth-child(2n) { transform: rotate(.35deg); }
+.card::before, .card::after { content: ""; position: absolute; top: 7px; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d8d8d8, #555 70%); box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.card::before { left: 7px; } .card::after { right: 7px; }
+.card.can { box-shadow: 0 0 0 2px #6b4a24, 0 0 0 5px var(--go), 0 6px 0 rgba(0,0,0,.45), 0 14px 24px rgba(0,0,0,.4); }
+.card .pic { background: radial-gradient(circle at 50% 35%, #3a6f96, #173650); border: 3px solid var(--brass); box-shadow: 0 0 0 2px var(--ink); border-radius: 50%; overflow: hidden; }
+.card .pic img { border-radius: 50%; }
+.card .lvb { background: var(--brass); color: var(--ink); border: 2px solid var(--ink); }
+.card h3 { color: var(--ink); font: 900 18px/1.1 system-ui, sans-serif; }
+.stat { background: var(--ink); color: var(--parch); }
+.stat small { color: var(--rope); }
+.card.locked { background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45)), var(--img-paper) 0 0 / 512px; filter: grayscale(.6) brightness(.72); color: var(--ink); box-shadow: 0 0 0 2px #3a2a1a; transform: none; }
+.card.locked h3, .card.locked .role, .card.locked .hint { color: var(--ink); }
+.upbtn.short { background: rgba(42,26,16,.08); border: 2px dashed rgba(42,26,16,.45); color: #5d4a30; }
+.upbtn.short small { color: var(--ink); }
+
+/* battle: wooden plaques with brass rims, a gunwale rail, crew cards as parchment posters */
+.hp, .pill { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.3)), var(--img-wood) 0 0 / 512px 256px, var(--deck); border: 2px solid var(--brass); box-shadow: 0 0 0 2px #1a0f08, 0 5px 10px rgba(0,0,0,.45); color: var(--parch); }
+.hp .lbl { color: var(--parch); }
+.hp .bar { background: #120a06; border: 1px solid #000; height: 10px; }
+.hp.enemy { border-color: #9b84d8; }
+.hud-bottom::before { height: calc(var(--sab) + 56px); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.35)), var(--img-wood) 0 0 / 512px 256px, var(--deck);
+  border-top: 0; box-shadow: 0 -5px 0 var(--rope), 0 -7px 0 #5a3e1c, 0 -16px 24px rgba(0,0,0,.4); }
+.cards { background: none; border: 0; box-shadow: none; padding: 0; }
+.ucard { background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(0,0,0,.08)), var(--img-paper) 0 0 / 256px, var(--parch); border: 3px solid #5a3e1c; border-radius: 8px;
+  box-shadow: 0 0 0 2px #1a0f08, 0 5px 0 #1a0f08; }
+.ucard img { top: 18px; left: 6px; right: 6px; width: calc(100% - 12px); border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3a6f96, #173650); box-shadow: 0 0 0 2px var(--brass), 0 0 0 4px #5a3e1c; }
+.ucard .nm { background: none; color: var(--ink); font: 900 10px/1.6 system-ui, sans-serif; }
+.ucard .cost { background: linear-gradient(180deg, var(--go-2), var(--go)); color: var(--go-ink); border-top: 3px solid #5a3e1c; }
+.ucard.ready { box-shadow: 0 0 0 2px #1a0f08, 0 0 0 5px var(--go), 0 0 24px rgba(255,180,40,.8), 0 9px 0 #1a0f08; }
+.ucard.poor { background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.45)), var(--img-paper) 0 0 / 256px, #b8a888; }
+.ucard.poor .cost { background: #3a2718; color: #ff9c86; }
+.ucard .cd { inset: 18px 4px 28px; border-radius: 0; }
+.weapon { background: radial-gradient(circle at 50% 45%, #5c3f28, #2a1a10 70%); border: 4px solid var(--brass); box-shadow: 0 0 0 3px #1a0f08, 0 6px 0 #1a0f08, inset 0 0 0 3px rgba(255,220,150,.2); }
+.weapon .art { width: 74px; height: 74px; filter: drop-shadow(0 3px 0 rgba(0,0,0,.5)); }
+.weapon:not(.reloading) { border-color: var(--go); box-shadow: 0 0 0 3px #1a0f08, 0 6px 0 #1a0f08, 0 0 22px rgba(255,180,40,.6); }
+.abil { background: radial-gradient(circle at 50% 45%, #5c3f28, #2a1a10 70%); border: 3px solid var(--brass); }
+.abil.ready { border-color: var(--go); box-shadow: 0 0 0 2px #1a0f08, 0 0 18px rgba(255,180,40,.6); }
+.energy .val { color: var(--parch); }
+.energy .bar { background: #120a06; border: 1px solid #000; }
+.tut { background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(0,0,0,.05)), var(--img-paper) 0 0 / 512px, var(--parch); color: var(--ink); box-shadow: 0 0 0 2px #6b4a24, 0 10px 26px rgba(0,0,0,.5); border-radius: 6px; }
+.callout.warn { background: linear-gradient(180deg, #c8402c, #8a2416); border: 2px solid #ffd2c0; box-shadow: 0 0 0 2px #2a0a04, 0 6px 16px rgba(0,0,0,.5); }
+.node { background: radial-gradient(circle at 50% 45%, #5c3f28, #2a1a10 70%); border-color: var(--brass); }
+.node .nm { background: var(--parch); color: var(--ink); }
+.pin .lbl { background: var(--parch); }
+.card.locked { filter: grayscale(.7) brightness(.9); }
+.card.locked .pic { filter: grayscale(1) brightness(.85); }
+.ucard img { left: 50%; right: auto; top: 20px; transform: translateX(-50%); width: 62px; max-width: 62px; height: 62px; }
+@media (max-width: 760px) { .ucard img { width: 52px; max-width: 52px; height: 52px; top: 18px; } }
