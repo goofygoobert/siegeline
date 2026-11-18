@@ -13,6 +13,7 @@ import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
 import { load, save, saveSoon, exportCode, importCode, wipe, freshData } from "./save/save.js";
 import { initAudio, sfx, playMusic, setVolumes, duck, preload } from "./audio/audio.js";
 import { createRenderer } from "./render/renderer.js";
+import { applySideways, toGame, centreOf } from "./ui/sideways.js";
 import { loadGroup, loadAtlas as loadOne, loadBackgrounds, loadImageAsset, sprites } from "./render/assets.js";
 const loadAtlas = (g, o) => loadGroup(g, o);
 
@@ -32,6 +33,7 @@ let testSpeed = 1, autoBot = null;
 const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
+applySideways(D.settings.sideways || "auto");
 const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onSalvage: (n) => { if (battle) { const el = battle.energy; el.classList.remove("gain"); void el.offsetWidth; el.classList.add("gain"); const f = h("span", { class: "gainfx" }, "+" + n); el.append(f); setTimeout(() => f.remove(), 900); } }, onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
@@ -476,6 +478,16 @@ async function armoury(backFn) {
 }
 
 // ---------------------------------------------------------------- settings
+/** With rotation lock on, an upright screen shows the game turned sideways. Which way it turns is the player's choice. */
+function sidewaysSetting() {
+  const opts = [["auto", "Top to the left"], ["flip", "Top to the right"], ["off", "Off"]];
+  const cur = D.settings.sideways || "auto";
+  const row = h("div", { class: "seg", role: "radiogroup", "aria-label": "Sideways view" });
+  const draw = () => row.replaceChildren(...opts.map(([k, label]) => h("button", { class: "segbtn" + ((D.settings.sideways || "auto") === k ? " on" : ""), role: "radio", "aria-checked": (D.settings.sideways || "auto") === k,
+    onclick: tap(() => { D.settings.sideways = k; persist(); applySideways(k); R.resize(); R._vg = null; draw(); }) }, label)));
+  draw();
+  return h("div", { class: "setting sideways-set" }, h("span", {}, "Sideways view (with rotation lock on)", h("small", {}, "Hold the phone like any landscape game")), row);
+}
 function openSettings(onClose) {
   const tgl = (key, label) => {
     const b = h("button", { class: "toggle" + (D.settings[key] ? " on" : ""), role: "switch", "aria-checked": !!D.settings[key], "aria-label": label,
@@ -490,6 +502,7 @@ function openSettings(onClose) {
     h("div", { class: "panel settings-panel", role: "dialog", "aria-label": "Settings" },
       h("div", { class: "row" }, h("h2", {}, "Settings"), h("div", { class: "spacer" }), h("button", { class: "btn icon", "aria-label": "Close", onclick: tap(() => close(), "ui_back") }, h("span", { html: "&#x2715;" }))),
       slider("music", "Music"), slider("sfx", "Sound effects"), tgl("reducedMotion", "Reduced motion (no shake or flashes)"), tgl("largeText", "Larger text"),
+      sidewaysSetting(),
       h("div", { class: "row", style: "flex-wrap:wrap" },
         h("button", { class: "btn", onclick: tap(() => exportUI(io)) }, "Export save"),
         h("button", { class: "btn", onclick: tap(() => importUI(io)) }, "Import save")),
@@ -638,10 +651,10 @@ class BattleView {
     w.addEventListener("pointerdown", (e) => {
       if (this.paused || this.over) return;
       e.preventDefault(); w.setPointerCapture(e.pointerId); id = e.pointerId;
-      const r = w.getBoundingClientRect(); start = [r.left + r.width / 2, r.top + r.height / 2];
-      w.classList.add("aiming"); this.aimFrom = start; this.updateAim(e.clientX, e.clientY);
+      start = centreOf(w);
+      w.classList.add("aiming"); this.aimFrom = start; this.updateAim(...toGame(e.clientX, e.clientY));
     });
-    w.addEventListener("pointermove", (e) => { if (e.pointerId === id && start) this.updateAim(e.clientX, e.clientY); });
+    w.addEventListener("pointermove", (e) => { if (e.pointerId === id && start) this.updateAim(...toGame(e.clientX, e.clientY)); });
     const up = (e) => {
       if (e.pointerId !== id || !start) return;
       w.classList.remove("aiming");
@@ -670,11 +683,11 @@ class BattleView {
     this.onDown = (e) => {
       if (this.paused || this.over) return;
       if (this.armed) {
-        const x = R.toWorldX(e.clientX); input.ability(this.B, this.armed.id, x); this.flag("ability"); this.disarm(); return;
+        const x = R.toWorldX(toGame(e.clientX, e.clientY)[0]); input.ability(this.B, this.armed.id, x); this.flag("ability"); this.disarm(); return;
       }
-      pan = { x: e.clientX, cam: R.camX, id: e.pointerId }; R.camTarget = null; this.lastPan = performance.now();
+      pan = { x: toGame(e.clientX, e.clientY)[0], cam: R.camX, id: e.pointerId }; R.camTarget = null; this.lastPan = performance.now();
     };
-    this.onMove = (e) => { if (pan && e.pointerId === pan.id) { this.lastPan = performance.now(); R.camX = pan.cam - (e.clientX - pan.x) * R.dpr / R.scale; R.clampCam(this.B); } };
+    this.onMove = (e) => { if (pan && e.pointerId === pan.id) { this.lastPan = performance.now(); R.camX = pan.cam - (toGame(e.clientX, e.clientY)[0] - pan.x) * R.dpr / R.scale; R.clampCam(this.B); } };
     this.onUp = (e) => { if (pan && e.pointerId === pan.id) pan = null; };
     canvas.addEventListener("pointerdown", this.onDown); window.addEventListener("pointermove", this.onMove); window.addEventListener("pointerup", this.onUp);
   }
@@ -871,7 +884,7 @@ class BattleView {
     [...starsEl.children].forEach((el, i) => setTimeout(() => { el.classList.add("show"); if (got[i]) sfx("star", { rate: 1 + i * 0.12, minGap: 0 }); }, (350 + i * 380) * delay));
     const startCoins = (350 + 3 * 380) * delay;
     setTimeout(() => {
-      const from = earnN.getBoundingClientRect(), to = marks.getBoundingClientRect(); const n = Math.min(14, Math.ceil(earned / 15)); let shown = 0;
+      const [fx, fy] = centreOf(earnN), [tx, ty] = centreOf(marks), from = { left: fx - 12, top: fy - 12 }, to = { left: tx - 12, top: ty - 12 }; const n = Math.min(14, Math.ceil(earned / 15)); let shown = 0;
       const step = Math.max(1, Math.ceil(earned / Math.max(1, n)));
       for (let i = 0; i < n; i++) setTimeout(() => {
         const c = h("span", { class: "coin flycoin", style: `left:${from.left}px;top:${from.top}px` }); document.body.append(c);
@@ -917,8 +930,9 @@ function boot() {
   const prevent = (e) => e.preventDefault();
   document.addEventListener("gesturestart", prevent); document.addEventListener("dblclick", prevent, { passive: false });
   document.addEventListener("contextmenu", prevent);
-  window.addEventListener("resize", () => { R.resize(); R._vg = null; });
-  window.addEventListener("orientationchange", () => setTimeout(() => { R.resize(); R._vg = null; }, 200));
+  const relayout = () => { applySideways(D.settings.sideways || "auto"); R.resize(); R._vg = null; };
+  window.addEventListener("resize", relayout);
+  window.addEventListener("orientationchange", () => setTimeout(relayout, 200));
   document.body.append(h("div", { class: "rotate" }, h("div", {}, h("div", { html: I.phone }), h("div", { class: "title-s" }, "Turn your phone sideways"), h("div", { class: "muted" }, "Siegeline plays in landscape."))));
   // idle canvas behind menus: a quiet ember backdrop
   const g = canvas.getContext("2d"); g.fillStyle = "#0b1118"; g.fillRect(0, 0, canvas.width, canvas.height);

@@ -1,3 +1,4 @@
+import { SW } from "../ui/sideways.js";
 // Canvas 2D battle renderer: parallax backgrounds, atlased sprites, pooled particles and numbers, shake.
 // Reads sim state, never changes it. Turns sim events into visuals and sounds ("feel").
 import { sprites, frameAt, bg as BG, atlases } from "./assets.js";
@@ -20,7 +21,7 @@ export function createRenderer(canvas, hooks) {
   };
 
   R.resize = () => {
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vw = SW.W || window.innerWidth, vh = SW.H || window.innerHeight;     // the game's own size (turned when sideways)
     R.dpr = Math.min(window.devicePixelRatio || 1, R.dprCap);
     canvas.width = Math.round(vw * R.dpr); canvas.height = Math.round(vh * R.dpr);
     canvas.style.width = vw + "px"; canvas.style.height = vh + "px";

@@ -923,3 +923,17 @@ input[type=range]::-webkit-slider-thumb { background: radial-gradient(circle at 
 .page .fig.round { border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3a6f96, #173650); place-items: center; }
 .page .fig.shadow img { filter: brightness(0) opacity(.55); }
 @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
+/* ---- sideways view: with rotation lock on, an upright screen shows the game turned 90 degrees */
+html.sideways body { position: fixed; top: 0; left: 0; width: var(--gw); height: var(--gh); transform-origin: 0 0; transform: rotate(90deg) translateY(-100%); }
+html.sideways.flip body { transform: rotate(-90deg) translateX(-100%); }
+html.sideways .rotate { display: none !important; }
+/* the notch and home indicator move with the turn: top of the phone = left of the game (right when flipped) */
+html.sideways { --sat: env(safe-area-inset-right, 0px); --sab: env(safe-area-inset-left, 0px); --sal: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-bottom, 0px); }
+html.sideways.flip { --sat: env(safe-area-inset-left, 0px); --sab: env(safe-area-inset-right, 0px); --sal: env(safe-area-inset-bottom, 0px); --sar: env(safe-area-inset-top, 0px); }
+html:not(.sideways):not(.no-sideways) .rotate { display: none !important; }
+.sideways-set { flex-wrap: wrap; gap: 8px; } .sideways-set small { display: block; font-size: 12px; opacity: .75; font-weight: 600; }
+.seg { display: inline-flex; border: 2px solid var(--brass); border-radius: 10px; overflow: hidden; }
+.segbtn { min-height: 40px; padding: 0 12px; border: 0; background: #2a1a10; color: var(--parch); font: 800 13px/1 system-ui, sans-serif; cursor: pointer; }
+.segbtn + .segbtn { border-left: 1px solid rgba(232,178,74,.4); }
+.segbtn.on { background: linear-gradient(180deg, var(--go-2), var(--go)); color: var(--go-ink); }
+.settings-panel { max-height: calc(var(--gh, 100vh) - 24px); overflow-y: auto; }

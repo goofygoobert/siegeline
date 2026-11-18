@@ -75,3 +75,4 @@ Format: decision — reason — alternative considered.
 - **The old six-stage saves migrate** by lesson, not by position (old 3 → new 5, old 5 → new 6).
 - **The stage sheet became a full scouting + loadout screen**; the chosen-crew row was dropped because it repeated the check marks and overflowed on a phone.
 - **The rotating later-region Tavern offer waits for region 2**, since those crew are not built yet.
+- **Sideways view (owner, 2026-11-17):** iPhone home-screen apps ignore the manifest's landscape lock, so with rotation lock on the game would open upright. When the screen is taller than wide, the whole page is turned 90 degrees (`src/ui/sideways.js`), touches are mapped back, and the notch/home-indicator margins move to the matching sides. Settings → "Sideways view": top to the left (default), top to the right, or off. Tested in a 390×844 viewport, not yet on a real iPhone.
