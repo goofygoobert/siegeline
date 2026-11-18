@@ -852,7 +852,7 @@
    },
    {
     "id": "aim",
-    "text": "Hold the cannon button, drag back to aim, let go to fire.",
+    "text": "Hold the cannon, drag onto the beach to place the ring, let go to fire. Drag back to the cannon to cancel.",
     "target": "weapon",
     "until": "fired",
     "holdWaves": true

@@ -52,7 +52,7 @@ async function playStage(id) {
     else if (/cannon|ballista/.test(text)) {
       await shot(`${id}-tutorial-aim`);
       const b = await (await page.$(".weapon")).boundingBox(); const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
-      await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.move(cx - 70, cy + 45, { steps: 8 }); await sl(250); await page.mouse.up();
+      await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.move(cx + 380, cy - 140, { steps: 8 }); await sl(250); await page.mouse.up();
     } else if (/Broadside|Ember Rain/.test(text)) {
       if (!this_shot_rain) { await shot(`${id}-tutorial-ability`); this_shot_rain = true; }
       await tapEl(await page.$('.abil[data-id="ember_rain"]')); await page.touchscreen.tap(560, 230);

@@ -134,7 +134,8 @@ export function createRenderer(canvas, hooks) {
           else { R.sfx("spit", { pan: panOf(t.x), rate: 0.6, gain: 0.35, minGap: 0.25 }); burst(t.x, gy - 30, 8, GLOWE, 150, 2.6, 1, -60, 0.8); burst(t.x, gy - 4, 5, "#27484a", 80, 8, 2, -15, 0.9); }
           break;
         }
-        case "salvage": R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;     // shown at the powder counter, not in the fight
+        case "salvage": R.sfx("coin", { rate: 0.8, gain: 0.8 }); hooks.onSalvage && hooks.onSalvage(e.amt); break;
+        case "bounty": hooks.onSalvage && hooks.onSalvage(e.amt, true); break;     // kill powder: quiet, summed at the counter     // shown at the powder counter, not in the fight
         case "directHit": R._direct = true; spark(e.x, e.y, 46); hitstop(0.09); R.sfx("hit_blunt", { pan: panOf(e.x), rate: 0.7, gain: 1 }); break;
         case "boltHit":
           burst(e.x, e.y - 6, 22, EMBER, 280, 4, 1, 400, 0.7); burst(e.x, e.y, 10, "#4a3a35", 140, 9, 2, -30, 1.1);
@@ -412,15 +413,28 @@ export function createRenderer(canvas, hooks) {
   function drawAim(B) {
     const a = R.aim; if (!a) return;
     const G = B.g.ballista.gravity; let x = B.ballista.x + 30, y = B.ballista.y - 4, vx = a.vx, vy = a.vy;
-    g.fillStyle = "rgba(255,226,160,0.9)";
-    for (let i = 0; i < 60; i++) {
-      const dt = 0.05; vy += G * dt; x += vx * dt; y += vy * dt;
+    const alpha = a.cancel ? 0.25 : a.ready ? 0.9 : 0.5;     // faint while reloading, fainter when about to cancel
+    g.fillStyle = `rgba(255,226,160,${alpha})`;
+    // the whole flight, in even steps, so near lobs and long shots both draw to the sand
+    const dt = 1 / 60;
+    for (let i = 0; i < 600; i++) {
+      vy += G * dt; x += vx * dt; y += vy * dt;
       if (y > B.F.groundY - 4) break;
-      if (i % 2 === 0) { const r = 3.2 - i * 0.03; g.beginPath(); g.arc(x - R.camX, y, Math.max(1.2, r), 0, 7); g.fill(); }
+      if (i % 4 === 0) {      // light dots with a dark rim, so the arc reads over a bright sky and dark sand alike
+        g.beginPath(); g.arc(x - R.camX, y, Math.max(2.6, 4.6 - i * 0.008), 0, 7);
+        g.strokeStyle = `rgba(40,20,10,${alpha * 0.6})`; g.lineWidth = 2; g.stroke(); g.fill();
+      }
     }
     a.landX = x;
-    g.strokeStyle = "rgba(255,200,120,0.9)"; g.lineWidth = 2.5;
-    g.beginPath(); g.ellipse(x - R.camX, B.F.groundY, B.g.ballista.splash, 9, 0, 0, 7); g.stroke();
+    const pulse = 1 + 0.06 * Math.sin(R.t * 8), lx = x - R.camX, rx = B.g.ballista.splash * pulse, ry = 11 * pulse;
+    g.beginPath(); g.ellipse(lx, B.F.groundY, rx, ry, 0, 0, 7);
+    if (!a.cancel) { g.fillStyle = `rgba(255,190,90,${alpha * 0.22})`; g.fill(); }
+    g.strokeStyle = `rgba(40,20,10,${alpha * 0.7})`; g.lineWidth = 7; g.stroke();
+    g.strokeStyle = a.cancel ? "rgba(255,255,255,0.35)" : `rgba(255,214,140,${alpha})`; g.lineWidth = 3.5; g.stroke();
+    if (!a.cancel) {        // a small pin above the ring marks the centre
+      g.fillStyle = `rgba(255,214,140,${alpha})`; g.strokeStyle = `rgba(40,20,10,${alpha * 0.7})`; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(lx, B.F.groundY - 6); g.lineTo(lx - 8, B.F.groundY - 22); g.lineTo(lx + 8, B.F.groundY - 22); g.closePath(); g.stroke(); g.fill();
+    }
   }
 
   function drawBallista(B) {

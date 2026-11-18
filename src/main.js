@@ -7,7 +7,7 @@ import r1 from "../data/stages/r1.json";
 import W from "../data/world.json";
 import ROSTER from "../data/design/roster.json";
 import LORE from "../data/lore.json";
-import { createBattle, step, input, canSend, stars as starCount } from "./sim/battle.js";
+import { createBattle, step, input, canSend, solveShot, stars as starCount } from "./sim/battle.js";
 import { makeBot } from "./sim/bot.js";
 import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
 import { load, save, saveSoon, exportCode, importCode, wipe, freshData } from "./save/save.js";
@@ -34,7 +34,18 @@ const canvas = document.getElementById("game");
 let S = load();                       // { data, note }
 let D = S.data;
 applySideways(D.settings.sideways || "auto");
-const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onSalvage: (n) => { if (battle) { const el = battle.energy; el.classList.remove("gain"); void el.offsetWidth; el.classList.add("gain"); const f = h("span", { class: "gainfx" }, "+" + n); el.append(f); setTimeout(() => f.remove(), 900); } }, onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
+// powder gained in the fight (kills, cannon salvage): summed for a moment so a pack dying shows one "+n", not ten
+let gainSum = 0, gainT = 0;
+function powderGain(n) {
+  if (!battle) return;
+  gainSum += n; if (gainT) return;
+  gainT = setTimeout(() => {
+    gainT = 0; const amt = Math.round(gainSum); gainSum = 0; if (!battle || amt <= 0) return;
+    const el = battle.energy; el.classList.remove("gain"); void el.offsetWidth; el.classList.add("gain");
+    const f = h("span", { class: "gainfx" }, "+" + amt); el.append(f); setTimeout(() => f.remove(), 900);
+  }, 220);
+}
+const R = createRenderer(canvas, { theme: W.fx, sfx: (id, o) => sfx(id, o), duck, onBoss: (e) => battle && battle.onBoss(e), onSalvage: (n) => powderGain(n), onRush: () => battle && battle.callout(W.callouts.rush), onAngry: () => battle && battle.callout(W.callouts.angry), onBossWarn: (k) => battle && battle.bossWarn(k) });
 initAudio(D.settings);
 applySettings();
 
@@ -651,38 +662,66 @@ class BattleView {
     if (hr.charge < hr.need) { sfx("ui_locked", { gain: 0.5 }); return; }
     input.hero(this.B); this.flag("hero"); this.callout(W.callouts.hero);
   }
+  // Long Tom: hold the cannon, drag onto the beach and the landing ring follows your finger; let go to fire.
+  // Drag back onto the cannon to cancel. Near the screen's edges the view slides, so far targets can be reached.
+  // The launch is solved for the chosen spot, so there is no pull length to run out of near or far.
   bindWeapon() {
-    const w = this.weapon; let start = null, id = null;
-    const k = 6.2;   // css px of pull -> speed
+    const w = this.weapon;
+    const end = () => { w.classList.remove("aiming"); this.aiming = null; R.aim = null; };
     w.addEventListener("pointerdown", (e) => {
-      if (this.paused || this.over) return;
-      e.preventDefault(); w.setPointerCapture(e.pointerId); id = e.pointerId;
-      start = centreOf(w);
-      w.classList.add("aiming"); this.aimFrom = start; this.updateAim(...toGame(e.clientX, e.clientY));
+      if (this.paused || this.over || this.B.noCannon) return;
+      e.preventDefault(); w.setPointerCapture(e.pointerId);
+      const c = centreOf(w), r = w.getBoundingClientRect();
+      this.aiming = { id: e.pointerId, c, rad: Math.max(r.width, r.height) * 0.5 + 8, left: false, gx: c[0], gy: c[1], last: performance.now() };
+      w.classList.add("aiming");
+      // start where the last shot went (kept on screen), or a fair way up the beach the first time
+      const B = this.B, x0 = B.ballista.x + 30;
+      const tx = this.lastTarget != null ? this.lastTarget : x0 + 420;
+      this.aimTarget = Math.max(R.camX + 60, Math.min(R.camX + R.W - 40, tx));
+      this.solveAim();
     });
-    w.addEventListener("pointermove", (e) => { if (e.pointerId === id && start) this.updateAim(...toGame(e.clientX, e.clientY)); });
-    const up = (e) => {
-      if (e.pointerId !== id || !start) return;
-      w.classList.remove("aiming");
-      const a = R.aim; start = null; id = null; R.aim = null;
-      if (!a || a.pull < 18 || this.B.ballista.reload > 0) { if (a && this.B.ballista.reload > 0) sfx("ui_locked", { gain: 0.5 }); return; }
+    w.addEventListener("pointermove", (e) => {
+      const A = this.aiming; if (!A || e.pointerId !== A.id) return;
+      const [gx, gy] = toGame(e.clientX, e.clientY); A.gx = gx; A.gy = gy;
+      const near = Math.hypot(gx - A.c[0], gy - A.c[1]) < A.rad;
+      if (!near) A.left = true;
+      A.cancel = A.left && near;
+      if (A.left && !A.cancel) this.aimTarget = R.toWorldX(gx);
+      this.solveAim();
+    });
+    w.addEventListener("pointerup", (e) => {
+      const A = this.aiming; if (!A || e.pointerId !== A.id) return;
+      const a = R.aim; end();
+      if (A.cancel || !a) { sfx("ui_back", { gain: 0.5 }); return; }
+      if (this.B.ballista.reload > 0) { sfx("ui_locked", { gain: 0.5 }); return; }
+      this.lastTarget = a.tx;
       input.fire(this.B, a.vx, a.vy); this.flag("fired");
       R.camTarget = null;
-    };
-    w.addEventListener("pointerup", up); w.addEventListener("pointercancel", (e) => { R.aim = null; start = null; w.classList.remove("aiming"); });
+    });
+    w.addEventListener("pointercancel", end);
   }
-  updateAim(cx, cy) {
-    const [sx, sy] = this.aimFrom; let dx = sx - cx, dy = sy - cy;     // pull back = fire forward
-    const pull = Math.hypot(dx, dy); const g = game.ballista;
-    // slingshot: pull back-and-down to fire forward-and-up. A tap without dragging gives a gentle lob.
-    if (pull < 6) { dx = 1; dy = -0.7; }
-    const up = Math.max(0.05, Math.min(1.35, Math.atan2(-dy, Math.max(4, dx))));
-    const k = 6.2;   // css px of pull -> launch speed
-    const speed = Math.max(g.minSpeed, Math.min(g.maxSpeed, g.minSpeed + pull * k));
-    R.aim = { vx: Math.cos(up) * speed, vy: -Math.sin(up) * speed, pull };
-    // keep the landing point in view while aiming
-    // keep the ballista in view; only slide right when the landing point would leave the screen
-    if (R.aim.landX && (R.aim.landX > R.camX + R.W * 0.9 || R.aim.landX < R.camX + 60)) R.camTarget = Math.max(0, Math.min(this.B.F.width - R.W, R.aim.landX - R.W * 0.75));
+  /** Launch velocity for the current target: a high lob up close, a flatter, faster shot far away. */
+  solveAim() {
+    const B = this.B, A = this.aiming; if (!A) return;
+    const x0 = B.ballista.x + 30;
+    const tx = Math.max(x0 + 70, Math.min(B.gate.front - 5, this.aimTarget));      // a ball aimed past the gate bursts on the Grotto anyway
+    this.aimTarget = tx;
+    const d = tx - x0, t = Math.max(0, Math.min(1, (d - 100) / 600));
+    const shot = solveShot(B, tx, 58 - 20 * t);
+    R.aim = { vx: shot.vx, vy: shot.vy, tx, cancel: !!A.cancel, ready: B.ballista.reload <= 0 };
+  }
+  /** Each frame while aiming: slide the view when the finger rests near a screen edge. */
+  aimTick(now) {
+    const A = this.aiming; if (!A) return;
+    const dt = Math.min(0.05, (now - A.last) / 1000); A.last = now;
+    const vw = R.W * R.scale / R.dpr, edge = Math.min(90, vw * 0.12);
+    let dir = 0;
+    if (A.left && !A.cancel) { if (A.gx > vw - edge) dir = (A.gx - (vw - edge)) / edge; else if (A.gx < edge && Math.hypot(A.gx - A.c[0], A.gy - A.c[1]) > A.rad * 1.6) dir = -(edge - A.gx) / edge; }
+    if (dir) {
+      R.camTarget = null; R.camX += dir * 900 * dt; R.clampCam(this.B); this.lastPan = now;
+      this.aimTarget = R.toWorldX(A.gx);
+    }
+    this.solveAim();
   }
   bindCanvas() {
     let pan = null;
@@ -743,7 +782,7 @@ class BattleView {
     if (this.over) return;
     this.paused = on;
     if (on) {
-      R.aim = null;
+      R.aim = null; this.aiming = null; this.weapon && this.weapon.classList.remove("aiming");
       const m = h("div", { class: "modal" }, h("div", { class: "panel", role: "dialog", "aria-label": "Paused", style: "width:min(380px,100%)" },
         h("h2", {}, "Paused"),
         h("button", { class: "btn primary big", onclick: tap(() => { m.remove(); this.pause(false); }) }, "Resume"),
@@ -807,6 +846,7 @@ class BattleView {
       (this.simWork || (this.simWork = [])).push(performance.now() - s0); if (this.simWork.length > 600) this.simWork.shift();
       this.tutorialTick();
     }
+    this.aimTick(now);
     this.followFight(now);
     R.consume(B);
     R.draw(B, this.paused ? 1 : Math.min(1, this.acc / B.dt), this.paused ? 0 : dt);

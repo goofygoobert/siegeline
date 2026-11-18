@@ -162,7 +162,12 @@ function damage(B, e, amt, src, opts) {
 
 function kill(B, e) {
   e.alive = false; e.state = "die"; e.stateT = 0; e.dieT = 0; e.hitAt = -1;
-  if (e.side === -1) B.stats.kills++;
+  if (e.side === -1) {
+    B.stats.kills++;
+    // every monster pays powder when it dies: small fry a little, big ones a lot (data: enemies.json "bounty")
+    const got = Math.round(e.s.bounty || 0);
+    if (got > 0 && B.result == null) { B.energy = Math.min(B.energyMax, B.energy + got); B.stats.bounty = (B.stats.bounty || 0) + got; ev(B, "bounty", { x: e.x, amt: got }); }
+  }
   ev(B, "die", { e });
   const db = e.s.traits && e.s.traits.deathBlast;
   if (db) {

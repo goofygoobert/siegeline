@@ -9,6 +9,7 @@
    "rate": 1.2,
    "range": 26,
    "speed": 34,
+   "bounty": 4,
    "size": 15,
    "traits": {},
    "desc": "A drowned sailor come back up the beach. Slow, many, relentless.",
@@ -26,6 +27,7 @@
    "rate": 0.6,
    "range": 22,
    "speed": 85,
+   "bounty": 2,
    "size": 11,
    "traits": {
     "pack": 3,
@@ -47,6 +49,7 @@
    "rate": 1.5,
    "range": 280,
    "speed": 30,
+   "bounty": 5,
    "size": 14,
    "traits": {
     "projectile": "spit",
@@ -72,6 +75,7 @@
    "rate": 1.4,
    "range": 26,
    "speed": 22,
+   "bounty": 6,
    "size": 20,
    "traits": {
     "deathBlast": {
@@ -94,6 +98,7 @@
    "rate": 2.4,
    "range": 34,
    "speed": 24,
+   "bounty": 15,
    "size": 26,
    "large": true,
    "traits": {
@@ -117,6 +122,7 @@
    "rate": 1.0,
    "range": 26,
    "speed": 62,
+   "bounty": 3,
    "size": 14,
    "traits": {
     "flying": true,
@@ -137,6 +143,7 @@
    "rate": 1.6,
    "range": 28,
    "speed": 26,
+   "bounty": 8,
    "size": 20,
    "traits": {
     "shell": 1000000,
@@ -157,6 +164,7 @@
    "rate": 2.0,
    "range": 170,
    "speed": 28,
+   "bounty": 6,
    "size": 16,
    "traits": {
     "heal": 24,
@@ -177,6 +185,7 @@
    "rate": 1.8,
    "range": 40,
    "speed": 26,
+   "bounty": 30,
    "size": 30,
    "large": true,
    "miniboss": true,
@@ -206,6 +215,7 @@
    "rate": 2.0,
    "range": 60,
    "speed": 18,
+   "bounty": 0,
    "size": 60,
    "large": true,
    "traits": {},
@@ -256,6 +266,7 @@
    "rate": 1.4,
    "range": 120,
    "speed": 40,
+   "bounty": 4,
    "size": 13,
    "traits": {
     "flying": true
@@ -272,6 +283,7 @@
    "rate": 1.2,
    "range": 44,
    "speed": 36,
+   "bounty": 8,
    "size": 17,
    "traits": {
     "armor": 0.2
@@ -288,6 +300,7 @@
    "rate": 2.2,
    "range": 280,
    "speed": 30,
+   "bounty": 6,
    "size": 15,
    "traits": {
     "projectile": "bolt"
@@ -304,6 +317,7 @@
    "rate": 1.6,
    "range": 34,
    "speed": 28,
+   "bounty": 22,
    "size": 24,
    "large": true,
    "traits": {
@@ -322,6 +336,7 @@
    "rate": 0.8,
    "range": 24,
    "speed": 85,
+   "bounty": 6,
    "size": 16,
    "traits": {},
    "desc": "Seal-skinned raider, fast on sand."
@@ -336,6 +351,7 @@
    "rate": 2.6,
    "range": 36,
    "speed": 18,
+   "bounty": 32,
    "size": 34,
    "large": true,
    "traits": {
@@ -354,6 +370,7 @@
    "rate": 1.6,
    "range": 160,
    "speed": 40,
+   "bounty": 20,
    "size": 28,
    "large": true,
    "traits": {
@@ -366,6 +383,7 @@
  "elite": {
   "hpMul": 2.2,
   "dmgMul": 1.4,
-  "speedMul": 1.1
+  "speedMul": 1.1,
+  "bountyMul": 1.5
  }
 }

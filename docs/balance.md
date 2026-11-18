@@ -162,3 +162,9 @@ Runs per cell: 100. Skill = bot reaction speed and aim error (sloppy 0.35, avera
 | r1boss | light | 74% | 93% | 98% | 266 s (par 260) | 72% | 28% |
 | r1boss | modest | 97% | 99% | 100% | 238 s (par 260) | 84% | 80% |
 | r1boss | strong | 100% | 100% | 100% | 149 s (par 260) | 100% | 100% |
+
+## Kill powder (2026-11-18)
+Every kill now pays powder (see decisions.md). Stage power unchanged. `node tools/balance.mjs`, 100 runs per cell,
+average skill, no upgrades, win rate before → after: stage 1 73 → 92%, 2 56 → 75%, 3 64 → 81%, 4 41 → 59%,
+5 63 → 95%, 6 56 → 73%, 7 58 → 78%, boss 60 → 67%. Sharp players and upgraded crews were already near 100%.
+Region 1 is clearly easier than the depth-pass target (about 60%); retuning waits for the owner's playtest.

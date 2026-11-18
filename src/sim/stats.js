@@ -51,6 +51,7 @@ export function enemyStats(def, elite, eliteCfg) {
     id: def.id, kind: def.boss ? "boss" : "enemy", hp: def.hp * m.hpMul, dmg: def.dmg * m.dmgMul, rate: def.rate,
     range: def.range, speed: def.speed * m.speedMul, size: def.size, traits: def.traits || {}, elite: !!elite,
     large: !!def.large, boss: def.boss || null, miniboss: !!def.miniboss, sprite: def.id,
+    bounty: (def.bounty || 0) * (elite ? (eliteCfg.bountyMul || 1.5) : 1),      // powder paid on death
   };
 }
 

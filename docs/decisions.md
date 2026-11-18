@@ -76,3 +76,14 @@ Format: decision — reason — alternative considered.
 - **The stage sheet became a full scouting + loadout screen**; the chosen-crew row was dropped because it repeated the check marks and overflowed on a phone.
 - **The rotating later-region Tavern offer waits for region 2**, since those crew are not built yet.
 - **Sideways view (owner, 2026-11-17):** iPhone home-screen apps ignore the manifest's landscape lock, so with rotation lock on the game would open upright. When the screen is taller than wide, the whole page is turned 90 degrees (`src/ui/sideways.js`), touches are mapped back, and the notch/home-indicator margins move to the matching sides. Settings → "Sideways view": top to the left (default), top to the right, or off. Tested in a 390×844 viewport, not yet on a real iPhone.
+
+## Kill powder and cannon aiming (owner, 2026-11-18)
+- **Every kill pays powder**, more for bigger monsters (`bounty` in `data/enemies.json`): Scuttler 2, Gallows Gull 3,
+  Drowner 4, Spitter 5, Tide Nurse and Pufferghast 6, Bellback 8, Troll 15, mini-boss 30; elites pay half again.
+  Cannon salvage (+4 per cannon kill) stays on top. Gains are summed at the powder counter ("+n"), not shown in the fight.
+  Stage power was **not** retuned (difficulty is on hold while the owner playtests); the effect is measured in balance.md.
+- **Long Tom aims by target, not by pull.** The old slingshot (drag back from the button) ran out of room near the
+  screen corner and could not reach far, and short pulls were silently ignored. Now: hold the cannon, drag onto the
+  beach, the landing ring follows the finger; let go to fire; drag back onto the cannon to cancel. Holding near a
+  screen edge slides the view. The launch is solved for the spot (a high lob up close, flatter far away), the ring
+  never goes past the Grotto's gate (a ball there bursts on the gate), and a tap fires at the last spot.
