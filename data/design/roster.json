@@ -36,7 +36,7 @@
    "name": "Siege",
    "icon": "arc over a wall",
    "read": "tall, stays at the back, lobs glowing globs",
-   "rule": "Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leaping Rope Rat, a Harpooner or Long Tom can reach it."
+   "rule": "Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leap over the line, a very long shot or the cannon reaches it."
   },
   "exploder": {
    "name": "Exploder",
@@ -54,7 +54,7 @@
    "name": "Shelled",
    "icon": "shell",
    "read": "carries a ship's bell or shell in front of it",
-   "rule": "The bell stops every hit from the front, and shields what walks behind it, until a heavy blow (the Anchorman) cracks it. A blade from behind goes round it."
+   "rule": "The bell stops every hit from the front, and shields what walks behind it, until a heavy blunt blow cracks it. A blade from behind goes round it."
   },
   "healer": {
    "name": "Healer",

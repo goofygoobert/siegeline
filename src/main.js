@@ -6,6 +6,7 @@ import regions from "../data/regions.json";
 import r1 from "../data/stages/r1.json";
 import W from "../data/world.json";
 import ROSTER from "../data/design/roster.json";
+import LORE from "../data/lore.json";
 import { createBattle, step, input, canSend, stars as starCount } from "./sim/battle.js";
 import { makeBot } from "./sim/bot.js";
 import { unitStats, upgradeCost, tierFor } from "./sim/stats.js";
@@ -51,6 +52,8 @@ for (const [k, f] of Object.entries({ coin: "icons/coin.webp", cannon: "icons/ca
   document.documentElement.style.setProperty("--img-" + k, `url("${new URL("assets/" + f, document.baseURI).href}")`);   // absolute: a url() inside a custom property resolves against the stylesheet that uses it
 const artIcon = (k, cls = "art") => h("span", { class: cls + " art-" + k, "aria-hidden": "true" });
 const I = {
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></svg>',
+  crown: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18.5l1.6-10 4.6 4.3L12 5l2.8 7.8 4.6-4.3 1.6 10z"/><rect x="3" y="19.6" width="18" height="2.4" rx="1"/></svg>',
   mug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 7h11v11a3 3 0 01-3 3H7a3 3 0 01-3-3z"/><path d="M15 10h2.5a2.5 2.5 0 010 5H15"/><path d="M5 4.5c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10.3 2.5h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.3"/></svg>',
@@ -132,6 +135,18 @@ function foesOf(s) {
   return out;
 }
 const tagsOf = (id) => enemyById[id].tags || [];
+/** A monster is "known" once you have fought a battle it was in: then the loadout screen shows who answers it. */
+const known = (id) => !!((D.seen.known || {})[id]);
+/** Black Tide: once Mother Fathom has fallen every stage returns stronger with one twist, for a crown. */
+let tideMode = false;
+const tideOpen = () => cleared("r1boss");
+const crownOf = (id) => !!(D.stages[id] && D.stages[id].crown);
+function tideStage(s) {
+  const t = s.tide, mods = t.mods;
+  return { ...s, power: s.power * t.power, bossPower: s.bossPower ? s.bossPower * t.power : undefined, mods, reward: t.reward, tideOf: s.id,
+    slots: (s.slots || 5) - (mods.includes("fewerPlaces") ? 1 : 0), noCaptain: mods.includes("noCaptain"), unlocks: [], tavern: [] };
+}
+const baseOf = (s) => (s.tideOf ? stageById[s.tideOf] : s);
 /** The first stage in the region where a trait appears: that stage introduces it. */
 function firstWithTrait(tag) { return regionStages.find((st) => foesOf(st).some((f) => tagsOf(f).includes(tag))); }
 /** Give every free recruit and Tavern offer earned by cleared stages (also repairs migrated saves). Returns new names. */
@@ -223,37 +238,45 @@ async function regionScreen(region) {
   playMusic("map");
   await loadAtlas("ui", { white: false });
   const bgs = await loadBackgrounds("r1");
-  const pts = [[0.08, 0.72], [0.19, 0.42], [0.31, 0.7], [0.43, 0.4], [0.55, 0.7], [0.67, 0.4], [0.78, 0.68], [0.9, 0.38]];
+  const pts = [[0.08, 0.6], [0.19, 0.34], [0.31, 0.6], [0.43, 0.32], [0.55, 0.6], [0.67, 0.32], [0.78, 0.58], [0.9, 0.3]];
   const path = h("div", { class: "path" });
   const svgPts = pts.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
   path.append(h("svg", { class: "pathline", viewBox: "0 0 100 100", preserveAspectRatio: "none", html: `<polyline points="${svgPts}" fill="none" stroke="#2a1b11" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke" style="stroke-width:9px"/><polyline points="${svgPts}" fill="none" stroke="#d9bb82" stroke-linecap="round" stroke-dasharray="7 5" vector-effect="non-scaling-stroke" style="stroke-width:5px"/>` }));
   let nextIdx = regionStages.findIndex((s, i) => stageOpen(i) && !cleared(s.id));
   regionStages.forEach((s, i) => {
-    const open = stageOpen(i), st = starsOf(s.id);
-    const node = h("button", { class: "node" + (s.boss ? " boss" : "") + (open ? "" : " locked") + (i === nextIdx ? " next" : ""),
-      style: `left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%`, "aria-label": `${s.name}${open ? "" : " (locked)"}`,
-      onclick: open ? tap(() => prepScreen(s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
+    const tide = tideMode && tideOpen(), open = stageOpen(i), st = starsOf(s.id), crown = crownOf(s.id);
+    const isNext = tide ? (!crown && regionStages.findIndex((x) => !crownOf(x.id)) === i) : i === nextIdx;
+    const node = h("button", { class: "node" + (s.boss ? " boss" : "") + (open ? "" : " locked") + (isNext ? " next" : "") + (tide && crown ? " crowned" : ""),
+      style: `left:${pts[i][0] * 100}%;top:${pts[i][1] * 100}%`, "aria-label": `${tide ? W.tide.title + ": " : ""}${s.name}${open ? "" : " (locked)"}${tide && crown ? ", crown won" : ""}`,
+      onclick: open ? tap(() => prepScreen(tide ? tideStage(s) : s, region)) : tap(() => toast("Clear the stage before this one first."), "ui_locked") },
       s.boss ? "☠︎" : String(i + 1),
-      h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))),
+      tide ? h("span", { class: "st crownmark" + (crown ? " on" : "") }, icon(I.crown)) : h("span", { class: "st" }, ...st.map((on) => h("i", { class: on ? "on" : "" }))),
       open ? h("span", { class: "nm" }, s.name) : null);
     if (!open) node.prepend(icon(I.lock));
     if (!open) node.childNodes[1].remove();
     path.append(node);
   });
   const back = bgs && (bgs.mid || bgs.far);
-  show(h("div", { class: "screen" },
+  const crowns = regionStages.filter((x) => crownOf(x.id)).length;
+  const tideBtn = h("button", { class: "tide-toggle" + (tideMode && tideOpen() ? " on" : "") + (tideOpen() ? "" : " locked"), role: "switch", "aria-checked": !!(tideMode && tideOpen()),
+    "aria-label": tideOpen() ? `${W.tide.toggle}, ${crowns} of ${regionStages.length} crowns` : W.tide.locked,
+    onclick: tap(() => { if (!tideOpen()) { toast(W.tide.locked, 3000); return; } tideMode = !tideMode; regionScreen(region); }, tideOpen() ? "ui_tap" : "ui_locked") },
+    icon(I.crown), h("span", {}, W.tide.toggle), tideOpen() ? h("b", {}, `${crowns}/${regionStages.length}`) : icon(I.lock));
+  show(h("div", { class: "screen" + (tideMode && tideOpen() ? " tide" : "") },
     h("div", { class: "bgimg cove", style: back ? `background-image:${["near", "mid", "far", "sky"].filter((k) => bgs[k]).map((k) => `url(${bgs[k].img.src})`).join(",")}` : "background:linear-gradient(#2a1418,#8a3a1a)" }),
     topbar(region.name, worldMap, [
+      h("button", { class: "btn", "aria-label": "Logbook", onclick: tap(() => logbook(() => regionScreen(region))) }, icon(I.book), h("span", { class: "lbl" }, "Log")),
       D.tavern.length || regionStages.some((st) => st.tavern) ? h("button", { class: "btn" + (D.tavern.some((u) => !owned(u)) ? " has-new" : ""), "aria-label": W.tavern.title, onclick: tap(() => tavern(() => regionScreen(region))) }, icon(I.mug), h("span", { class: "lbl" }, W.tavern.title)) : null,
       h("button", { class: "btn", "aria-label": W.armoury.title, onclick: tap(() => armoury(() => regionScreen(region))) }, icon(I.hammer), h("span", { class: "lbl" }, W.armoury.title))]),
-    path));
+    path, tideBtn));
 }
 
 /** Scouting + loadout: who you will face (in arrival order, with their traits) and who you take in. Tapping a
  *  monster lights the crew who answer it and dims the ones it beats, straight from the counter data. */
 async function prepScreen(s, region, preset) {
   await Promise.all([loadAtlas("ui", { white: false }), loadAtlas("enemies", { white: false }), s.boss ? loadAtlas("boss", { white: false }) : null]);
-  const idx = regionStages.indexOf(s), slots = s.slots || 5, first = !cleared(s.id);
+  const base = baseOf(s), idx = regionStages.indexOf(base), slots = s.slots || 5, tide = !!s.tideOf;
+  const first = tide ? !crownOf(base.id) : !cleared(s.id);
   const reward = first ? s.reward : Math.round(s.reward * game.rewards.replayFraction);
   const crew = units.units.filter((u) => owned(u.id));
   let pick = (preset || D.loadouts[s.id] || D.loadouts._last || []).filter(owned).slice(0, slots);
@@ -265,7 +288,7 @@ async function prepScreen(s, region, preset) {
   const fightBtn = h("button", { class: "btn primary big", onclick: tap(() => { if (!pick.length) return; D.loadouts[s.id] = pick.slice(); D.loadouts._last = pick.slice(); persist(); startBattle(s, pick); }),
     "aria-label": `Fight. ${first ? "First clear" : "Replay"} pays ${reward} ${W.currency}` }, "Fight", h("span", { class: "reward" }, "+", coin(), reward + ""));
   const verdict = (u) => {
-    if (!focus) return "";
+    if (!focus || !known(focus)) return "";       // counters are learned by facing a monster, not handed out
     const tags = tagsOf(focus), c = crewPlan[u];
     if (!c) return "";
     if (tags.some((t) => c.strong.includes(t))) return "good";
@@ -275,16 +298,18 @@ async function prepScreen(s, region, preset) {
   function render() {
     strip.replaceChildren(...foes.map((f) => {
       const tags = tagsOf(f), isNew = tags.some((t) => t !== "plain" && t !== "boss" && firstWithTrait(t) === s);
-      return h("button", { class: "foe" + (focus === f ? " on" : "") + (isNew ? " new" : ""), role: "listitem", "aria-pressed": focus === f,
+      return h("button", { class: "foe" + (focus === f ? " on" : "") + (isNew && !tide ? " new" : ""), role: "listitem", "aria-pressed": focus === f,
         "aria-label": `${enemyById[f].name}: ${tags.map(traitName).join(", ")}. Show who answers it.`, onclick: tap(() => { focus = focus === f ? null : f; render(); }) },
         h("span", { class: "pic" }, figure(f)), h("b", {}, enemyById[f].name),
         h("span", { class: "tags" }, ...tags.filter((t) => t !== "plain").map((t) => h("span", { class: "tag" }, traitIcon(t), traitName(t)))),
-        isNew ? h("span", { class: "newflag" }, "New") : null);
+        isNew && !tide ? h("span", { class: "newflag" }, "New") : null);
     }));
     const ft = focus ? tagsOf(focus).filter((t) => TRAITS[t] && t !== "plain") : [];
+    const unknownNote = focus && !known(focus) ? [" ", h("i", {}, W.scoutUnknown)] : [];
     const newTag = foes.flatMap(tagsOf).find((t) => TRAITS[t] && t !== "plain" && firstWithTrait(t) === s);
-    hint.replaceChildren(...(ft.length ? [h("b", {}, traitName(ft[0]) + ": "), TRAITS[ft[0]].rule]
-      : newTag ? [h("b", {}, "New: " + traitName(newTag) + ". "), TRAITS[newTag].rule] : [s.teaches || ""]));
+    hint.replaceChildren(...(ft.length ? [h("b", {}, traitName(ft[0]) + ": "), TRAITS[ft[0]].rule, ...unknownNote]
+      : tide ? [h("b", {}, W.tide.title + ". "), s.tide.text, " ", ...s.mods.map((m) => h("span", { class: "modtag" }, W.tide.mods[m]))]
+      : newTag ? [h("b", {}, "New: " + traitName(newTag) + ". "), TRAITS[newTag].rule] : [h("i", {}, (LORE.log[s.id] || {}).before || "")]));
     roster.replaceChildren(...crew.map((u) => {
       const inT = pick.includes(u.id), v = verdict(u.id);
       return h("button", { class: "rcard" + (inT ? " in" : "") + (v ? " " + v : ""), "aria-pressed": inT,
@@ -301,15 +326,53 @@ async function prepScreen(s, region, preset) {
   const count = h("span", { class: "muted count", role: "status" });
   render();
   const st = starsOf(s.id);
-  show(h("div", { class: "screen prep" },
-    topbar(s.boss ? "Boss · " + s.name : `Stage ${idx + 1} · ${s.name}`, () => regionScreen(region)),
+  show(h("div", { class: "screen prep" + (tide ? " tide" : "") },
+    topbar(tide ? `${W.tide.title} ${s.boss ? "" : idx + 1 + " "}· ${s.name}` : (s.boss ? "Boss · " + s.name : `Stage ${idx + 1} · ${s.name}`), () => regionScreen(region)),
     h("div", { class: "prep-body" },
       h("section", { class: "panel paper scouting" }, h("h3", {}, "You'll face"), strip, hint),
       h("section", { class: "panel paper loadout" },
         h("div", { class: "row" }, h("h3", {}, "Your crew"), h("div", { class: "spacer" }),
-          h("span", { class: "starmini", "aria-label": `${st.filter(Boolean).length} of 3 stars` }, ...st.map((on) => h("i", { class: on ? "on" : "" })))),
+          tide ? h("span", { class: "crownmark" + (crownOf(base.id) ? " on" : ""), "aria-label": crownOf(base.id) ? "Crown won" : "No crown yet" }, icon(I.crown))
+            : h("span", { class: "starmini", "aria-label": `${st.filter(Boolean).length} of 3 stars` }, ...st.map((on) => h("i", { class: on ? "on" : "" })))),
         roster,
         h("div", { class: "row prep-foot" }, count, h("div", { class: "spacer" }), fightBtn)))));
+}
+
+// ---------------------------------------------------------------- logbook (the story, found by playing)
+/** Every page of lore and whether it has been found. Log pages: first clears. Black Tide pages: crowns. Bestiary: a
+ *  monster you have fought. Crew: aboard. Counts toward 100%. */
+function lorePages() {
+  const out = [];
+  for (const st of regionStages) out.push({ tab: "log", id: st.id, title: LORE.log[st.id].title, text: LORE.log[st.id].page, found: cleared(st.id), hint: `Clear ${st.name}` });
+  for (const st of regionStages) out.push({ tab: "tide", id: st.id, title: LORE.tide[st.id].title, text: LORE.tide[st.id].page, found: crownOf(st.id), hint: `Win the Black Tide crown on ${st.name}` });
+  for (const [id, text] of Object.entries(LORE.bestiary)) out.push({ tab: "beasts", id, title: enemyById[id].name, text, found: known(id), hint: "Not met yet" });
+  for (const [id, text] of Object.entries(LORE.crew)) {
+    const isHero = id === "marshal", u = unitById[id];
+    out.push({ tab: "crew", id, title: isHero ? game.hero.name : u.name, text, found: isHero ? D.unlocked.hero : owned(id), hint: isHero ? "Joins after The Smugglers' Steps" : unlockHint(id) });
+  }
+  return out;
+}
+let logTab = "log";
+async function logbook(backFn) {
+  await Promise.all([loadAtlas("ui", { white: false }), loadAtlas("enemies", { white: false }), loadAtlas("boss", { white: false })]);
+  const pages = lorePages(), found = pages.filter((p) => p.found).length;
+  const tabs = h("div", { class: "tabs", role: "tablist" }), list = h("div", { class: "logpages" });
+  const names = { log: "Captain's log", tide: W.tide.title, beasts: "Bestiary", crew: "Crew" };
+  function render() {
+    tabs.replaceChildren(...Object.entries(names).map(([k, n]) => {
+      const ps = pages.filter((p) => p.tab === k);
+      return h("button", { class: "tab" + (logTab === k ? " on" : ""), role: "tab", "aria-selected": logTab === k, onclick: tap(() => { logTab = k; render(); }) }, n, h("span", { class: "cnt" }, `${ps.filter((p) => p.found).length}/${ps.length}`));
+    }));
+    const ps = pages.filter((p) => p.tab === logTab);
+    list.replaceChildren(...(logTab === "log" ? [h("p", { class: "page intro" }, h("b", {}, LORE.title + ". "), LORE.intro)] : []),
+      ...ps.map((p) => h("article", { class: "page" + (p.found ? "" : " sealed") },
+        logTab === "beasts" ? h("span", { class: "fig" + (p.found ? "" : " shadow") }, figure(p.id)) : logTab === "crew" ? h("span", { class: "fig round" + (p.found ? "" : " shadow") }, portrait(p.id, 56)) : null,
+        h("div", {}, h("h3", {}, p.found ? p.title : (logTab === "beasts" || logTab === "crew" ? "?" : p.title)),
+          p.found && logTab === "beasts" ? h("div", { class: "tags" }, ...tagsOf(p.id).filter((t) => t !== "plain").map((t) => h("span", { class: "tag" }, traitIcon(t), traitName(t)))) : null,
+          h("p", {}, p.found ? p.text : h("i", {}, p.hint))))));
+  }
+  render();
+  show(h("div", { class: "screen qm logbook" }, topbar(`Logbook · ${found}/${pages.length} pages`, backFn), tabs, list));
 }
 
 // ---------------------------------------------------------------- tavern (crew bought with doubloons)
@@ -478,7 +541,7 @@ async function startBattle(stage, crew) {
   let n = 0; const tick = () => { n++; bar.style.transform = `scaleX(${0.1 + 0.9 * n / (pages.length + 1)})`; };
   await Promise.all([...pages.map(([g, all]) => (all ? loadAtlas(g, { white: false }) : loadOne(g)).then(tick)), loadBackgrounds(stage.bg).then(tick), stage.bg !== "r1" ? loadBackgrounds("r1") : null]);
   preload(["hit_blade", "hit_claw", "hit_blunt", "arrow_fire", "arrow_hit", "bolt_fire", "bolt_hit", "hollow_die", "warden_die", "castle_hit", "spit", "ballista_reload", "denied", "bloater_burst", "boss_roar", "boss_warn", "boss_slam", "win", "lose", "star", "coin", "hero_call", "hero_flare", "rally", "ember_rain", "heal", "energy_full", "castle_crumble"]);
-  const st = { ...stage, available: crew, hero: D.unlocked.hero, abilities: D.unlocked.abilities.slice() };
+  const st = { ...stage, available: crew, hero: D.unlocked.hero && !stage.noCaptain, abilities: D.unlocked.abilities.slice() };
   const prog = { unitLevels: D.unitLevels, keep: D.keep, ballista: D.ballista, energyMax: D.energyMax, energyRegen: D.energyRegen, hero: D.hero, abilities: D.abilities, skills: D.skills };
   const seedQ = new URLSearchParams(location.search).get("seed");
   const B = createBattle(content, st, prog, seedQ ? +seedQ : (Math.random() * 1e9) | 0);
@@ -510,7 +573,7 @@ class BattleView {
     const top = h("div", { class: "hud-top" }, this.hpKeep, h("div", { class: "spacer" }), h("div", { class: "hud-mid" }, this.timer, this.speedBtn,
       h("button", { class: "pill", "aria-label": "Pause", onclick: tap(() => this.pause(true)) }, icon(I.pause))), h("div", { class: "spacer" }), this.hpGate);
     // ballista (hold + drag back to aim)
-    this.weapon = h("button", { class: "weapon", "aria-label": W.weaponHelp }, artIcon("cannon"), h("span", { class: "ring" }));
+    this.weapon = h("button", { class: "weapon" + (B.noCannon ? " off" : ""), "aria-label": B.noCannon ? W.tide.mods.noCannon : W.weaponHelp, disabled: B.noCannon || null }, artIcon("cannon"), h("span", { class: "ring" }));
     this.bindWeapon();
     this.energy = h("div", { class: "energy" }, h("div", { class: "val" }, h("span", { class: "fl" }), h("span", { class: "n" }, "0"), h("span", { class: "muted", style: "font-size:13px" }, h("span", { class: "mx" }, "/100"))), h("div", { class: "bar" }, h("i")));
     this.cardEls = B.cards.map((c) => {
@@ -749,14 +812,18 @@ class BattleView {
   finish() {
     const B = this.B; this.over = true; this.endTutor(B.result === "win"); this.unbind(); battle = null;
     const s = this.stage, win = B.result === "win";
-    const rec = D.stages[s.id] || (D.stages[s.id] = { stars: [false, false, false], best: 0, clears: 0 });
+    D.seen.known = D.seen.known || {}; for (const f of foesOf(s)) D.seen.known[f] = true;       // now you know what they are and what answers them
+    const rec = D.stages[baseOf(s).id] || (D.stages[baseOf(s).id] = { stars: [false, false, false], best: 0, clears: 0 });
     let earned = 0, newStars = 0; const got = [false, false, false]; const unlocks = [];
-    if (win) {
+    if (s.tideOf) {          // Black Tide: a crown, no stars
+      if (win) { earned = rec.crown ? Math.round(s.reward * game.rewards.replayFraction) : s.reward; if (!rec.crown) { rec.crown = true; unlocks.push({ name: W.tide.crown, how: "crown" }); } rec.tideClears = (rec.tideClears || 0) + 1; }
+      else earned = Math.round(Math.min(40, 10 + B.stats.kills * 2));
+    } else if (win) {
       const n = starCount(B); got[0] = true; got[1] = B.keep.hp >= B.keep.max * game.stars.keepHp; got[2] = B.endT - B.heldT <= s.par;
       for (let i = 0; i < 3; i++) if (got[i] && !rec.stars[i]) { rec.stars[i] = true; newStars++; }
       earned = (rec.clears === 0 ? s.reward : Math.round(s.reward * game.rewards.replayFraction)) + newStars * game.rewards.perNewStar;
       rec.best = rec.best ? Math.min(rec.best, Math.round(B.endT)) : Math.round(B.endT);
-      const firstClear = rec.clears === 0;
+      const firstClear = rec.clears === 0; this.newPage = firstClear;
       const hadHero = D.unlocked.hero, hadAb = D.unlocked.abilities.slice();
       rec.clears++;
       if (firstClear) {
@@ -764,7 +831,7 @@ class BattleView {
         if (!hadHero && D.unlocked.hero) unlocks.push({ name: game.hero.name, how: "hero" });
         for (const a of D.unlocked.abilities) if (!hadAb.includes(a)) unlocks.push({ name: abilityNames[a], how: "power" });
       }
-    } else earned = Math.round(Math.min(40, B.stats.kills * 2));      // a little for trying: losses still move you forward
+    } else earned = Math.round(Math.min(40, 10 + B.stats.kills * 2));      // a little for trying: losses still move you forward
     D.marks += earned; D.totalMarks += earned; D.playTime += Math.round(B.t);
     persist(true);
     playMusic(win ? "victory" : "defeat");
@@ -772,26 +839,27 @@ class BattleView {
     this.results(win, got, earned, unlocks);
   }
   results(win, got, earned, unlocks) {
-    const s = this.stage, idx = regionStages.indexOf(s), next = regionStages[idx + 1];
+    const s = this.stage, tide = !!s.tideOf, idx = regionStages.indexOf(baseOf(s)), nb = regionStages[idx + 1], next = nb ? (tide ? tideStage(nb) : nb) : null;
     const starsEl = h("div", { class: "bigstars", "aria-label": `${got.filter(Boolean).length} of 3 stars` }, ...got.map((g) => h("span", { class: "star" + (g ? " on" : " miss") })));
     const earnN = h("b", {}, "0");
     const tip = win ? null : loseTip(this.B);
     const marks = h("div", { class: "marks", style: "position:absolute;top:calc(var(--sat) + 60px);right:calc(var(--sar) + 16px)" }, coin(), h("span", {}, String(D.marks - earned)));
     const panel = h("div", { class: "panel result " + (win ? "win" : "lose") + (unlocks.length ? " has-news" : ""), role: "dialog", "aria-label": win ? "Victory" : "Defeat" },
       h("h2", {}, win ? (s.boss ? W.results.bossWin : W.results.win) : W.results.lose),
-      win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" },
+      win && tide ? h("div", { class: "bigcrown", "aria-label": "Crown" }, icon(I.crown)) : win ? starsEl : h("p", { class: "note", style: "text-align:center;margin:0;font-size:var(--fs-m)" },
         this.B.gate.max && this.B.gate.hp / this.B.gate.max < 0.25 && !this.B.gate.sealed ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, fill(W.results.closeGate, { hp: Math.ceil(this.B.gate.hp) })) : null,
         this.B.boss && this.B.boss.alive && this.B.boss.hp / this.B.boss.maxHp < 0.3 ? h("b", { style: "display:block;color:var(--accent-2);margin-bottom:4px" }, fill(W.results.closeBoss, { pct: Math.round(this.B.boss.hp / this.B.boss.maxHp * 100) })) : null,
         tip),
-      win ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
+      win && !tide ? h("div", { class: "starrow", style: "align-self:center" }, ...game.stars.desc.map((d, i) => h("div", {}, h("span", { class: "star" + (got[i] ? " on" : "") }), i === 2 ? `Win under ${fmt(s.par)} — you took ${fmt(this.B.endT - this.B.heldT)}` : d))) : null,
       h("div", { class: "earn" }, coin(), h("span", {}, "+", earnN, " " + W.currency)),
+      win && (unlocks.some((u) => u.how === "crown") || this.newPage) ? h("div", { class: "unlock" }, icon(I.book), h("span", {}, h("small", {}, "New logbook page"), tide ? LORE.tide[baseOf(s).id].title : LORE.log[s.id].title)) : null,
       ...unlocks.filter((u) => u.how === "free").map((u) => h("div", { class: "recruit" }, h("span", { class: "pic" }, portrait(u.id, 72)),
         h("span", {}, h("small", {}, W.tavern.joins), h("b", {}, unitById[u.id].name), (crewPlan[u.id] || {}).job || ""))),
       ...unlocks.filter((u) => u.how === "tavern").map((u) => h("div", { class: "unlock" }, icon(I.mug), h("span", {}, h("small", {}, W.tavern.opened), `${unitById[u.id].name} will sign on for ${unitById[u.id].price} ${W.currency}`))),
       unlocks.some((u) => u.how === "hero" || u.how === "power") ? h("div", { class: "unlock" }, h("span", { class: "star on", style: "width:26px;height:26px" }), h("span", {}, h("small", {}, "Unlocked"), unlocks.filter((u) => u.name).map((u) => u.name).join(" · "))) : null,
       h("div", { class: "btnrow" },
         win && next ? h("button", { class: "btn primary big", onclick: tap(() => prepScreen(next, regions.regions[0])) }, "Next stage") : null,
-        win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { D.seen.regionCleared = D.seen.regionCleared || "new"; worldMap(); }) }, "Continue") : null,
+        win && !next ? h("button", { class: "btn primary big", onclick: tap(() => { if (!tide) D.seen.regionCleared = D.seen.regionCleared || "new"; tide ? regionScreen(regions.regions[0]) : worldMap(); }) }, "Continue") : null,
         win && next ? null : null,
         !win ? h("button", { class: "btn primary big", onclick: tap(() => prepScreen(s, regions.regions[0])) }, "Change crew") : null,
         h("button", { class: "btn big", onclick: tap(() => startBattle(s, lastCrew)) }, "Retry"),
@@ -858,7 +926,7 @@ function boot() {
   // register the offline cache after first load settles, so it never competes with the first screen
   if ("serviceWorker" in navigator && import.meta.env.PROD && !/\/preview\//.test(location.pathname)) window.addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("sw.js").catch(() => {}), 4000));
   if (syncRecruits().length) persist(true);
-  window.__siegeline = { prepScreen: (id) => prepScreen(stageById[id], regions.regions[0]), tavern: () => tavern(worldMap), get D() { return D; }, get battle() { return battle; }, startBattle: (id, crew) => startBattle(stageById[id], crew), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
+  window.__siegeline = { logbook: () => logbook(worldMap), prepScreen: (id) => prepScreen(stageById[id], regions.regions[0]), tavern: () => tavern(worldMap), get D() { return D; }, get battle() { return battle; }, startBattle: (id, crew) => startBattle(stageById[id], crew), worldMap, regionScreen: () => regionScreen(regions.regions[0]), armoury: () => armoury(worldMap), titleScreen, openSettings, R,
     ...(TEST ? { setSpeed: (x) => (testSpeed = x), autoplay: (skill) => (autoBot = skill == null ? null : makeBot({ skill })), save: () => save(D), reload: () => { S = load(); D = S.data; } } : {}) };
   titleScreen();
 }

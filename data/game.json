@@ -86,43 +86,43 @@
  },
  "upgradeCost": {
   "unit": [
-   60,
-   1.45
+   90,
+   1.5
   ],
   "keep": [
-   80,
-   1.4
+   120,
+   1.5
   ],
   "ballista": [
-   80,
-   1.4
+   120,
+   1.5
   ],
   "energyMax": [
-   100,
-   1.6
+   150,
+   1.65
   ],
   "energyRegen": [
-   120,
-   1.6
+   170,
+   1.65
   ],
   "hero": [
-   100,
-   1.45
+   140,
+   1.5
   ],
   "ability": [
-   90,
-   1.45
+   130,
+   1.5
   ]
  },
  "rewards": {
-  "replayFraction": 0.35,
-  "perNewStar": 30
+  "replayFraction": 0.25,
+  "perNewStar": 45
  },
  "stars": {
-  "keepHp": 0.6,
+  "keepHp": 0.8,
   "desc": [
    "Win",
-   "Keep the Gullwake above 60% health",
+   "Keep the Gullwake above 80% health",
    "Win under the par time"
   ]
  }

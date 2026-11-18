@@ -267,7 +267,7 @@
    "name": "Sawbones",
    "role": "healer",
    "region": 1,
-   "cost": 120,
+   "cost": 100,
    "cooldown": 16,
    "hp": 110,
    "dmg": 0,
@@ -276,7 +276,7 @@
    "speed": 38,
    "size": 14,
    "traits": {
-    "heal": 22
+    "heal": 30
    },
    "counter": "Anything that reaches the back line",
    "strongVs": "long fights, bosses",

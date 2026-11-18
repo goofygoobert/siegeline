@@ -28,7 +28,7 @@ export function makeBot(opts = {}) {
       }
     }
     // ballista: shoot the closest threat, with aim error that shrinks with skill
-    if (B.ballista.reload <= 0 && enemies.length) {
+    if (B.ballista.reload <= 0 && !B.noCannon && enemies.length) {
       const tgt = enemies.reduce((a, b) => (a.x < b.x ? a : b));
       const lead = tgt.s.speed * 1.0 * (tgt.state === "walk" ? -1 : 0);
       const err = (B.rand() - 0.5) * 2 * (1 - skill) * 170;       // an average thumb misses the pack about a third of the time

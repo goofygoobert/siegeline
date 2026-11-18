@@ -24,10 +24,10 @@ turn a wrong answer into a right one.
 |---|---|---|---|---|
 | **Swarm** | three dots | small, low and many, arriving in packs of 5-8 | Fast packs that run round anyone already fighting and bite under shields. A wall holds them; the song or a net stops them slipping past. | Shantyman, Netcaster, Fire-eater, Powder Monkey, Swivel Gun, Cooper, Storm-caller |
 | **Flying** | wing | off the ground with a shadow below it | Melee cannot hit it. It flies over the front line to the back line and the fort. | Blackpowder, Netcaster, Gull-rider, Storm-caller |
-| **Siege** | arc over a wall | tall, stays at the back, lobs glowing globs | Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leaping Rope Rat, a Harpooner or Long Tom can reach it. | Rope Rat, Harpooner, Gull-rider, Grapnel |
+| **Siege** | arc over a wall | tall, stays at the back, lobs glowing globs | Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leap over the line, a very long shot or the cannon reaches it. | Rope Rat, Harpooner, Gull-rider, Grapnel |
 | **Exploder** | burst | round, swollen, glowing cracks | Bursts when it dies and hurts everyone close, crew and monsters. | Hatchguard, Blackpowder, Powder Monkey, Diver, Cooper |
 | **Armoured** | plate | huge, crusted in barnacle plates | Takes 12 less damage from every hit, so many small hits do almost nothing. | Anchorman, Harpooner, Boathook, Swivel Gun, Colour Sergeant |
-| **Shelled** | shell | carries a ship's bell or shell in front of it | The bell stops every hit from the front, and shields what walks behind it, until a heavy blow (the Anchorman) cracks it. A blade from behind goes round it. | Rope Rat, Anchorman, Powder Monkey, Grapnel |
+| **Shelled** | shell | carries a ship's bell or shell in front of it | The bell stops every hit from the front, and shields what walks behind it, until a heavy blunt blow cracks it. A blade from behind goes round it. | Rope Rat, Anchorman, Powder Monkey, Grapnel |
 | **Healer** | drop in a ring | soft glowing bell-shape floating low, a beam to whoever it mends | Mends the most hurt monster nearby. A fight in front of it never ends. | Rope Rat, Harpooner, Fire-eater, Gull-rider, Grapnel, Storm-caller |
 | **Venomous** | green drop | covered in long thin spines | Each hit adds a stack of poison. | Hatchguard, Sawbones, Chaplain, Diver |
 | **Submerged** | fin | a moving ripple and fin in the sand | Cannot be targeted while under the sand. Surfaces at the first crew member it passes, behind the front line. | Shantyman, Anchorman, Lookout, Diver |
@@ -155,13 +155,18 @@ that use them.
 
 ## Difficulty
 
-- **Target for the intended loadout:** 75–90% wins for an average player with no upgrades.
+- **Target for the intended loadout:** about 60% wins for an average player with no upgrades (stage 1: 80%, stage 2:
+  70%). Changed from 75–90% after the owner asked that nobody can 100% the game in a couple of hours.
 - **Target for a sensible wrong loadout** (a reasonable team that lacks the answer to the stage's new trait): under 25%.
 - **Random loadout:** somewhere between, by how many of its picks happen to answer the stage.
 - **Upgrades cannot brute-force a stage:** a wrong loadout with upgrades two tiers ahead of the stage must still be
   under 50%. **Not met** (see `docs/balance.md`): with crew at level 6 and the fort and cannon at level 6 every wrong
   loadout wins. Upgrades are generous today; tightening them is the next balance pass.
-- Stage power is tuned so the right loadout is at the top of its target; stars reward doing it cleanly.
+- Stage power is tuned so the right loadout sits at its target; stars reward doing it cleanly (fort above 80%, a par
+  about 90% of an average clear).
+- **Black Tide**, after the boss: each stage again, stronger, with one twist, for a crown. About 50% for an average
+  player with level-5 crew. 100% of region 1 (every star and crown) takes a simulated average player about 6 hours.
+- **Counters are learned, not given.** The loadout screen shows who answers a monster only after you have fought it.
 
 ## Region 1, reworked: one new idea per stage
 

@@ -1,0 +1,80 @@
+{
+ "note": "Lore for Tales of the Brine, region 1 (all original). Shown in the Logbook: log pages unlock on a first clear, Black Tide pages on a crown, bestiary entries once you have fought the monster, crew stories once they are aboard. 'before' lines appear on the loadout screen.",
+ "title": "The Green Moon",
+ "intro": "Saltwick Cove has paid the sea for three hundred years: a share of every catch thrown back, a lantern lit on every grave. This spring the harbourmaster stopped paying. On the night the moon came up green, the drowned came up the beach to collect.",
+ "log": {
+  "r1s1": {
+   "title": "The night it started",
+   "before": "Drowners on the sand below the Gullwake. Hold them off the hull.",
+   "page": "Log of the Gullwake, first night. We were mending nets when the tide went the colour of bottle glass. Old Teague said the sea was owed, and laughed, and then the first of them stood up out of the shallows wearing his brother's coat. We held. Barely. The Hatchguards say they can hold a door against anything; tonight they held a whole beach."
+  },
+  "r1s2": {
+   "title": "The Smugglers' Steps",
+   "before": "Scuttlers by the hundred on the old smugglers' stair. They run round anyone who stands alone.",
+   "page": "The Scuttlers came up the cliff stair the smugglers cut in my grandfather's time. They don't fight like men; they flow round you and bite the ankles of whoever is behind. The Shantyman sang the old capstan song and the little horrors slowed to a crawl, swaying, as if they remembered being sailors. I don't like what that means."
+  },
+  "r1s3": {
+   "title": "Gallows Roost",
+   "before": "Something is nesting in the gibbet on Roost Point. It flies.",
+   "page": "There used to be a gibbet on Roost Point where the cove hanged wreckers. The gulls that fed there never left. Now they fly without feathers, nooses of kelp swinging from their necks, and they go over the line straight for the gunners. A fisherwoman named Mags Corrie walked into our camp with a cast-net and said she'd been catching worse than these since she was nine."
+  },
+  "r1s4": {
+   "title": "The Broken Lighthouse",
+   "before": "Inkspitters are lobbing from the lighthouse rocks, out of reach of our guns.",
+   "page": "The lighthouse went dark the first night and nobody has dared climb to it since. The Inkspitters roost below it and lob their black bile over our heads, then shrink back into the rocks when we come close. The Rope Rat went up the cliff like a cat and came down with ink to the elbows and a grin. Behind the lamp glass he found a page of the harbourmaster's ledger, nailed to the frame."
+  },
+  "r1s5": {
+   "title": "Pufferghast Shoals",
+   "before": "Swollen things are drifting in over the shoals. Don't let them burst among the crew.",
+   "page": "We lost two good hands to the Pufferghasts before we learned: let them come to the door and pop them from the deck, never in a crowd. The ledger page from the lighthouse is in the harbourmaster's own hand. It lists what the cove has paid the sea each year since the founding, and one line struck out this spring: 'The Tithe, 300th year. Refused.'"
+  },
+  "r1s6": {
+   "title": "Wreckers' Reef",
+   "before": "The reef is crawling with Barnacle Trolls, and something big is grazing in the kelp beyond.",
+   "page": "The Trolls on Wreckers' Reef wear barnacles like plate and shrug off a cutlass. It took the Anchorman's iron to crack them. Then the Kelpie came out of the kelp, a drowned horse taller than the mast, and it knew my name. It called me by it twice before Halloran's flare drove it under. The Captain wouldn't look at me after."
+  },
+  "r1s7": {
+   "title": "The Bell Ground",
+   "before": "The drowned church bells are walking. Something soft and glowing follows them.",
+   "page": "The old chapel sank in the great storm and its bells sank with it. Now they walk the bottom on crab legs, and behind them drift the Tide Nurses, mending every wound we make. You cannot fight a bell from the front. You crack it, or you get round it. The Captain finally talked: the Kelpie was the price the cove paid the last time the Tithe was late. It was his father."
+  },
+  "r1boss": {
+   "title": "Mother Fathom",
+   "before": "She has come up herself. Everything we have, on the beach, tonight.",
+   "page": "She was tall as the lighthouse and wore the cove's old tithes like jewellery: a christening cup, a wedding ring, a lantern from every grave. She did not want the town. She wanted what was owed. We gave her iron instead, and she sank back with the tide still green behind her. The moon is white again. The ledger is still open. Something tells me the sea keeps its own books."
+  }
+ },
+ "tide": {
+  "r1s1": { "title": "Below the waterline", "page": "Under the Gullwake's keel, where the Drowners came up, the divers found a ring of stones with names cut into them: everyone the cove has given to the sea. The newest name is not dry yet. It is the harbourmaster's." },
+  "r1s2": { "title": "The capstan song", "page": "The Scuttlers stopped for the old capstan song because they were the crew of the first Saltwick ship, the Larkspur, lost with all hands the year the Tithe began. The cove made a bargain to keep the rest of the fleet afloat. The Larkspur was the down payment." },
+  "r1s3": { "title": "The gibbet's last rope", "page": "The last man hanged on Roost Point was a wrecker named Abel Corrie, who swore the cove was lighting false lamps to wreck ships for the sea's share. Mags Corrie never says his name. She keeps a knot of his rope in her net." },
+  "r1s4": { "title": "The lamp that lies", "page": "The lighthouse was never a warning. Its keeper's notes show it was lit to draw ships onto the reef in Tithe years: the cove paid the sea in strangers rather than its own. The Inkspitters are what became of the keepers." },
+  "r1s5": { "title": "What the ledger owes", "page": "On the last ledger page is a line in a hand that is not the harbourmaster's, written in something that smells of the deep: 'Three hundred years paid in strangers. The next payment is in kind.' The Pufferghasts are full of the cove's own coins." },
+  "r1s6": { "title": "The Kelpie's bridle", "page": "Every kelpie wears a bridle, and whoever holds it holds the beast. The Kelpie of Wreckers' Reef wears a captain's belt for a bridle, with a buckle cast in the shape of a gull. Halloran has the matching buckle on his own belt. He has not taken it off since." },
+  "r1s7": { "title": "The bell that rang last", "page": "One bell never came up with the others: the founding bell, rung the day the bargain was made. The Tide Nurses keep the drowned alive for the sea, the way a farmer keeps a herd. The founding bell is still down there, and it is still ringing." },
+  "r1boss": { "title": "The sea's own book", "page": "Mother Fathom was the cove's first harbourmaster, the woman who made the bargain and went into the sea to see it kept. She is not the sea. She is its clerk. And the moon over the Fogbanks to the north has begun, very faintly, to turn green." }
+ },
+ "bestiary": {
+  "husk": "Drowned sailors raised by the green tide, still in the clothes they died in. Slow, stubborn and many. They remember just enough to hate the living for being dry.",
+  "gnawer": "Crab-things the size of dogs that move in packs and bite under shields. Old sailors called them the sea's tithe-collectors: they take a little from everyone.",
+  "gallows_gull": "Skeletal gulls from the gibbet on Roost Point, trailing nooses of kelp. They fly over the fighting to peck at gunners and the fort. Nets bring them down to earth.",
+  "spitter": "Squid-headed lurkers that lob globs of bitter ink from far behind the line, then shrink back into the rocks. Too slow to hit anything small and quick.",
+  "bloater": "Swollen puffer-ghosts stuffed with brine and old coins. When one bursts, everything near it is hurt, monster or sailor. Pop them at a distance or behind a door.",
+  "brute": "Sea trolls crusted in barnacle plate so thick that a cutlass skids off. A heavy blunt blow cracks the plates; fire finds the gaps.",
+  "bellback": "Hermit crabs grown huge inside the drowned chapel bells. The bell stops anything that comes at it from the front and shields whatever walks behind it.",
+  "tide_nurse": "Pale jellyfish that drift behind the drowned and mend them with a green thread of light. A fight in front of a Nurse never ends until the Nurse does.",
+  "husk_warden": "The Kelpie of Wreckers' Reef: a drowned horse taller than a mast, with a kelp mane and a captain's belt for a bridle. It grows wild when wounded.",
+  "cinder_matron": "Mother Fathom, who rises when the Tithe goes unpaid. She sweeps the beach with a tentacle arm, calls her packs, and spits ink bombs that leave the sand burning."
+ },
+ "crew": {
+  "ashguard": "Big Dunmore Lake tore the hatch cover off the Gullwake's hold the night she ran aground and has carried it as a shield ever since. He talks to it. It has never once let him down.",
+  "torchbow": "Gunner Pell keeps his late father's flintlock and tricorn and fires both with equal disrespect. His shot is packed with lamp-oil wadding; it sets what it hits alight.",
+  "bellringer": "The Shantyman has sung the cove's capstan songs for forty years. He knows the old verses nobody else does, the ones the drowned still sway to.",
+  "netcaster": "Mags Corrie, who has fished the shoals since she was nine and has never once come home with an empty net. She keeps a knot of old rope tied into its rim and won't say whose.",
+  "cinder_runner": "A cabin boy who never gave his name; the crew call him the Rope Rat because he goes up the rigging faster than the rats do. Small, quick, and too fast for anything that lobs.",
+  "harpooner": "Old Ezra Vane, last of the cove's whalers, who swore he'd never throw iron again after the last whale. The Tithe changed his mind. Nothing out-ranges his gun.",
+  "maulwright": "Brannoch, who swings a ship's anchor on a chain as if it were a censer. He is gentle with everything except barnacles.",
+  "lamplighter": "The ship's surgeon, Doctor Quill, who keeps a lantern lit at every bedside on principle. He has opinions about grog, all of them in favour.",
+  "marshal": "Captain Rook Halloran of the Gullwake, who rebuilt a wreck into a fort and a rabble into a crew. He carries a flare pistol, a cutlass and a belt buckle shaped like a gull, and he does not talk about his father."
+ }
+}

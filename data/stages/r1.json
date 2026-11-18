@@ -9,7 +9,7 @@
    "name": "Tide Turns Green",
    "slots": 4,
    "enemyCastleHp": 1200,
-   "par": 120,
+   "par": 105,
    "reward": 120,
    "unlocks": [
     "bellringer",
@@ -67,8 +67,16 @@
      ]
     }
    ],
-   "power": 2.17,
-   "teaches": "Hold a line: a wall in front, a shooter behind."
+   "power": 2.21,
+   "teaches": "Hold a line: a wall in front, a shooter behind.",
+   "tide": {
+    "power": 2.06,
+    "mods": [
+     "eliteTide"
+    ],
+    "text": "The green moon is up. Every third Drowner comes back wrong.",
+    "reward": 150
+   }
   },
   {
    "region": "r1",
@@ -79,7 +87,7 @@
    "name": "The Smugglers' Steps",
    "slots": 4,
    "enemyCastleHp": 2600,
-   "par": 165,
+   "par": 155,
    "reward": 150,
    "unlocks": [
     "netcaster",
@@ -171,8 +179,16 @@
      ]
     }
    ],
-   "power": 1.58,
-   "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack."
+   "power": 1.65,
+   "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack.",
+   "tide": {
+    "power": 2.3,
+    "mods": [
+     "fastTide"
+    ],
+    "text": "The Steps run wet and fast: the Scuttlers are quicker on them.",
+    "reward": 187
+   }
   },
   {
    "region": "r1",
@@ -183,7 +199,7 @@
    "name": "Gallows Roost",
    "slots": 4,
    "enemyCastleHp": 1700,
-   "par": 100,
+   "par": 82,
    "reward": 170,
    "unlocks": [
     "cinder_runner"
@@ -259,8 +275,16 @@
      ]
     }
    ],
-   "power": 1.56,
-   "teaches": "Flying: melee cannot reach. Bring shooters or nets."
+   "power": 1.77,
+   "teaches": "Flying: melee cannot reach. Bring shooters or nets.",
+   "tide": {
+    "power": 1.01,
+    "mods": [
+     "noCannon"
+    ],
+    "text": "Long Tom's powder is soaked. Bring the nets.",
+    "reward": 212
+   }
   },
   {
    "region": "r1",
@@ -271,7 +295,7 @@
    "name": "The Broken Lighthouse",
    "slots": 5,
    "enemyCastleHp": 3200,
-   "par": 185,
+   "par": 150,
    "reward": 200,
    "unlocks": [
     "rally"
@@ -359,8 +383,16 @@
      ]
     }
    ],
-   "power": 1.3,
-   "teaches": "Siege: something at the back out-ranges you. Send a diver or a sniper."
+   "power": 1.59,
+   "teaches": "Siege: something at the back out-ranges you. Send a diver or a sniper.",
+   "tide": {
+    "power": 1.62,
+    "mods": [
+     "fewerPlaces"
+    ],
+    "text": "Half the crew is fighting the lighthouse fire. One place fewer.",
+    "reward": 250
+   }
   },
   {
    "region": "r1",
@@ -371,7 +403,7 @@
    "name": "Pufferghast Shoals",
    "slots": 5,
    "enemyCastleHp": 2300,
-   "par": 140,
+   "par": 122,
    "reward": 220,
    "unlocks": [
     "maulwright"
@@ -465,8 +497,16 @@
      ]
     }
    ],
-   "power": 1.91,
-   "teaches": "Exploder: kill it at range or behind a door, never in a crowd."
+   "power": 2.06,
+   "teaches": "Exploder: kill it at range or behind a door, never in a crowd.",
+   "tide": {
+    "power": 1.37,
+    "mods": [
+     "eliteTide"
+    ],
+    "text": "The shoals are swollen: the Pufferghasts come back larger.",
+    "reward": 275
+   }
   },
   {
    "region": "r1",
@@ -477,7 +517,7 @@
    "name": "Wreckers' Reef",
    "slots": 5,
    "enemyCastleHp": 2700,
-   "par": 205,
+   "par": 182,
    "reward": 250,
    "unlocks": [],
    "tavern": [
@@ -573,8 +613,16 @@
      ]
     }
    ],
-   "power": 0.92,
-   "teaches": "Armoured: small hits bounce. Bring one big hit or burn."
+   "power": 0.97,
+   "teaches": "Armoured: small hits bounce. Bring one big hit or burn.",
+   "tide": {
+    "power": 1.84,
+    "mods": [
+     "noCaptain"
+    ],
+    "text": "The Captain is away at the harbour. You hold the Reef alone.",
+    "reward": 312
+   }
   },
   {
    "region": "r1",
@@ -585,7 +633,7 @@
    "name": "The Bell Ground",
    "slots": 5,
    "enemyCastleHp": 3000,
-   "par": 235,
+   "par": 200,
    "reward": 280,
    "unlocks": [],
    "waves": [
@@ -694,8 +742,17 @@
      ]
     }
    ],
-   "power": 0.76,
-   "teaches": "Shelled and Healer together: break the shell, reach the mender."
+   "power": 0.83,
+   "teaches": "Shelled and Healer together: break the shell, reach the mender.",
+   "tide": {
+    "power": 1.01,
+    "mods": [
+     "fastTide",
+     "fewerPlaces"
+    ],
+    "text": "The bells are ringing under the water. Fewer hands, faster tide.",
+    "reward": 350
+   }
   },
   {
    "id": "r1boss",
@@ -704,7 +761,7 @@
    "bg": "r1n",
    "music": "boss",
    "enemyCastleHp": 2500,
-   "par": 125,
+   "par": 105,
    "reward": 400,
    "boss": "cinder_matron",
    "bossAt": 20,
@@ -764,10 +821,18 @@
     "min": 4
    },
    "triggers": [],
-   "power": 0.33,
-   "bossPower": 0.61,
+   "power": 0.36,
+   "bossPower": 0.71,
    "slots": 5,
-   "teaches": "The exam: she calls packs, spits ink and sends Gulls. No single answer."
+   "teaches": "The exam: she calls packs, spits ink and sends Gulls. No single answer.",
+   "tide": {
+    "power": 0.85,
+    "mods": [
+     "noCannon"
+    ],
+    "text": "She has drowned Long Tom's magazine. Face her without the cannon.",
+    "reward": 500
+   }
   }
  ],
  "tutorials": {

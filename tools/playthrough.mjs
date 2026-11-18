@@ -113,7 +113,7 @@ try {
   for (let i = 0; i < stages.length; i++) {
     const id = stages[i];
     let tries = 0, won = false;
-    while (!won && tries < 4) {
+    while (!won && tries < 8) {
       tries++;
       if (!(await page.$(".hud"))) {        // start from the region screen
         if (!(await page.$(".prep"))) { await sl(600); const nodes = await page.$$(".screen:not(.out) .node"); await tapEl(nodes[i]); }
@@ -149,7 +149,7 @@ try {
         await waitFor(".hud .weapon", 30000);
       }
     }
-    if (!won) throw new Error(`could not beat ${id} in 4 tries (with upgrades between)`);
+    if (!won) throw new Error(`could not beat ${id} in 8 tries (with upgrades between)`);
   }
   await tapText(".result button", "Continue"); await waitFor(".map"); await sl(600); await shot("region-cleared-map");
   if (!(await page.$(".announce"))) problems.push("no region-cleared announcement on the map");

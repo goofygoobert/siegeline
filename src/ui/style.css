@@ -885,3 +885,41 @@ input[type=range]::-webkit-slider-thumb { background: radial-gradient(circle at 
 .rcard .pic, .rcard .pic img { width: 46px; height: 46px; }
 .scout-hint { font-size: 12.5px; line-height: 1.3; min-height: 0; }
 @media (max-width: 760px) { .scout { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); } .foe .pic { width: 56px; height: 44px; } .roster { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); } .rcard .pic, .rcard .pic img { width: 40px; height: 40px; } }
+/* ---- depth pass: earned counter hints, Black Tide, crowns */
+.rcard.bad { opacity: 1; }                       /* never dim a card: picked vs not picked is the only visual state */
+.rcard.bad .verdict { background: #8a2416; color: #fff; padding: 2px 5px; border-radius: 999px; }
+.rcard.good .verdict { background: #2f6a22; color: #fff; padding: 2px 5px; border-radius: 999px; }
+.rcard:not(.in) { background: rgba(255,255,255,.18); border-style: dashed; }
+.scout-hint i { color: #6b5636; }
+.tide-toggle { position: absolute; left: calc(var(--sal) + 14px); bottom: calc(var(--sab) + 12px); display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  border-radius: 999px; border: 2px solid var(--brass); background: linear-gradient(180deg, #2a3b3a, #0f1c1c); color: var(--parch); font: 900 13px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em;
+  box-shadow: 0 0 0 2px #1a0f08, 0 4px 0 #1a0f08; cursor: pointer; transition: transform .14s var(--ease); }
+.tide-toggle:active { transform: translateY(2px); }
+.tide-toggle .icon { width: 18px; height: 18px; color: #9fe8c0; }
+.tide-toggle b { background: rgba(0,0,0,.35); padding: 3px 7px; border-radius: 999px; }
+.tide-toggle.on { background: linear-gradient(180deg, #3d9a6a, #1b5a3c); border-color: #c8ffe0; box-shadow: 0 0 0 2px #06140c, 0 4px 0 #06140c, 0 0 20px rgba(120,255,180,.45); }
+.tide-toggle.locked { opacity: .75; } .tide-toggle.locked .icon:last-child { color: var(--parch); }
+.screen.tide .bgimg { filter: hue-rotate(95deg) saturate(.7) brightness(.55); }
+.screen.tide .node { border-color: #9fe8c0; } .screen.tide .node.crowned { box-shadow: 0 0 0 3px #ffd36b, 0 0 18px rgba(255,200,80,.6); }
+.crownmark { display: inline-grid; place-items: center; } .crownmark .icon { width: 18px; height: 18px; color: rgba(42,26,16,.35); }
+.node .crownmark .icon { color: rgba(255,255,255,.35); } .crownmark.on .icon, .node .crownmark.on .icon { color: #ffc93a; filter: drop-shadow(0 1px 0 #5a3200); }
+.prep.tide .panel.paper { background: linear-gradient(180deg, rgba(40,90,70,.12), rgba(10,40,30,.25)), var(--img-paper) 0 0 / 512px, #dfe2c4; }
+.modtag { display: inline-block; margin: 4px 4px 0 0; padding: 2px 8px; border-radius: 999px; background: #1b5a3c; color: #fff; font: 800 11px/1.4 system-ui, sans-serif; }
+.bigcrown { display: grid; place-items: center; } .bigcrown .icon { width: 64px; height: 64px; color: #ffc93a; filter: drop-shadow(0 3px 0 #5a3200); animation: pop-in .45s var(--ease) .3s both; }
+.weapon.off { filter: grayscale(1) brightness(.5); pointer-events: none; }
+/* logbook: pages of the Gullwake's log on parchment */
+.logbook .tab .cnt { margin-left: 6px; font-size: 11px; opacity: .75; }
+.logpages { flex: 1; overflow-y: auto; margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 10px; align-content: start; padding: 2px 2px 20px; touch-action: pan-y; }
+.page { display: flex; gap: 12px; padding: 12px 14px; border-radius: 6px; background: linear-gradient(180deg, rgba(120,90,40,.06), rgba(80,50,20,.18)), var(--img-paper) 0 0 / 512px, #ead9ae; color: var(--ink);
+  box-shadow: 0 0 0 2px #6b4a24, 0 6px 0 rgba(0,0,0,.4); animation: pop-in .25s var(--ease) both; }
+.page h3 { margin: 0 0 4px; font: 900 15px/1.2 system-ui, sans-serif; color: #3a2614; }
+.page p { margin: 0; font: 500 13.5px/1.45 Georgia, "Times New Roman", serif; color: #2a1a10; }
+.page.intro { grid-column: 1 / -1; display: block; font: 500 14px/1.5 Georgia, serif; }
+.page.sealed { background: linear-gradient(180deg, #4a3624, #2e2116); color: var(--parch); box-shadow: 0 0 0 2px #1a0f08; }
+.page.sealed h3, .page.sealed p { color: #d8c49a; }
+.page .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.page .fig { flex: none; width: 72px; height: 72px; display: grid; place-items: end center; overflow: hidden; border-radius: 8px; background: linear-gradient(180deg, #24384a, #13202c); }
+.page .fig img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.page .fig.round { border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3a6f96, #173650); place-items: center; }
+.page .fig.shadow img { filter: brightness(0) opacity(.55); }
+@media (prefers-reduced-motion: reduce) { .page { animation: none; } }

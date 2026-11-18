@@ -35,6 +35,8 @@ export function createBattle(content, stage, progress, seed = 1) {
     loop: stage.loop ? { ...stage.loop, timer: stage.loop.start } : null,
     triggers: (stage.triggers || []).map((t) => ({ ...t, fired: false })),
     boss: null, bossSpawned: false, result: null, endT: 0, emul: stage.power || 1, bmul: stage.bossPower || 1,
+    // Black Tide twists (stage.mods): no cannon, more elites, faster monsters (fewer places and no Captain are applied by the caller)
+    noCannon: (stage.mods || []).includes("noCannon"), eliteBonus: (stage.mods || []).includes("eliteTide") ? 0.35 : 0, foeSpeed: (stage.mods || []).includes("fastTide") ? 1.25 : 1,
     stats: { sent: 0, kills: 0, shots: 0, shotHits: 0, dmgDealt: 0, abilityUses: 0 },
     events: [], inputs: [],
   };
@@ -67,7 +69,7 @@ function applyInputs(B) {
       for (let k = 0; k < n; k++) spawn(B, c.stats, 1, B.keep.front - 10 - k * 14);
       ev(B, "send", { id: i.id });
     } else if (i.k === "fire") {
-      if (B.ballista.reload > 0) continue;
+      if (B.ballista.reload > 0 || B.noCannon) continue;
       B.ballista.reload = B.ballista.maxReload; B.stats.shots++;
       B.projs.push({ kind: "bolt", x: B.ballista.x + 30, y: B.ballista.y - 4, vx: i.vx, vy: i.vy, side: 1, dmg: B.ballista.dmg,
         splash: B.g.ballista.splash, alive: true, t: 0, px: 0, py: 0 });
@@ -234,6 +236,7 @@ function findTarget(B, e, reach) {
 function speedMul(B, e) {
   let m = 1;
   if (e.slowT > 0) m *= 1 - e.slow;
+  if (e.side === -1) m *= B.foeSpeed;
   if (e.netT > 0) m *= 1 - (e.netSlow || 0.5);
   if (e.side === 1 && B.rally > 0) m *= B.g.abilities.rally.speedMul;
   if (e.enraged) m *= e.s.traits.enrage.speed;
@@ -572,7 +575,7 @@ function stepWaves(B, dt) {
   const eliteCfg = B.content.enemies.elite;
   const spawnEnemy = (id, elite) => {
     const d = B.enemyDefs[id]; if (!d) return;
-    spawn(B, powered(B, enemyStats(d, elite, eliteCfg), B.emul), -1, B.gate.front - 10);
+    spawn(B, powered(B, enemyStats(d, elite || (B.eliteBonus > 0 && B.rand() < B.eliteBonus), eliteCfg), B.emul), -1, B.gate.front - 10);
   };
   for (const w of B.waves) {
     while (w.done < w.n && T >= w.next) { spawnEnemy(w.id, w.elite); w.done++; w.next += w.gap; }

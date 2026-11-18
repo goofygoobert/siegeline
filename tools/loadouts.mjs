@@ -7,3 +7,9 @@ export function kit(k) { return { hero: k >= 2, abilities: [...(k >= 1 ? ["ember
 export function withLoadout(st, k, crew) { return { ...st, available: crew, ...kit(k) }; }
 export const right = (k) => ROSTER.stages[k].right;
 export const wrong = (k) => ROSTER.stages[k].wrongIds;
+/** The Black Tide version of a stage: stronger, with its twist; "noCaptain" and "fewerPlaces" are applied here. */
+export function tideOf(st) {
+  const t = st.tide, mods = t.mods;
+  return { ...st, power: st.power * t.power, bossPower: st.bossPower ? st.bossPower * t.power : undefined, mods, reward: t.reward, tideOf: st.id,
+    slots: (st.slots || 5) - (mods.includes("fewerPlaces") ? 1 : 0), noCaptain: mods.includes("noCaptain") };
+}

@@ -95,5 +95,19 @@
   "note": "Sailors who heard of your stand. They sign on for doubloons won in battle, never for real money.",
   "joins": "Joins the crew",
   "opened": "New face in the Tavern"
- }
+ },
+ "tide": {
+  "title": "Black Tide",
+  "toggle": "Black Tide",
+  "locked": "The Black Tide rises once Mother Fathom has fallen.",
+  "crown": "Crown",
+  "mods": {
+   "eliteTide": "Elite tide: many monsters come back stronger",
+   "fastTide": "Fast tide: monsters move a quarter faster",
+   "noCannon": "No Long Tom",
+   "fewerPlaces": "One crew place fewer",
+   "noCaptain": "No Captain"
+  }
+ },
+ "scoutUnknown": "You have not fought one yet: who answers it is yours to work out."
 }
