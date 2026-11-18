@@ -385,7 +385,8 @@ class BattleView {
         portrait(c.id), h("span", { class: "nm" }, SHORT[c.id] || unitById[c.id].name), h("span", { class: "cd" }), h("span", { class: "cdn" }), h("span", { class: "afm" }), h("span", { class: "cost" }, h("span", { class: "fl" }), c.stats.cost + ""));
       return el;
     });
-    const cards = h("div", { class: "cards" }, ...this.cardEls);
+    const empty = Math.max(0, 5 - this.cardEls.length);       // sockets for crew not yet recruited: the tray is always full width
+    const cards = h("div", { class: "cards" }, ...this.cardEls, ...Array.from({ length: empty }, () => h("span", { class: "slot", "aria-hidden": "true" })));
     this.abilEls = B.abilities.map((a) => {
       const el = h("button", { class: "abil", "aria-label": abilityNames[a.id], "data-id": a.id, onpointerdown: (e) => { e.preventDefault(); this.useAbility(a, el); } },
         iconImg("i_" + a.id, a.id === "rally" ? I.bell : I.rain), h("span", { class: "cdtxt" }));

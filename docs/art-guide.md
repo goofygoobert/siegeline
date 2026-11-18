@@ -100,21 +100,21 @@ Nothing imitates a pirate film or game: no recognisable characters, costumes, fl
 ## Atlas sizes (written by tools/pack_sprites.py)
 | file | size | ppu | bytes | ids |
 |---|---|---|---|---|
-| units.webp | 2048x2028 | 80 | 996 KB | ashguard, torchbow, cinder_runner, bellringer |
-| units2.webp | 2036x2040 | 80 | 881 KB | maulwright, lamplighter |
-| unitsb.webp | 2048x2048 | 80 | 1036 KB | ashguard_t2, torchbow_t2, cinder_runner_t2, bellringer_t2 |
-| unitsb2.webp | 1516x2040 | 80 | 503 KB | maulwright_t2 |
-| unitsb3.webp | 748x1996 | 80 | 381 KB | lamplighter_t2 |
-| unitsc.webp | 2048x2048 | 80 | 1067 KB | ashguard_t3, torchbow_t3, cinder_runner_t3, bellringer_t3 |
-| unitsc2.webp | 2048x2036 | 80 | 915 KB | maulwright_t3, lamplighter_t3 |
-| hero.webp | 1292x2048 | 80 | 503 KB | marshal |
-| enemies.webp | 1692x2048 | 80 | 1012 KB | husk, gnawer, spitter, bloater |
-| enemies2.webp | 1480x2040 | 80 | 574 KB | brute |
-| enemies3.webp | 1360x2032 | 80 | 554 KB | husk_warden |
+| units.webp | 2048x2028 | 80 | 1007 KB | ashguard, torchbow, cinder_runner, bellringer |
+| units2.webp | 2036x2040 | 80 | 889 KB | maulwright, lamplighter |
+| unitsb.webp | 2048x2048 | 80 | 1047 KB | ashguard_t2, torchbow_t2, cinder_runner_t2, bellringer_t2 |
+| unitsb2.webp | 1516x2040 | 80 | 510 KB | maulwright_t2 |
+| unitsb3.webp | 748x1996 | 80 | 382 KB | lamplighter_t2 |
+| unitsc.webp | 2048x2048 | 80 | 1069 KB | ashguard_t3, torchbow_t3, cinder_runner_t3, bellringer_t3 |
+| unitsc2.webp | 2048x2036 | 80 | 919 KB | maulwright_t3, lamplighter_t3 |
+| hero.webp | 1292x2048 | 80 | 509 KB | marshal |
+| enemies.webp | 1692x2048 | 80 | 1024 KB | husk, gnawer, spitter, bloater |
+| enemies2.webp | 1480x2040 | 80 | 592 KB | brute |
+| enemies3.webp | 1360x2032 | 80 | 566 KB | husk_warden |
 | boss.webp | 1236x1964 | 64 | 202 KB | cinder_matron |
 | boss2.webp | 1300x2024 | 64 | 203 KB | cinder_matron |
 | boss3.webp | 1888x1948 | 64 | 285 KB | cinder_matron |
 | boss4.webp | 1220x1684 | 64 | 213 KB | cinder_matron |
 | boss5.webp | 2004x2044 | 64 | 325 KB | cinder_matron |
 | boss6.webp | 1876x2012 | 64 | 258 KB | cinder_matron |
-| ui.webp | 1940x972 | 72 | 69 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |
+| ui.webp | 1940x972 | 72 | 70 KB | p_ashguard, p_torchbow, p_cinder_runner, p_bellringer, p_maulwright, p_lamplighter, p_marshal, i_ember_rain, i_rally, i_mark, i_star, i_star_empty, i_energy, i_lock |

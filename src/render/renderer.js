@@ -180,7 +180,7 @@ export function createRenderer(canvas, hooks) {
     if (R._fire > 0) {       // one headline per blast: "Direct hit!  225  x3"
       const x = R._boltX != null ? R._boltX : R._fireX;
       for (const m of R.nums) if (m.life > 0 && m.head && Math.abs(m.x - x) < 160) m.life = 0;      // a newer blast replaces the old headline
-      num(x, gy - 215, (R._direct ? (TH.directWord || "Direct hit!") + "  " : "") + Math.round(R._fire) + (R._kills >= 2 ? "  \u00d7" + R._kills : ""), R._direct ? "#ffffff" : "#ffe28a", true);
+      num(x, gy - 150, (R._direct ? (TH.directWord || "Direct hit!") + "  " : "") + Math.round(R._fire) + (R._kills >= 2 ? "  \u00d7" + R._kills : ""), R._direct ? "#ffffff" : "#ffe28a", true);
       R.nums[(R.ni + MAXN - 1) % MAXN].head = true; R.nums[(R.ni + MAXN - 1) % MAXN].life = 1.2;
     }
     R._fire = 0; R._direct = false; R._boltX = null; R._kills = 0;
@@ -303,9 +303,10 @@ export function createRenderer(canvas, hooks) {
     // health bar when hurt (not for boss: boss has its own bar)
     if (e.alive && e.hp < e.maxHp && e.kind !== "boss") {
       const w = Math.max(22, e.s.size * 1.6), hy = y - Math.min(170, e.s.size * 4.6) - 14;
-      const bw = Math.max(40, w * 1.5);
-      g.fillStyle = "#10141a"; g.fillRect(sx - bw / 2 - 2, hy - 4, bw + 4, 10);
-      g.fillStyle = e.side === 1 ? "#6fd35a" : "#b48cff"; g.fillRect(sx - bw / 2, hy - 2, bw * Math.max(0, e.hp / e.maxHp), 6);
+      const bw = Math.max(34, Math.min(60, w * 1.3)), f = Math.max(0, e.hp / e.maxHp), x0 = sx - bw / 2, yb = hy - 2;
+      g.globalAlpha = 0.9; g.fillStyle = "rgba(20,12,8,.75)"; g.beginPath(); g.roundRect(x0 - 2, yb - 2, bw + 4, 8, 4); g.fill();
+      g.fillStyle = e.side === 1 ? "#8be06a" : "#c4a6ff"; g.beginPath(); g.roundRect(x0, yb, Math.max(3, bw * f), 4, 2); g.fill();
+      g.strokeStyle = "rgba(255,236,200,.55)"; g.lineWidth = 1; g.beginPath(); g.roundRect(x0 - 2, yb - 2, bw + 4, 8, 4); g.stroke(); g.globalAlpha = 1;
     }
     if (e.vuln > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 4; i++) { const a = R.t * 4 + i * 1.57; g.fillRect(sx + Math.cos(a) * 26 - 3, y - 250 + Math.sin(a) * 5, 6, 6); } }
     if (e.stun > 0 && e.alive) { g.fillStyle = "#ffe9a0"; for (let i = 0; i < 3; i++) { const a = R.t * 5 + i * 2.1; g.fillRect(sx + Math.cos(a) * 12 - 2, y - Math.min(170, e.s.size * 4.6) - 4 + Math.sin(a) * 3, 4, 4); } }
@@ -425,7 +426,7 @@ export function createRenderer(canvas, hooks) {
     g.beginPath(); g.moveTo(-20, gy - 34);
     for (let x = -20; x <= R.W + 20; x += 24) g.lineTo(x, gy - 24 + reach + 3.5 * Math.sin((x + R.camX) * 0.021 + R.t * 1.3));
     g.lineTo(R.W + 20, gy - 34); g.closePath(); g.fill();
-    g.strokeStyle = night ? "rgba(190,255,220,0.55)" : "rgba(255,246,226,0.8)"; g.lineWidth = 2.2; g.beginPath();
+    g.strokeStyle = night ? "rgba(190,255,220,0.3)" : "rgba(255,246,226,0.35)"; g.lineWidth = 1.6; g.beginPath();
     for (let x = -20; x <= R.W + 20; x += 24) { const yy = gy - 24 + reach + 3.5 * Math.sin((x + R.camX) * 0.021 + R.t * 1.3); if (x === -20) g.moveTo(x, yy); else g.lineTo(x, yy); }
     g.stroke();
   }
@@ -541,7 +542,7 @@ export function createRenderer(canvas, hooks) {
     for (const n of R.nums) {
       if (n.life <= 0) continue; n.life -= dt; n.y -= 34 * dt;
       const a = Math.min(1, n.life / 0.35), sx = n.x - R.camX, pop = n.life > 0.75 ? 1 + (n.life - 0.75) * 2 : 1;
-      g.globalAlpha = a; g.font = n.head ? `700 ${Math.round(30 * pop)}px Copperplate, "Copperplate Gothic Bold", Rockwell, "DejaVu Serif", Georgia, serif` : `900 ${Math.round((n.big ? 24 : 17) * pop)}px system-ui, sans-serif`;
+      g.globalAlpha = a; g.font = `900 ${Math.round((n.head ? 26 : n.big ? 22 : 17) * pop)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
       g.strokeText(n.t, sx, n.y); g.fillStyle = n.c; g.fillText(n.t, sx, n.y);
     }
     g.globalAlpha = 1;

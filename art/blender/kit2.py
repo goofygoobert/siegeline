@@ -65,6 +65,8 @@ def paint(fig, color, glow=0.0, metal=False, rough=1.0):
     # no airbrushed fill, so figures belong to the same flat-painted world as the backdrop.
     base = c
     shadow = mix("MULTIPLY", 1.0, base, lin((0.62, 0.50, 0.70)))       # plum shadow shape, not black
+    base = mix("MULTIPLY", 1.0, base, lin((1.0, 0.9, 0.82)))       # graded toward the sunset palette
+    shadow = mix("MULTIPLY", 1.0, base, lin((0.62, 0.50, 0.70)))
     lit = mix("MULTIPLY", 1.0, base, (1.04, 1.0, 0.92))
     k1 = dot(KEY_DIR, -0.02, 0.02)                                       # hard terminator
     col = mix("MIX", k1, shadow, lit)
@@ -77,9 +79,9 @@ def paint(fig, color, glow=0.0, metal=False, rough=1.0):
     L.new(gb, gbm.inputs[0])
     col = mix("MIX", gbm.outputs[0], col, mix("MULTIPLY", 1.0, base, lin((1.0, 0.72, 0.55))))
     # rim: a thin hard band of sunset on the edge away from the camera
-    r = dot(RIM_DIR, 0.56, 0.58)
-    rimc = lin((1.0, 0.66, 0.34))
-    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.55 * rough * getattr(fig, "rim", 1.0)
+    r = dot(RIM_DIR, 0.40, 0.43)          # a wider hard band of sunset: the sun is behind the field
+    rimc = lin((1.0, 0.62, 0.30))
+    rm = N.new("ShaderNodeMath"); rm.operation = "MULTIPLY"; rm.inputs[1].default_value = 0.9 * rough * getattr(fig, "rim", 1.0)
     L.new(r, rm.inputs[0])
     col = mix("ADD", rm.outputs[0], col, rimc)
     if glow > 0:

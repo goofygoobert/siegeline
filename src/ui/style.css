@@ -759,3 +759,31 @@ input[type=range]::-webkit-slider-thumb { background: radial-gradient(circle at 
 .card.locked .pic { filter: grayscale(1) brightness(.85); }
 .ucard img { left: 50%; right: auto; top: 20px; transform: translateX(-50%); width: 62px; max-width: 62px; height: 62px; }
 @media (max-width: 760px) { .ucard img { width: 52px; max-width: 52px; height: 52px; top: 18px; } }
+
+/* ---- review 6: one type system, one frame system, a calmer ledger, a full card tray */
+.title-s, .panel h2, .sheet h2, .callout, .hp .lbl span:first-child, .bossbar .name { font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.result h2 { font-size: 30px; }
+.hp, .hp.enemy { border-color: var(--brass); }
+.hp.enemy .bar > i { background: linear-gradient(180deg, #d9c2ff, #8a5fe0); }
+.hud-mid .pill:first-child { top: 0; padding-top: 0; border-radius: 12px; }
+/* full-width tray: five slots, empty ones shown as sockets */
+.cards { min-width: 0; }
+.slot { width: 82px; height: 98px; margin-bottom: 6px; border-radius: 8px; border: 2px dashed rgba(232,178,74,.35); background: rgba(0,0,0,.25); flex: 0 1 82px; }
+.ucard .cost { padding: 1px 0 2px; font-size: 16px; }
+.ucard img { top: 17px; }
+.ucard .afm { height: 6px; }
+/* ledger */
+.card { background: linear-gradient(180deg, rgba(120,90,40,.08), rgba(80,50,20,.2)), var(--img-paper) 0 0 / 512px, #e6d4a8; transform: none !important; }
+.card::before, .card::after { display: none; }
+.card.can { box-shadow: 0 0 0 2px #6b4a24, 0 6px 0 rgba(0,0,0,.45), 0 14px 24px rgba(0,0,0,.4); }
+.card .pic { border-color: #6b4a24; }
+.pips { gap: 0; height: 8px; width: 150px; border-radius: 4px; overflow: hidden; background: rgba(42,26,16,.2); margin-top: 8px; display: flex; }
+.pips i, .pips i.mile { flex: 1; height: 8px; width: auto; margin: 0; border-radius: 0; transform: none; background: transparent; border-right: 1px solid rgba(230,212,168,.8); }
+.pips i.on { background: #6b4a24; }
+.pips span { display: none; }
+.upbtn small .coin { width: 22px; height: 22px; }
+.card.locked { filter: none; background: linear-gradient(180deg, #4a3624, #2e2116); color: var(--parch); box-shadow: 0 0 0 2px #1a0f08; }
+.card.locked h3 { color: var(--parch); } .card.locked .role, .card.locked .hint { color: #d8c49a; }
+.card.locked .pic { filter: grayscale(1) brightness(.6) contrast(1.2); }
+.tut::after { content: ""; position: absolute; left: 50%; bottom: -10px; width: 18px; height: 18px; transform: translateX(-50%) rotate(45deg); background: var(--parch); box-shadow: 2px 2px 0 #6b4a24; display: block; }
+.card .pic { overflow: visible; } .card .lvb { left: -4px; top: -4px; }
