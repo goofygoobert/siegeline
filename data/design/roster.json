@@ -36,7 +36,7 @@
    "name": "Siege",
    "icon": "arc over a wall",
    "read": "tall, stays at the back, lobs glowing globs",
-   "rule": "Out-ranges every crew shooter. Targets the back line, then the fort."
+   "rule": "Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leaping Rope Rat, a Harpooner or Long Tom can reach it."
   },
   "exploder": {
    "name": "Exploder",
@@ -54,7 +54,7 @@
    "name": "Shelled",
    "icon": "shell",
    "read": "carries a ship's bell or shell in front of it",
-   "rule": "The shell soaks the first 300 damage from the front. Blunt and blast hits break it at once."
+   "rule": "The bell stops every hit from the front, and shields what walks behind it, until a heavy blow (the Anchorman) cracks it. A blade from behind goes round it."
   },
   "healer": {
    "name": "Healer",
@@ -754,7 +754,7 @@
    "n": 7,
    "name": "The Bell Ground",
    "slots": 5,
-   "teaches": "Shelled and Healer together: break the shell, reach the mender.",
+   "teaches": "Shelled and Healer together: crack the bell with a heavy blow, or get a blade round behind it to the mender.",
    "foes": [
     "bellback",
     "tide_nurse",
@@ -768,7 +768,7 @@
     "netcaster",
     "ashguard"
    ],
-   "wrong": "Wall, shooter, song and nets: the bells soak every shot and the Nurse undoes the rest.",
+   "wrong": "Wall, shooter, song and nets: the bells stop every blow from the front and the Nurse mends whatever is behind them.",
    "wrongIds": [
     "ashguard",
     "torchbow",

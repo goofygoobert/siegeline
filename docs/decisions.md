@@ -65,3 +65,13 @@ Format: decision — reason — alternative considered.
 - **Sound**: no new audio was made. New events reuse existing cues at different pitch. Unheard.
 - **Not done**: foreground parallax layer; fort re-model; new sound cues; dedicated boss-stage night props.
 - **Going live is the owner's call**: the roll-out is on `redesign` and at /preview/. Merging to `main` publishes it through the same gate.
+
+## Part 3 (2026-11-17)
+- **Recruit order changed from the plan** so every stage's answer is in hand before it: Shantyman free after 1, Netcaster free after 2, Rope Rat free after 3, Harpooner in the Tavern after 3 (500), Anchorman free after 5, Sawbones in the Tavern after 6 (450). No stage needs a purchase.
+- **Traits are rules, not numbers.** Tuning showed number tweaks never separated right from wrong loadouts; readable rules did (swarm slips past a busy wall, siege hides in the Grotto mouth, the bell stops everything from the front until a heavy blow or a blade from behind). See docs/balance.md.
+- **Long Tom softened** (damage 90 → 72, reload 3.5 → 4.2 s, fire patch weaker) and **the Captain charges slower** (25 → 35 s): before, the cannon and Captain won every stage whatever crew you took.
+- **Hatchguard is a wall, not a killer** (damage 16 → 12, cost 50 → 60): spamming walls won almost every stage.
+- **Stage 2 teaches "bring a wall"** rather than "bring the song": in every test the song added less than another Hatchguard against Scuttlers. The song still helps (slowed swarms cannot slip round), but it is not the stage's answer.
+- **The old six-stage saves migrate** by lesson, not by position (old 3 → new 5, old 5 → new 6).
+- **The stage sheet became a full scouting + loadout screen**; the chosen-crew row was dropped because it repeated the check marks and overflowed on a phone.
+- **The rotating later-region Tavern offer waits for region 2**, since those crew are not built yet.

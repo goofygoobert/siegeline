@@ -122,7 +122,9 @@
     "firstStrike": 2.0,
     "vault": {
      "reach": 260
-    }
+    },
+    "assassin": 2.5,
+    "nimble": true
    },
    "counter": "Barnacle Trolls crush it in one blow",
    "strongVs": "spitter",

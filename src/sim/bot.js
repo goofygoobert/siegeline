@@ -38,9 +38,15 @@ export function makeBot(opts = {}) {
     // sending: fill the composition, cheapest-needed when embers are capped
     const count = {};
     for (const m of mine) count[m.s.baseSprite || m.id] = (count[m.s.baseSprite || m.id] || 0) + 1;
-    // anyone the bot has none of on the beach comes first (in a random order), then the most under-filled role
-    const ranked = B.cards.map((c) => ({ c, need: count[c.id] ? count[c.id] / (WANT[c.id] || 1) : -1 + B.rand() * 0.5 })).sort((a, b) => a.need - b.need);
+    // anyone the bot has none of on the beach comes first (walls, then shooters, then the rest), then the most under-filled role
+    const ranked = B.cards.map((c) => ({ c, need: (count[c.id] || 0) / (WANT[c.id] || 1), w: WANT[c.id] || 1 })).sort((a, b) => a.need - b.need || b.w - a.w);
     const threat = front < 900;
+    // an empty beach under attack: put down the toughest crew member per powder you can afford now, don't save up
+    if (threat && mine.filter((m) => m.kind === "unit").length < 2) {
+      const tough = B.cards.filter((c) => c.cd <= 0).sort((a, b) => b.stats.hp / b.stats.cost - a.stats.hp / a.stats.cost)[0];
+      if (tough && canSend(B, tough.id)) { input.send(B, tough.id); return; }
+      if (tough) return;           // save for it rather than feeding something flimsy into the pack
+    }
     for (const { c } of ranked) {
       if (threat && c.id !== "ashguard" && c.id !== "cinder_runner" && canSend(B, "ashguard") && (count.ashguard || 0) < 1) { input.send(B, "ashguard"); break; }
       if (canSend(B, c.id)) { input.send(B, c.id); break; }

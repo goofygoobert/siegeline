@@ -38,9 +38,10 @@ for (const s of R.stages) {
   if (s.right.length > s.slots) problems.push(`stage ${s.n}: intended loadout larger than the slots`);
 }
 const used = new Set(R.stages.flatMap((s) => s.right));
-for (const c of r1c) if (!used.has(c.id)) problems.push(`${c.name} is in no intended loadout in region 1`);
-const everywhere = r1c.filter((c) => R.stages.every((s) => s.right.includes(c.id)));
-for (const c of everywhere) problems.push(`${c.name} is in every intended loadout`);
+// crew bought in the Tavern are optional by design (no stage needs a purchase), so only free crew must appear in an
+// intended loadout. "Nobody is a must-pick" is measured on play, not on this list: tools/strategy_proof.mjs checks every
+// crew member is in 10-90% of winning loadouts.
+for (const c of r1c) if (!used.has(c.id) && (c.recruit || {}).how !== "buy") problems.push(`${c.name} is in no intended loadout in region 1`);
 const nm = (id) => (R.crew.find((c) => c.id === id) || R.enemies.find((e) => e.id === id) || { name: id }).name;
 const stageTable = ["| # | Stage | Slots | New idea, taught by playing | You'll face | A right loadout | A sensible wrong one |", "|---|---|:-:|---|---|---|---|",
   ...R.stages.map((s) => `| ${s.n} | ${s.name} | ${s.slots} | ${s.teaches} | ${s.foes.map(nm).join(", ")} | ${s.right.map(nm).join(", ")} | ${s.wrong} |`)].join("\n");
@@ -48,7 +49,7 @@ const traitTable = ["| Trait | Icon | Read it from the silhouette | Rule | Answe
   ...Object.entries(R.traits).filter(([id]) => id !== "plain").map(([id, t]) => `| **${t.name}** | ${t.icon} | ${t.read} | ${t.rule} | ${R.crew.filter((c) => c.strong.includes(id)).map((c) => c.name).join(", ")} |`)].join("\n");
 const crewTable = ["| Crew | From | Job | Weakness |", "|---|:-:|---|---|", ...R.crew.map((c) => `| **${c.name}** | R${c.region} | ${c.job} | ${c.weakness} |`)].join("\n");
 const out = { COUNTERS_R1: table(r1c, r1e), COUNTERS_ALL: table(R.crew, R.enemies), STAGES: stageTable, TRAITS: traitTable, CREW: crewTable,
-  CHECKS: problems.length ? problems.map((p) => "- FAIL: " + p).join("\n") : `- All design checks pass: every trait has 2+ answers (and 2+ inside region 1 for region 1 traits), every crew member has 2+ weaknesses, nobody is strong against more than half the enemies, every region 1 crew member is in at least one intended loadout and none is in all of them.` };
+  CHECKS: problems.length ? problems.map((p) => "- FAIL: " + p).join("\n") : `- All design checks pass: every trait has 2+ answers (and 2+ inside region 1 for region 1 traits), every crew member has 2+ weaknesses, nobody is strong against more than half the enemies, every free region 1 crew member is in at least one intended loadout (Tavern crew are optional; must-picks are checked on play by tools/strategy_proof.mjs).` };
 let md = readFileSync("docs/design/strategy.md", "utf8");
 for (const [k, v] of Object.entries(out)) {
   const a = `<!-- GEN:${k} -->`, b = `<!-- /GEN:${k} -->`; const i = md.indexOf(a), j = md.indexOf(b);

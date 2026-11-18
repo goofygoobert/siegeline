@@ -3,6 +3,7 @@ import { loadContent } from "./content_node.mjs";
 import { createBattle, step, stars } from "../src/sim/battle.js";
 import { makeBot } from "../src/sim/bot.js";
 import { writeFileSync } from "node:fs";
+import { withLoadout, right } from "./loadouts.mjs";
 
 const C = loadContent();
 const N = +(process.argv[2] || 100);
@@ -25,7 +26,7 @@ for (const st of C.stages) {
   for (const [pn, p] of Object.entries(PROFILES)) for (const [sn, sk] of Object.entries(SKILLS)) {
     let w = 0, tsum = 0, hp = 0, s3 = 0, sall = 0;
     for (let i = 0; i < N; i++) {
-      const B = createBattle(C, st, prog(p), 1000 + i * 7919); const bot = makeBot({ skill: sk });
+      const k = C.stages.indexOf(st); const B = createBattle(C, withLoadout(st, k, right(k)), prog(p), 1000 + i * 7919); const bot = makeBot({ skill: sk });
       while (!B.result && B.t < 900) { bot(B); step(B); B.events.length = 0; }
       if (B.result === "win") { w++; tsum += B.t; hp += B.keep.hp / B.keep.max; const s = stars(B); sall += s; if (s === 3) s3++; }
     }
@@ -34,7 +35,7 @@ for (const st of C.stages) {
   process.stderr.write(`${st.id} done ${((Date.now() - t0) / 1000).toFixed(0)}s\n`);
 }
 const pct = (x) => Math.round(x * 100) + "%";
-let md = `Runs per cell: ${N}. Skill = bot reaction speed and aim error (sloppy 0.35, average 0.6, sharp 0.9). Profiles: none = all level 1; light = units 2, keep/ballista 2; modest = units 3, keep/ballista 3, ember 2/2, hero 2, powers 2; strong = units 6, keep/ballista 6, ember 4/4, hero 5, powers 5.\n\n`;
+let md = `Each stage played with its intended loadout (data/design/roster.json). Runs per cell: ${N}. Skill = bot reaction speed and aim error (sloppy 0.35, average 0.6, sharp 0.9). Profiles: none = all level 1; light = units 2, keep/ballista 2; modest = units 3, keep/ballista 3, ember 2/2, hero 2, powers 2; strong = units 6, keep/ballista 6, ember 4/4, hero 5, powers 5.\n\n`;
 md += "| Stage | Upgrades | Sloppy win | Average win | Sharp win | Avg win time (average) | Keep HP left (average) | 3-star rate (average) |\n|---|---|---|---|---|---|---|---|\n";
 for (const st of C.stages) for (const pn of Object.keys(PROFILES)) {
   const r = (sn) => rows.find((x) => x.st === st.id && x.pn === pn && x.sn === sn); if (!r("average")) continue;

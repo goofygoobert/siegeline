@@ -174,6 +174,7 @@ function explode(B, x, r, dmg, src, who, opts) {
   for (const o of B.ents) {
     if (!o.alive) continue;
     if (airborne(o) && !(opts && opts.air)) continue;        // a blast on the sand passes under a flier
+    if (opts && opts.lob && o.s.traits && o.s.traits.nimble) continue;      // a lobbed glob is too slow to catch a running Rope Rat
     if (who === "enemies" && o.side !== -1) continue;
     if (who === "players" && o.side !== 1) continue;
     if (Math.abs(o.x - x) <= r + o.s.size * 0.5) damage(B, o, dmg, src, opts);
@@ -214,6 +215,7 @@ function findTarget(B, e, reach) {
   for (const o of B.ents) {
     if (!o.alive || o.side === e.side) continue;
     if (!canHit(e, o)) continue;
+    if (e.side === 1 && o.s.traits.siege && o.x > B.gate.front + 30 && !T.sniper) continue;     // inside the Grotto's mouth: only a leap or a harpoon reaches it
     if (fly && melee(o)) continue;
     const d = (o.x - e.x) * e.side;            // distance ahead
     if (d < -(e.s.size + o.s.size) * 0.5) continue;  // behind
@@ -282,6 +284,7 @@ function strike(B, e) {
   }
   let dmg = s.dmg;
   if (T.firstStrike && !e.firstDone) { dmg *= T.firstStrike; e.firstDone = true; }
+  if (T.assassin && tgt && PRIORITY(tgt) >= 2) dmg *= T.assassin;      // the Rope Rat knifes the back line: siege and menders
   if (tgt) {
     const big = tgt.s.large ? (T.bonusVsLarge || 1) : 1;
     if (T.splash) {
@@ -451,6 +454,12 @@ function stepEntity(B, e, dt) {
     if (need && e.atkCd <= 0) wantsAttack = true;
     else if (ahead < 70 || findTarget(B, e, 120)) { e.state = "idle"; return; }
   }
+  if (T.siege && !e.lock) {   // siege keeps its distance: it backs toward its own fort when crew come close (only a leap or a long shot reaches it)
+    let near = false;
+    for (const o of B.ents) if (o.alive && o.side !== e.side && !airborne(o) && (o.x - e.x) * e.side > -e.s.size && (o.x - e.x) * e.side < T.siege.keep) { near = true; break; }
+    const home = castleOf(B, -e.side);
+    if (near && (e.x - home.front) * -e.side < T.siege.hide - 2) { e.state = "walk"; e.target = null; e.x -= e.side * s.speed * speedMul(B, e) * dt * (B.g.speedScale || 1); clampX(B, e); return; }
+  }
   if (T.slowAura && !tgt) {   // the singer keeps a step behind the front so the song covers the line, not the singer
     let front = -1e9; for (const o of B.ents) if (o.alive && o.side === e.side && o !== e && !o.s.traits.slowAura && !o.s.traits.heal) front = Math.max(front, o.x * e.side);
     if (front > -1e9 && front - e.x * e.side < 60) { e.state = "idle"; return; }
@@ -471,7 +480,8 @@ function stepEntity(B, e, dt) {
 }
 
 function clampX(B, e) {
-  const lo = B.keep.front - 20, hi = B.gate.front + 20;
+  const sg = e.s.traits && e.s.traits.siege;
+  const lo = B.keep.front - 20, hi = B.gate.front + (sg && e.side === -1 ? sg.hide : 20);     // siege can back into the Grotto's mouth
   if (e.x < lo) e.x = lo; if (e.x > hi) e.x = hi;
 }
 
@@ -530,7 +540,7 @@ function stepProjectiles(B, dt) {
         if (!o.alive || o === tgt || o.side === p.side || !(o.shell > 0)) continue;
         if ((o.x - p.sx) * p.side > 0 && (tgt.x - o.x) * p.side > 0) { tgt = o; p.x = o.x; break; }
       }
-      const po = { kind: p.kind, pierceArmor: p.pierceArmor, air: p.air };
+      const po = { kind: p.kind, pierceArmor: p.pierceArmor, air: p.air, lob: p.lob };
       if (p.net) {             // a net: everything under it is pinned and slowed; fliers are dragged down to the sand
         const N = p.net;
         for (const o of B.ents) if (o.alive && o.side !== p.side && o.kind !== "boss" && Math.abs(o.x - p.x) <= N.radius + o.s.size * 0.5) {

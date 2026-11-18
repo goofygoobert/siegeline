@@ -1,28 +1,36 @@
-Runs per cell: 100. Skill = bot reaction speed and aim error (sloppy 0.35, average 0.6, sharp 0.9). Profiles: none = all level 1; light = units 2, keep/ballista 2; modest = units 3, keep/ballista 3, ember 2/2, hero 2, powers 2; strong = units 6, keep/ballista 6, ember 4/4, hero 5, powers 5.
+Each stage played with its intended loadout (data/design/roster.json). Runs per cell: 40. Skill = bot reaction speed and aim error (sloppy 0.35, average 0.6, sharp 0.9). Profiles: none = all level 1; light = units 2, keep/ballista 2; modest = units 3, keep/ballista 3, ember 2/2, hero 2, powers 2; strong = units 6, keep/ballista 6, ember 4/4, hero 5, powers 5.
 
 | Stage | Upgrades | Sloppy win | Average win | Sharp win | Avg win time (average) | Keep HP left (average) | 3-star rate (average) |
 |---|---|---|---|---|---|---|---|
-| r1s1 | none | 91% | 100% | 100% | 111 s (par 110) | 100% | 54% |
-| r1s1 | light | 100% | 100% | 100% | 103 s (par 110) | 100% | 96% |
-| r1s1 | modest | 100% | 100% | 100% | 95 s (par 110) | 100% | 100% |
-| r1s1 | strong | 100% | 100% | 100% | 78 s (par 110) | 100% | 100% |
-| r1s2 | none | 55% | 79% | 97% | 145 s (par 140) | 99% | 25% |
-| r1s2 | light | 91% | 100% | 100% | 135 s (par 140) | 99% | 78% |
-| r1s2 | modest | 100% | 100% | 100% | 119 s (par 140) | 99% | 98% |
-| r1s2 | strong | 100% | 100% | 100% | 87 s (par 140) | 100% | 100% |
-| r1s3 | none | 75% | 92% | 100% | 175 s (par 155) | 99% | 8% |
-| r1s3 | light | 100% | 100% | 100% | 158 s (par 155) | 99% | 54% |
-| r1s3 | modest | 100% | 100% | 100% | 142 s (par 155) | 100% | 96% |
-| r1s3 | strong | 100% | 100% | 100% | 112 s (par 155) | 100% | 100% |
-| r1s4 | none | 35% | 74% | 96% | 204 s (par 190) | 100% | 5% |
-| r1s4 | light | 95% | 100% | 100% | 183 s (par 190) | 100% | 72% |
-| r1s4 | modest | 100% | 100% | 100% | 169 s (par 190) | 100% | 96% |
-| r1s4 | strong | 100% | 100% | 100% | 112 s (par 190) | 100% | 100% |
-| r1s5 | none | 26% | 59% | 79% | 217 s (par 205) | 99% | 7% |
-| r1s5 | light | 77% | 98% | 100% | 202 s (par 205) | 99% | 60% |
-| r1s5 | modest | 100% | 100% | 100% | 184 s (par 205) | 99% | 100% |
-| r1s5 | strong | 100% | 100% | 100% | 139 s (par 205) | 100% | 100% |
-| r1boss | none | 15% | 42% | 54% | 290 s (par 260) | 40% | 1% |
-| r1boss | light | 74% | 93% | 98% | 266 s (par 260) | 72% | 28% |
-| r1boss | modest | 97% | 99% | 100% | 238 s (par 260) | 84% | 80% |
-| r1boss | strong | 100% | 100% | 100% | 149 s (par 260) | 100% | 100% |
+| r1s1 | none | 8% | 95% | 100% | 117 s (par 120) | 100% | 65% |
+| r1s1 | light | 57% | 100% | 100% | 107 s (par 120) | 100% | 100% |
+| r1s1 | modest | 95% | 100% | 100% | 95 s (par 120) | 100% | 100% |
+| r1s1 | strong | 100% | 100% | 100% | 68 s (par 120) | 100% | 100% |
+| r1s2 | none | 28% | 80% | 98% | 175 s (par 165) | 82% | 25% |
+| r1s2 | light | 78% | 100% | 100% | 150 s (par 165) | 97% | 88% |
+| r1s2 | modest | 100% | 100% | 100% | 124 s (par 165) | 99% | 100% |
+| r1s2 | strong | 100% | 100% | 100% | 93 s (par 165) | 100% | 100% |
+| r1s3 | none | 53% | 88% | 93% | 89 s (par 100) | 99% | 88% |
+| r1s3 | light | 65% | 95% | 100% | 86 s (par 100) | 100% | 95% |
+| r1s3 | modest | 95% | 100% | 100% | 80 s (par 100) | 100% | 100% |
+| r1s3 | strong | 100% | 100% | 100% | 67 s (par 100) | 100% | 100% |
+| r1s4 | none | 65% | 85% | 93% | 187 s (par 185) | 88% | 48% |
+| r1s4 | light | 80% | 98% | 100% | 162 s (par 185) | 96% | 85% |
+| r1s4 | modest | 98% | 100% | 100% | 136 s (par 185) | 97% | 100% |
+| r1s4 | strong | 100% | 100% | 100% | 87 s (par 185) | 99% | 100% |
+| r1s5 | none | 73% | 83% | 95% | 135 s (par 140) | 99% | 48% |
+| r1s5 | light | 60% | 100% | 100% | 122 s (par 140) | 100% | 93% |
+| r1s5 | modest | 95% | 100% | 100% | 107 s (par 140) | 100% | 100% |
+| r1s5 | strong | 100% | 100% | 100% | 88 s (par 140) | 100% | 100% |
+| r1s6 | none | 38% | 98% | 100% | 201 s (par 205) | 100% | 75% |
+| r1s6 | light | 90% | 100% | 100% | 185 s (par 205) | 100% | 100% |
+| r1s6 | modest | 100% | 100% | 100% | 159 s (par 205) | 100% | 100% |
+| r1s6 | strong | 100% | 100% | 100% | 91 s (par 205) | 100% | 100% |
+| r1s7 | none | 28% | 90% | 100% | 225 s (par 235) | 100% | 60% |
+| r1s7 | light | 45% | 98% | 100% | 218 s (par 235) | 98% | 73% |
+| r1s7 | modest | 80% | 100% | 100% | 179 s (par 235) | 100% | 98% |
+| r1s7 | strong | 100% | 100% | 100% | 141 s (par 235) | 100% | 100% |
+| r1boss | none | 55% | 93% | 88% | 107 s (par 125) | 75% | 63% |
+| r1boss | light | 80% | 90% | 100% | 87 s (par 125) | 93% | 90% |
+| r1boss | modest | 100% | 100% | 98% | 75 s (par 125) | 90% | 98% |
+| r1boss | strong | 100% | 100% | 100% | 59 s (par 125) | 99% | 100% |

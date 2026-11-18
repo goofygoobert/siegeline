@@ -43,15 +43,18 @@
    "name": "Inkspitter",
    "faction": "hollow",
    "hp": 135,
-   "dmg": 30,
-   "rate": 1.8,
+   "dmg": 46,
+   "rate": 1.5,
    "range": 280,
    "speed": 30,
    "size": 14,
    "traits": {
     "projectile": "spit",
     "lob": true,
-    "siege": true,
+    "siege": {
+     "keep": 150,
+     "hide": 70
+    },
     "lobSplash": 48
    },
    "desc": "Squid-headed and patient. Lobs glowing ink from behind the horde.",
@@ -130,19 +133,20 @@
    "name": "Bellback",
    "faction": "hollow",
    "hp": 300,
-   "dmg": 20,
+   "dmg": 34,
    "rate": 1.6,
    "range": 28,
    "speed": 26,
    "size": 20,
    "traits": {
-    "shell": 300
+    "shell": 1000000,
+    "knockback": 30
    },
    "tags": [
     "shelled"
    ],
    "art": true,
-   "desc": "A crab in a drowned ship's bell. The bell soaks the first 300 damage from the front, and shields what walks behind it."
+   "desc": "A crab in a drowned ship's bell. The bell stops every blow from the front until a heavy hit cracks it; it also shields what walks behind it. A knife from behind goes round it."
   },
   {
    "id": "tide_nurse",

@@ -9,7 +9,7 @@
    "name": "Tide Turns Green",
    "slots": 4,
    "enemyCastleHp": 1200,
-   "par": 110,
+   "par": 120,
    "reward": 120,
    "unlocks": [
     "bellringer",
@@ -67,7 +67,7 @@
      ]
     }
    ],
-   "power": 2.25,
+   "power": 2.17,
    "teaches": "Hold a line: a wall in front, a shooter behind."
   },
   {
@@ -79,7 +79,7 @@
    "name": "The Smugglers' Steps",
    "slots": 4,
    "enemyCastleHp": 2600,
-   "par": 170,
+   "par": 165,
    "reward": 150,
    "unlocks": [
     "netcaster",
@@ -171,7 +171,7 @@
      ]
     }
    ],
-   "power": 1.55,
+   "power": 1.58,
    "teaches": "Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack."
   },
   {
@@ -183,7 +183,7 @@
    "name": "Gallows Roost",
    "slots": 4,
    "enemyCastleHp": 1700,
-   "par": 150,
+   "par": 100,
    "reward": 170,
    "unlocks": [
     "cinder_runner"
@@ -259,7 +259,7 @@
      ]
     }
    ],
-   "power": 2.15,
+   "power": 1.56,
    "teaches": "Flying: melee cannot reach. Bring shooters or nets."
   },
   {
@@ -270,8 +270,8 @@
    "id": "r1s4",
    "name": "The Broken Lighthouse",
    "slots": 5,
-   "enemyCastleHp": 2000,
-   "par": 170,
+   "enemyCastleHp": 3200,
+   "par": 185,
    "reward": 200,
    "unlocks": [
     "rally"
@@ -359,7 +359,7 @@
      ]
     }
    ],
-   "power": 1.6,
+   "power": 1.42,
    "teaches": "Siege: something at the back out-ranges you. Send a diver or a sniper."
   },
   {
@@ -371,7 +371,7 @@
    "name": "Pufferghast Shoals",
    "slots": 5,
    "enemyCastleHp": 2300,
-   "par": 185,
+   "par": 140,
    "reward": 220,
    "unlocks": [
     "maulwright"
@@ -465,7 +465,7 @@
      ]
     }
    ],
-   "power": 2.45,
+   "power": 1.91,
    "teaches": "Exploder: kill it at range or behind a door, never in a crowd."
   },
   {
@@ -477,7 +477,7 @@
    "name": "Wreckers' Reef",
    "slots": 5,
    "enemyCastleHp": 2700,
-   "par": 200,
+   "par": 205,
    "reward": 250,
    "unlocks": [],
    "tavern": [
@@ -573,7 +573,7 @@
      ]
     }
    ],
-   "power": 0.95,
+   "power": 0.92,
    "teaches": "Armoured: small hits bounce. Bring one big hit or burn."
   },
   {
@@ -585,7 +585,7 @@
    "name": "The Bell Ground",
    "slots": 5,
    "enemyCastleHp": 3000,
-   "par": 215,
+   "par": 235,
    "reward": 280,
    "unlocks": [],
    "waves": [
@@ -694,7 +694,7 @@
      ]
     }
    ],
-   "power": 1.5,
+   "power": 0.76,
    "teaches": "Shelled and Healer together: break the shell, reach the mender."
   },
   {
@@ -704,7 +704,7 @@
    "bg": "r1n",
    "music": "boss",
    "enemyCastleHp": 2500,
-   "par": 260,
+   "par": 125,
    "reward": 400,
    "boss": "cinder_matron",
    "bossAt": 20,
@@ -764,8 +764,8 @@
     "min": 4
    },
    "triggers": [],
-   "power": 0.4,
-   "bossPower": 0.75,
+   "power": 0.33,
+   "bossPower": 0.61,
    "slots": 5,
    "teaches": "The exam: she calls packs, spits ink and sends Gulls. No single answer."
   }

@@ -24,10 +24,10 @@ turn a wrong answer into a right one.
 |---|---|---|---|---|
 | **Swarm** | three dots | small, low and many, arriving in packs of 5-8 | Fast and weak; arrive in packs that surround single-target crew. | Shantyman, Netcaster, Fire-eater, Powder Monkey, Swivel Gun, Cooper, Storm-caller |
 | **Flying** | wing | off the ground with a shadow below it | Melee cannot hit it. It flies over the front line to the back line and the fort. | Blackpowder, Netcaster, Gull-rider, Storm-caller |
-| **Siege** | arc over a wall | tall, stays at the back, lobs glowing globs | Out-ranges every crew shooter. Targets the back line, then the fort. | Rope Rat, Harpooner, Gull-rider, Grapnel |
+| **Siege** | arc over a wall | tall, stays at the back, lobs glowing globs | Out-ranges every crew shooter and lobs onto the back line. When crew close in it backs into the Grotto's mouth, where only a leaping Rope Rat, a Harpooner or Long Tom can reach it. | Rope Rat, Harpooner, Gull-rider, Grapnel |
 | **Exploder** | burst | round, swollen, glowing cracks | Bursts when it dies and hurts everyone close, crew and monsters. | Hatchguard, Blackpowder, Powder Monkey, Diver, Cooper |
 | **Armoured** | plate | huge, crusted in barnacle plates | Takes 12 less damage from every hit, so many small hits do almost nothing. | Anchorman, Harpooner, Boathook, Swivel Gun, Colour Sergeant |
-| **Shelled** | shell | carries a ship's bell or shell in front of it | The shell soaks the first 300 damage from the front. Blunt and blast hits break it at once. | Rope Rat, Anchorman, Powder Monkey, Grapnel |
+| **Shelled** | shell | carries a ship's bell or shell in front of it | The bell stops every hit from the front, and shields what walks behind it, until a heavy blow (the Anchorman) cracks it. A blade from behind goes round it. | Rope Rat, Anchorman, Powder Monkey, Grapnel |
 | **Healer** | drop in a ring | soft glowing bell-shape floating low, a beam to whoever it mends | Mends the most hurt monster nearby. A fight in front of it never ends. | Rope Rat, Harpooner, Fire-eater, Gull-rider, Grapnel, Storm-caller |
 | **Venomous** | green drop | covered in long thin spines | Each hit adds a stack of poison. | Hatchguard, Sawbones, Chaplain, Diver |
 | **Submerged** | fin | a moving ripple and fin in the sand | Cannot be targeted while under the sand. Surfaces at the first crew member it passes, behind the front line. | Shantyman, Anchorman, Lookout, Diver |
@@ -140,14 +140,18 @@ to another; weak is the reverse.
 | Effect | Rule | Stacking | How the player sees it |
 |---|---|---|---|
 | **Poison** | 4 damage a second for 6 s. Healing received is halved while poisoned. | Up to 3 stacks; a new stack refreshes the timer. | Green bubbles rising from the figure; health pip turns green; a small number of drops (1–3) by the pip. |
-| **Burn** | 8 damage a second for 4 s. Ignores armour. Shells do not block it. | Does not stack; re-applying refreshes. | Small flames on the figure; orange flicker on the outline. |
-| **Slow** | Movement and attack speed −35%. | Does not stack; the strongest applies. | Blue-grey tint on the legs, music notes or net over the figure. |
+| **Burn** | Damage over time (Blackpowder: 6 a second for 2 s). Ignores armour plates. A shot the bell soaks does not set anything alight. | Does not stack; re-applying refreshes. | Small embers rising from the figure. |
+| **Slow** | Movement and attack speed cut by the same amount (song 40%, net 50%). A slowed or netted swarm cannot slip round your line. | Does not stack; the strongest applies. | The net is drawn over the figure. |
+| **Netted** | 3 s: slowed 50%, and a flier is dragged down to the sand, where anyone can hit it. | Refreshes. | A rope mesh with weights over the figure; a flier drops to the ground. |
 | **Stun** | Cannot move or attack for 1.2 s. | Cannot be stunned again for 3 s after. | Stars circling the head; figure held in its "hit" pose. |
-| **Shell break** | A Shelled monster loses its shell for good; an Armoured one loses half its armour for 6 s. | Refreshes. | The shell bursts into pieces that stay on the sand; a cracked-plate mark over the monster. |
+| **Shell break** | Only a heavy blow (the Anchorman) cracks a bell, for good. On an Armoured monster the same blow halves its plates for 6 s. | Refreshes. | "Bell cracked!", bronze pieces fly; a white crack mark on cracked plates. |
 | **Solid** (ghosts only) | Inside lantern or blessing light a Ghostly monster can be hit by anything. | – | The ghost turns opaque and gains an outline while in the light; the light's edge is drawn on the sand. |
 
 Rules that keep it readable: a figure shows at most two effect marks (the two most recent), effects never change a
 silhouette, and every effect has one colour used for nothing else.
+
+Built in part 3: Burn, Slow, Netted, Stun and Shell break. Poison and Solid arrive with the region 2 and 3 monsters
+that use them.
 
 ## Difficulty
 
@@ -155,8 +159,8 @@ silhouette, and every effect has one colour used for nothing else.
 - **Target for a sensible wrong loadout** (a reasonable team that lacks the answer to the stage's new trait): under 25%.
 - **Random loadout:** somewhere between, by how many of its picks happen to answer the stage.
 - **Upgrades cannot brute-force a stage:** a wrong loadout with upgrades two tiers ahead of the stage must still be
-  under 50%. This works because most traits are rules, not numbers: melee never reaches a flier, shot never hurts a
-  ghost, and 12 armour removes a small hit entirely however many of them you buy.
+  under 50%. **Not met** (see `docs/balance.md`): with crew at level 6 and the fort and cannon at level 6 every wrong
+  loadout wins. Upgrades are generous today; tightening them is the next balance pass.
 - Stage power is tuned so the right loadout is at the top of its target; stars reward doing it cleanly.
 
 ## Region 1, reworked: one new idea per stage
@@ -167,13 +171,13 @@ Region 1 grows from six battles to eight so each stage can teach one thing by ma
 | # | Stage | Slots | New idea, taught by playing | You'll face | A right loadout | A sensible wrong one |
 |---|---|:-:|---|---|---|---|
 | 1 | Tide Turns Green | 4 | Hold a line: a wall in front, a shooter behind. | Drowner | Hatchguard, Blackpowder | Only shooters: nothing holds the Drowners off them. |
-| 2 | The Smugglers' Steps | 4 | Swarm: packs beat single hits. Slow them or net them, and aim the cannon at the pack. | Drowner, Scuttler | Hatchguard, Shantyman, Netcaster | Wall and shooters: Scuttlers run round the wall and eat the shooters. |
-| 3 | Gallows Roost | 4 | Flying: melee cannot reach. Bring shooters or nets. | Drowner, Gallows Gull | Hatchguard, Blackpowder, Netcaster | All melee: the Gulls pass overhead and peck the fort down. |
-| 4 | The Broken Lighthouse | 5 | Siege: something at the back out-ranges you. Send a diver or a sniper. | Drowner, Scuttler, Inkspitter | Hatchguard, Rope Rat, Harpooner | Wall and Blackpowders: ink falls on them from out of range all fight. |
-| 5 | Pufferghast Shoals | 5 | Exploder: kill it at range or behind a door, never in a crowd. | Drowner, Pufferghast, Gallows Gull | Hatchguard, Blackpowder, Harpooner | Rope Rats and Anchormen: each burst wipes the melee pile. |
-| 6 | Wreckers' Reef | 5 | Armoured: small hits bounce. Bring one big hit or burn. | Drowner, Scuttler, Barnacle Troll | Hatchguard, Anchorman, Harpooner, Shantyman | Rope Rats and Netcasters: nothing they have gets through the plates. |
-| 7 | The Bell Ground | 5 | Shelled and Healer together: break the shell, reach the mender. | Bellback, Tide Nurse, Drowner, Scuttler | Anchorman, Rope Rat, Shantyman, Netcaster | Blackpowders and Harpooners: shells soak the shot and the Nurse undoes the rest. |
-| 8 | Mother Fathom | 5 | The exam: she calls packs, spits ink and sends Gulls. No single answer. | cinder_matron, Scuttler, Gallows Gull, Inkspitter | Hatchguard, Netcaster, Blackpowder, Harpooner, Sawbones | Any four of one kind. |
+| 2 | The Smugglers' Steps | 4 | Swarm: packs run round a lone fighter and eat anyone soft. Bring a wall, slow them with the song, and aim the cannon at the pack. | Drowner, Scuttler | Hatchguard, Shantyman | Shooter and singer, no wall: the Scuttlers run straight through to them and the fort. |
+| 3 | Gallows Roost | 4 | Flying: melee cannot reach. Bring shooters or nets. | Drowner, Gallows Gull | Hatchguard, Blackpowder, Netcaster, Shantyman | All hand-to-hand: the Gulls pass overhead and peck the fort down. |
+| 4 | The Broken Lighthouse | 5 | Siege: something at the back out-ranges you. Send a diver or a sniper. | Drowner, Scuttler, Inkspitter | Hatchguard, Rope Rat, Blackpowder, Netcaster, Shantyman | Wall, shooter, song and nets: ink falls on them from out of range all fight. |
+| 5 | Pufferghast Shoals | 5 | Exploder: kill it at range or behind a door, never in a crowd. | Drowner, Pufferghast, Gallows Gull | Hatchguard, Blackpowder, Netcaster, Shantyman | Rope Rats, song and nets, no door: each burst wipes the melee pile. |
+| 6 | Wreckers' Reef | 5 | Armoured: small hits bounce. Bring one big hit or burn. | Drowner, Scuttler, Barnacle Troll | Hatchguard, Anchorman, Blackpowder, Shantyman, Netcaster | Rope Rats and Netcasters with a wall: nothing they have gets through the plates. |
+| 7 | The Bell Ground | 5 | Shelled and Healer together: crack the bell with a heavy blow, or get a blade round behind it to the mender. | Bellback, Tide Nurse, Drowner, Scuttler | Anchorman, Rope Rat, Shantyman, Netcaster, Hatchguard | Wall, shooter, song and nets: the bells stop every blow from the front and the Nurse mends whatever is behind them. |
+| 8 | Mother Fathom | 5 | The exam: she calls packs, spits ink and sends Gulls. No single answer. | cinder_matron, Scuttler, Gallows Gull, Inkspitter | Hatchguard, Netcaster, Blackpowder, Anchorman, Shantyman | All hand-to-hand: the Gulls and the ink go where they cannot reach. |
 <!-- /GEN:STAGES -->
 
 The first time a new trait appears the battle pauses once, for one line and one arrow at the monster. After that the
@@ -181,19 +185,28 @@ scouting screen carries it.
 
 ## How part 3 proves it
 
-`tools/balance.mjs` will run, for each stage: the intended loadout, the listed wrong loadout and 50 random loadouts,
-200 battles each at three skill levels and two upgrade levels, and record in `docs/balance.md`:
+`node tools/strategy_proof.mjs 40 24` runs, for each stage: the intended loadout, the listed wrong loadout (also with
+upgrades two tiers ahead) and 24 random loadouts drawn from the crew a player has by then; then all 56 five-crew
+loadouts of the region 1 roster on every stage. Results and the three checks are in `docs/balance.md`:
 
-- win rate for right, wrong and random per stage (right must beat wrong by at least 40 points);
-- that no single loadout wins every stage above 50%;
-- that every crew member appears in between 10% and 90% of winning loadouts across the region.
+- right beats wrong by at least 40 points on every stage: **8 of 8**;
+- no single loadout wins every stage: the best all-rounder wins 40% on its worst stage;
+- every crew member is in 10–90% of winning loadouts: 30% (Sawbones) to 89% (Hatchguard).
 
-A failing check blocks publishing, like the play-through.
+Rules that came out of the tuning, and why (each made a trait a rule you can read rather than a number):
+
+- **Swarm** packs slip past anyone already fighting, unless the song or a net holds them; they bite under the door.
+- **Siege** backs into the Grotto's mouth when crew close in: only a leaping Rope Rat, a Harpooner or Long Tom
+  reaches it there. Lobbed ink is too slow to catch a Rope Rat.
+- **Shelled**: the bell stops every hit from the front, and shields what walks behind it, until a heavy blow cracks
+  it or a blade comes round behind.
+- The Rope Rat knifes the back line hard (two and a half times against siege and menders).
+- Long Tom hits a little less hard and reloads a little slower, so it helps every loadout without replacing one.
 
 ## Design checks (from the data, today)
 
 <!-- GEN:CHECKS -->
-- All design checks pass: every trait has 2+ answers (and 2+ inside region 1 for region 1 traits), every crew member has 2+ weaknesses, nobody is strong against more than half the enemies, every region 1 crew member is in at least one intended loadout and none is in all of them.
+- All design checks pass: every trait has 2+ answers (and 2+ inside region 1 for region 1 traits), every crew member has 2+ weaknesses, nobody is strong against more than half the enemies, every free region 1 crew member is in at least one intended loadout (Tavern crew are optional; must-picks are checked on play by tools/strategy_proof.mjs).
 <!-- /GEN:CHECKS -->
 
 ## Recruiting (owner's request: some crew free, some to buy)
@@ -204,36 +217,45 @@ A failing check blocks publishing, like the play-through.
   member from a later region early, at a high price, changing after each stage you clear.
 - **No real money**, ever. Every crew member can be earned by playing; buying only spends doubloons sooner.
 
-Region 1 plan (from `data/design/roster.json`):
+Region 1 as built (`data/stages/r1.json`, `unlocks` and `tavern`):
 
 | Crew | How you get them |
 |---|---|
 | Hatchguard, Blackpowder | from the start |
-| Rope Rat | free after stage 2 |
-| Netcaster | Tavern after stage 2, 350 doubloons |
-| Shantyman | free after stage 3 |
-| Harpooner | Tavern after stage 4, 600 doubloons |
+| Shantyman | free after stage 1 |
+| Netcaster | free after stage 2 |
+| Rope Rat | free after stage 3 |
+| Harpooner | Tavern after stage 3, 500 doubloons |
 | Anchorman | free after stage 5 |
-| Sawbones | Tavern after stage 6, 500 doubloons |
+| Sawbones | Tavern after stage 6, 450 doubloons |
 
-The stage plan is built so a stage never needs a crew member you could not have yet: each stage's intended loadout
-uses only crew available by then, with the Tavern ones being the clever choice, not the only one.
+The order changed from the first plan so each stage's answer is in hand before the stage: the Shantyman before the
+swarm stage, the Netcaster before the fliers, the Rope Rat before siege, the Anchorman before the plates. No stage
+needs a purchase; Tavern crew are the clever choice, not the only one. The rotating later-region offer opens when
+region 2's crew exist.
 
 ## Skills (owner's request: new abilities)
 
 Each crew member learns one skill at level 5 and picks one of two at level 10 (the level 5 and 10 looks already
 exist). A skill changes what they do, not just a number, so it opens new answers to traits. Examples:
 
-| Crew | Level 5 | Level 10: pick one |
+| Crew | Level 5 | Level 10: pick one (for good, in the Quartermaster) |
 |---|---|---|
-| Hatchguard | Brace: standing still, the door blocks shots for those behind him | Shove: every third block knocks back · Taunt: nearby monsters must attack him |
-| Blackpowder | Tar shot: leaves a small fire patch | Long barrel: +40% range · Grapeshot: every fourth shot splits in three |
-| Netcaster | Weighted net: netted fliers fall and are stunned | Wide net: two targets · Hooked net: netted monsters take +25% |
+| Hatchguard | Brace: blocks 35% of blows and blasts | Shove: every third blow knocks back · Taunt: monsters in reach fight him first |
+| Blackpowder | Tar shot: leaves a small fire on the sand | Long barrel: 35% further · Grapeshot: every fourth shot bursts over a pack |
+| Rope Rat | Knife in the back: first strike after a vault ×3 | Second wind: +50% health · Venom blade: cuts burn |
+| Shantyman | Rousing verse: slows 48% | Long note: song reaches further · Work song: crew in earshot fight 20% faster |
+| Anchorman | Earthshaker: the slam stuns | Wide swing: wider slam · Embers: slam leaves burning ground |
+| Sawbones | Second lantern: mends two | Golden lamp: mends half again as much · Field surgery: mends three |
+| Harpooner | Barbed head: struck monster slowed | Twin line: harpoon goes through one more · Heavy iron: +35% |
+| Netcaster | Weighted net: dragged-down fliers stunned | Wide net: more sand covered · Hooked net: netted take +25% |
 
-The rest are written in part 3. Skills never remove a crew member's weakness; they widen what the crew member is
+All are data in `data/units.json` (`skills`). Skills never remove a crew member's weakness; they widen what the crew member is
 good for.
 
 ## Saves
 
-Old saves keep loading. Unlocked crew, levels and stars carry over; the two new stages appear as not yet played; a
-default loadout is filled in for each stage from the crew the save already owns.
+Old saves keep loading (save version 3, tested in `tools/test_sim.mjs`). Unlocked crew, levels, doubloons and stars
+carry over. Old stage progress moves to the stage that teaches the same thing (old 3 Pufferghast Shoals is now 5, old 5
+Wreckers' Reef is now 6); the two new stages (3 and 7) appear unplayed but open. Free recruits a migrated save has
+already earned are given on load, and Tavern offers it has reached appear. The last loadout is remembered per stage.
